@@ -59,63 +59,68 @@
     revealEls.forEach(el => el.classList.add('in'));
   }
 
-  /* ---------- floor plan data ---------- */
+  /* ---------- floor plan cards (real photos + real chertyozhi) ---------- */
+  const ICONS = {
+    floor: '<path d="M4 10l8-6 8 6M6 10v9h12v-9" stroke-linejoin="round"/>',
+    height: '<path d="M12 3v18M8 6l4-3 4 3M8 18l4 3 4-3"/>',
+    bath: '<path d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2Z"/><path d="M6 12V7a2 2 0 0 1 3.6-1.2"/>',
+    balcony: '<path d="M4 21V9l8-5 8 5v12"/><path d="M4 21h16M8 21v-6h8v6"/>',
+  };
+  const icon = (name) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">${ICONS[name]}</svg>`;
+
   const PLAN_DATA = [
-    { type: 'studio', name: 'Студия', area: 'от 27,2 м²', tags: ['Студия'] },
-    { type: '1', name: '1-комнатная', area: '36,8–45,3 м²', tags: ['1-комн'] },
-    { type: '2', name: '2-комнатная, классика', area: '41,5–46,0 м²', tags: ['2-комн'] },
-    { type: '2', name: '2-комнатная, евро', area: '60,0–74,0 м²', tags: ['2-комн', 'Евро'] },
-    { type: '2', name: '2-комнатная, с террасой', area: '67,7–74,0 м²', tags: ['2-комн', 'Терраса'] },
-    { type: '3', name: '3-комнатная, евро', area: '74,7–85,3 м²', tags: ['3-комн', 'Евро'] },
-    { type: '4', name: '4-комнатная, евро', area: '89,1 м²', tags: ['4-комн', 'Евро', 'Флагман'] },
+    {
+      type: '1', name: '1-комнатная квартира (евро)', area: '27,21', photo: 'card-1k.jpg', plan: 'plan-1k.png',
+      specs: [['floor', 'Блок 1: этажи 3–11'], ['height', 'Высота потолков: 3 м'], ['bath', 'Санузел: 1'], ['balcony', 'Балкон']],
+    },
+    {
+      type: '2', name: '2-комнатная квартира', area: '42,5', photo: 'card-2k.jpg', plan: 'plan-2k.png',
+      specs: [['floor', 'Блок 1/1: этажи 3–12'], ['height', 'Высота потолков: 3 м'], ['bath', 'Санузел: 1'], ['balcony', '2 балкона']],
+    },
+    {
+      type: '2', name: '2-комнатная квартира с террасой', area: '64,23', photo: 'card-2k-terrace.jpg', plan: 'plan-2k-terrace.png',
+      specs: [['floor', 'Блок 1/1.1: верхние этажи'], ['height', 'Высота потолков: 3 м'], ['bath', 'Санузел: 1'], ['balcony', 'Терраса 10,8 м²']],
+    },
+    {
+      type: '3', name: '3-комнатная квартира (евро)', area: '74,71', photo: 'card-3k.jpg', plan: 'plan-3k.png',
+      specs: [['floor', 'Блок 1: этажи 3–11'], ['height', 'Высота потолков: 3 м'], ['bath', 'Санузел: 2'], ['balcony', '2 балкона']],
+    },
   ];
 
-  const PLAN_ICON = {
-    studio: '<rect x="10" y="10" width="80" height="80" rx="2"/>',
-    1: '<rect x="10" y="10" width="80" height="80" rx="2"/><line x1="55" y1="10" x2="55" y2="55"/>',
-    2: '<rect x="10" y="10" width="80" height="80" rx="2"/><line x1="45" y1="10" x2="45" y2="90"/><line x1="45" y1="50" x2="90" y2="50"/>',
-    3: '<rect x="10" y="10" width="80" height="80" rx="2"/><line x1="40" y1="10" x2="40" y2="90"/><line x1="40" y1="45" x2="90" y2="45"/><line x1="65" y1="45" x2="65" y2="90"/>',
-    4: '<rect x="10" y="10" width="80" height="80" rx="2"/><line x1="38" y1="10" x2="38" y2="90"/><line x1="38" y1="40" x2="90" y2="40"/><line x1="38" y1="68" x2="90" y2="68"/><line x1="65" y1="10" x2="65" y2="40"/>',
-  };
-
   const planGrid = document.getElementById('planGrid');
-  const svgIcon = (type) => `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.4">${PLAN_ICON[type] || PLAN_ICON.studio}</svg>`;
-
-  function renderPlans() {
+  if (planGrid) {
     planGrid.innerHTML = PLAN_DATA.map((p) => `
-      <article class="plan-card" data-type="${p.type}">
-        <div class="plan-icon">${svgIcon(p.type)}</div>
-        <h4>${p.name}</h4>
-        <div class="area">${p.area}</div>
-        <div class="tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-        <a class="cta" href="#lead" data-type="${p.type}">Уточнить планировку</a>
+      <article class="plan-card-v2" data-type="${p.type}">
+        <div class="pcard-frame">
+          <div class="pcard-media">
+            <img class="photo" src="assets/img/${p.photo}" alt="${p.name} — визуализация PARI Residence" loading="lazy">
+            <img class="pcard-wordmark" src="assets/img/pari-logo-gold.png" alt="" aria-hidden="true">
+          </div>
+          <div class="pcard-body">
+            <div class="pcard-area">${p.area}<span>м²</span></div>
+            <div class="pcard-type">${p.name}</div>
+            <ul class="pcard-specs">
+              ${p.specs.map(([k, label]) => `<li>${icon(k)}<span>${label}</span></li>`).join('')}
+            </ul>
+            <div class="pcard-plan"><img src="assets/img/${p.plan}" alt="Чертёж планировки: ${p.name}, ${p.area} м²" loading="lazy"></div>
+            <a class="btn btn-ghost pcard-cta" href="#lead" data-type="${p.type}">Уточнить планировку</a>
+          </div>
+          <div class="pcard-footer">PARI · Самарканд</div>
+        </div>
       </article>
     `).join('');
   }
-  renderPlans();
-
-  /* ---------- plan filter ---------- */
-  const filterTabs = document.getElementById('filterTabs');
-  filterTabs.addEventListener('click', (e) => {
-    const btn = e.target.closest('.filter-tab');
-    if (!btn) return;
-    filterTabs.querySelectorAll('.filter-tab').forEach(b => b.setAttribute('aria-pressed', 'false'));
-    btn.setAttribute('aria-pressed', 'true');
-    const filter = btn.dataset.filter;
-    planGrid.querySelectorAll('.plan-card').forEach(card => {
-      const show = filter === 'all' || card.dataset.type === filter;
-      card.style.display = show ? '' : 'none';
-    });
-  });
 
   /* prefill "Интересующий формат" when a plan card CTA is clicked */
   const typeSelect = document.getElementById('f-type');
-  planGrid.addEventListener('click', (e) => {
-    const cta = e.target.closest('.cta');
-    if (!cta) return;
-    const t = cta.dataset.type;
-    if (typeSelect && t) typeSelect.value = t;
-  });
+  if (planGrid) {
+    planGrid.addEventListener('click', (e) => {
+      const cta = e.target.closest('.pcard-cta');
+      if (!cta) return;
+      const t = cta.dataset.type;
+      if (typeSelect && t) typeSelect.value = t;
+    });
+  }
 
   /* ---------- lead form ---------- */
   const form = document.getElementById('leadForm');
