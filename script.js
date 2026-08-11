@@ -7,6 +7,27 @@
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  /* ---------- hero wordmark: gold -> ink as it scrolls out of the "sky" ---------- */
+  const heroEl = document.getElementById('top');
+  const heroWordmark = document.querySelector('.hero-wordmark');
+  if (heroEl && heroWordmark) {
+    let ticking = false;
+    const updateHeroLogo = () => {
+      ticking = false;
+      const rect = heroEl.getBoundingClientRect();
+      const progress = 1 - Math.min(Math.max(rect.bottom / rect.height, 0), 1);
+      heroWordmark.style.setProperty('--hero-logo-progress', progress.toFixed(3));
+    };
+    updateHeroLogo();
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateHeroLogo);
+      }
+    }, { passive: true });
+    window.addEventListener('resize', updateHeroLogo);
+  }
+
   /* ---------- mobile nav ---------- */
   const navToggle = document.getElementById('navToggle');
   const mainNav = document.getElementById('mainNav');
