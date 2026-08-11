@@ -180,37 +180,41 @@ section{padding:var(--space-8) 0;position:relative;}
 
 /* ---------- hero ---------- */
 .hero{
-  min-height:100dvh;display:flex;align-items:center;
+  min-height:100dvh;display:flex;align-items:center;position:relative;
   padding-top:calc(var(--space-8) + 40px);
   background:
-    radial-gradient(120% 70% at 82% 8%, var(--gold-pale) 0%, transparent 55%),
+    url('assets/img/hero-facade.jpg') center 62% / cover no-repeat,
     linear-gradient(180deg, var(--cream) 0%, var(--stone) 100%);
   overflow:hidden;
 }
-.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--space-6);align-items:center;}
-.hero-art{position:relative;aspect-ratio:3/4;}
+.hero-scrim{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(to top, rgba(23,19,16,.32) 0%, transparent 22%),
+    linear-gradient(100deg, var(--cream) 0%, var(--cream) 34%, rgba(246,242,231,.88) 47%, rgba(246,242,231,.35) 62%, transparent 78%);
+}
+.hero-grid{position:relative;z-index:1;}
+.hero-copy{max-width:640px;}
 .hero-copy .eyebrow{margin-bottom:var(--space-3);}
 .hero h1{font-size:clamp(34px,5.2vw,60px);line-height:1.14;}
 .hero .sub{margin-top:var(--space-3);font-size:18px;color:var(--ink-soft);max-width:46ch;}
 .hero .cta-row{display:flex;gap:var(--space-2);margin-top:var(--space-5);flex-wrap:wrap;}
 .hero .scroll-cue{
-  position:absolute;left:50%;bottom:28px;transform:translateX(-50%);
+  position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:1;
   display:flex;flex-direction:column;align-items:center;gap:8px;
-  font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);
+  font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--surface);
+  text-shadow:0 1px 6px rgba(0,0,0,.35);
 }
 .hero .scroll-cue .line{width:1px;height:34px;background:linear-gradient(var(--gold),transparent);}
 
 @media (max-width:900px){
-  .hero-grid{grid-template-columns:1fr;}
-  .hero-art{order:-1;aspect-ratio:16/10;}
+  .hero{background-position:38% 62%;}
+  .hero-scrim{
+    background:
+      linear-gradient(to top, rgba(23,19,16,.4) 0%, transparent 30%),
+      linear-gradient(180deg, var(--cream) 0%, var(--cream) 40%, rgba(246,242,231,.9) 55%, rgba(246,242,231,.55) 70%, transparent 92%);
+  }
 }
-
-/* ---------- illustrative art (arches) ---------- */
-.art-frame{position:absolute;inset:0;}
-.arch-field{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-evenly;padding:0 4%;}
-.arch-field path{fill:none;stroke-width:1;vector-effect:non-scaling-stroke;}
-.arch-field.gold path{stroke:var(--gold);opacity:.55;}
-.arch-field.gold-d path{stroke:var(--gold-d);opacity:.65;}
 
 /* ---------- about ---------- */
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-7);align-items:center;}
@@ -246,17 +250,15 @@ section{padding:var(--space-8) 0;position:relative;}
 @media (max-width:520px){.infra-grid{grid-template-columns:1fr;}}
 
 .mood-strip{margin-top:var(--space-6);display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2);}
-.mood-tile{aspect-ratio:3/4;position:relative;border:1px solid var(--line-d);overflow:hidden;}
-.mood-tile .tile-label{position:absolute;left:14px;bottom:12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--paper-soft);}
-.mood-tile[data-mood="facade"]{background:repeating-linear-gradient(100deg, #1D170F 0 34px, #221B12 34px 68px);}
-.mood-tile[data-mood="yard"]{background:radial-gradient(120% 100% at 30% 100%, #24301F 0%, #171310 60%);}
-.mood-tile[data-mood="lobby"]{background:linear-gradient(160deg, #241C10 0%, #12100C 100%);}
-.mood-tile[data-mood="evening"]{background:radial-gradient(90% 70% at 70% 20%, #3A2A12 0%, #100C08 70%);}
+.mood-tile{aspect-ratio:3/4;position:relative;border:1px solid var(--line-d);overflow:hidden;margin:0;}
+.mood-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 500ms var(--ease);}
+.mood-tile:hover img{transform:scale(1.04);}
 .mood-tile::after{
   content:'';position:absolute;inset:0;
-  background-image:linear-gradient(var(--line-d) 1px, transparent 1px);
-  background-size:100% 22%;opacity:.4;
+  background:linear-gradient(to top, rgba(11,8,6,.75) 0%, rgba(11,8,6,0) 45%);
+  pointer-events:none;
 }
+.mood-tile .tile-label{position:absolute;left:14px;bottom:12px;z-index:1;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--paper);margin:0;}
 @media (max-width:760px){.mood-strip{grid-template-columns:1fr 1fr;}}
 
 /* ---------- plans ---------- */

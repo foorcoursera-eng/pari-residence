@@ -38,32 +38,6 @@
     revealEls.forEach(el => el.classList.add('in'));
   }
 
-  /* ---------- illustrative arch skyline (SVG, generated) ---------- */
-  function buildArchField(container, count, opts = {}) {
-    if (!container) return;
-    const ns = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', `0 0 ${count * 60} 200`);
-    svg.setAttribute('preserveAspectRatio', 'xMidYMax meet');
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', '100%');
-    const heights = opts.heights || [70, 120, 90, 150, 100, 135, 80, 110, 65];
-    for (let i = 0; i < count; i++) {
-      const w = 60;
-      const x = i * w + w / 2;
-      const hh = heights[i % heights.length];
-      const y0 = 200;
-      const y1 = 200 - hh;
-      const r = w * 0.36;
-      const path = document.createElementNS(ns, 'path');
-      const d = `M ${x - w * 0.36} ${y0} L ${x - w * 0.36} ${y1 + r} A ${r} ${r} 0 0 1 ${x + w * 0.36} ${y1 + r} L ${x + w * 0.36} ${y0}`;
-      path.setAttribute('d', d);
-      svg.appendChild(path);
-    }
-    container.appendChild(svg);
-  }
-  buildArchField(document.getElementById('heroArch'), 7);
-
   /* ---------- floor plan data ---------- */
   const PLAN_DATA = [
     { type: 'studio', name: 'Студия', area: 'от 27,2 м²', tags: ['Студия'] },
