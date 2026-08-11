@@ -9,7 +9,7 @@
 
   /* ---------- hero wordmark: gold -> ink as it scrolls out of the "sky" ---------- */
   const heroEl = document.getElementById('top');
-  const heroWordmark = document.querySelector('.hero-wordmark');
+  const heroWordmark = document.querySelector('.hero-corner-logo');
   if (heroEl && heroWordmark) {
     let ticking = false;
     const updateHeroLogo = () => {
@@ -33,23 +33,41 @@
   const mainNav = document.getElementById('mainNav');
   const closeNav = () => {
     mainNav.classList.remove('open');
+    mainNav.style.transform = '';
     navToggle.setAttribute('aria-expanded', 'false');
     document.body.classList.remove('nav-open');
   };
   navToggle.addEventListener('click', () => {
     const open = mainNav.classList.toggle('open');
+    mainNav.style.transform = open ? 'translateX(0)' : '';
     navToggle.setAttribute('aria-expanded', String(open));
     document.body.classList.toggle('nav-open', open);
   });
   mainNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
 
-  /* ---------- scroll reveal ---------- */
+  /* ---------- scroll reveal (fail-safe: never leaves content stuck invisible) ---------- */
   const revealEls = document.querySelectorAll('.reveal');
+  const revealNow = (el) => el.classList.add('in');
+
+  // Safety net: whatever IntersectionObserver misses (fast programmatic scroll,
+  // anchor jumps, odd browser timing) still becomes visible shortly after load.
+  window.setTimeout(() => revealEls.forEach(revealNow), 1200);
+  // Second net on scroll/resize, in case the timeout fires before layout settles.
+  const revealVisible = () => {
+    revealEls.forEach((el) => {
+      if (el.classList.contains('in')) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) revealNow(el);
+    });
+  };
+  window.addEventListener('scroll', revealVisible, { passive: true });
+  window.addEventListener('load', revealVisible);
+
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('in');
+          revealNow(entry.target);
           io.unobserve(entry.target);
         }
       });
