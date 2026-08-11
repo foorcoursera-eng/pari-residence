@@ -230,7 +230,7 @@ section{padding:var(--space-8) 0;position:relative;}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);}
 .stat .num{font-family:'Tenor Sans';font-size:clamp(30px,3.4vw,44px);color:var(--gold);font-variant-numeric:tabular-nums;line-height:1;}
 .stat .lbl{margin-top:10px;font-size:13.5px;color:var(--ink-soft);}
-@media (max-width:760px){.stats{grid-template-columns:1fr 1fr;gap:var(--space-4) var(--space-3);}}
+@media (max-width:880px){.stats{grid-template-columns:1fr 1fr;gap:var(--space-4) var(--space-3);}}
 
 /* ---------- location ---------- */
 .location-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);align-items:stretch;}
@@ -247,7 +247,7 @@ section{padding:var(--space-8) 0;position:relative;}
 .infra-item svg{color:var(--gold-d);}
 .infra-item h4{margin-top:var(--space-2);font-family:'Jost';font-weight:500;font-size:15.5px;color:var(--paper);}
 .infra-item p{margin-top:8px;font-size:13.5px;color:var(--paper-soft);}
-@media (max-width:760px){.infra-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:880px){.infra-grid{grid-template-columns:1fr 1fr;}}
 @media (max-width:520px){.infra-grid{grid-template-columns:1fr;}}
 
 .mood-strip{margin-top:var(--space-6);display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2);}
@@ -260,7 +260,7 @@ section{padding:var(--space-8) 0;position:relative;}
   pointer-events:none;
 }
 .mood-tile .tile-label{position:absolute;left:14px;bottom:12px;z-index:1;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--paper);margin:0;}
-@media (max-width:760px){.mood-strip{grid-template-columns:1fr 1fr;}}
+@media (max-width:880px){.mood-strip{grid-template-columns:1fr 1fr;}}
 
 /* ---------- plans (photo + real chertyozh cards) ---------- */
 .plan-grid-v2{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5) var(--space-4);}
@@ -269,12 +269,6 @@ section{padding:var(--space-8) 0;position:relative;}
 .plan-card-v2:hover .pcard-frame{transform:translateY(-4px);box-shadow:0 18px 34px -18px rgba(33,26,18,.28);}
 .pcard-media{position:relative;aspect-ratio:16/11;overflow:hidden;border-bottom:1px solid var(--gold);}
 .pcard-media .photo{width:100%;height:100%;object-fit:cover;display:block;}
-.pcard-wordmark{
-  position:absolute;left:50%;top:14%;width:44%;
-  transform:translateX(-50%);
-  filter:brightness(0) invert(1);
-  opacity:.95;
-}
 .pcard-body{padding:24px 26px 8px;}
 .pcard-area{font-family:'Tenor Sans';font-size:38px;color:var(--gold);line-height:1;font-variant-numeric:tabular-nums;}
 .pcard-area span{margin-left:6px;font-size:16px;color:var(--ink-soft);font-family:'Jost';}

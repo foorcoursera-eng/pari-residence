@@ -112,7 +112,6 @@
         <div class="pcard-frame">
           <div class="pcard-media">
             <img class="photo" src="assets/img/${p.photo}" alt="${p.name} — визуализация PARI Residence" loading="lazy">
-            <img class="pcard-wordmark" src="assets/img/pari-logo-gold.png" alt="" aria-hidden="true">
           </div>
           <div class="pcard-body">
             <div class="pcard-area">${p.area}<span>м²</span></div>
