@@ -285,15 +285,6 @@ section{padding:var(--space-8) 0;position:relative;}
 }
 @media (max-width:820px){.plan-grid-v2{grid-template-columns:1fr;max-width:480px;margin:0 auto;}}
 
-/* ---------- finishing ---------- */
-.finish-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:var(--space-7);align-items:start;}
-.finish-note{padding:var(--space-3) var(--space-4);background:var(--stone);border-left:2px solid var(--gold);font-size:14.5px;color:var(--ink-soft);}
-.spec-list{margin-top:var(--space-4);display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line);}
-.spec-list dt{grid-column:1;font-size:13px;color:var(--ink-soft);padding:14px 0;border-bottom:1px solid var(--line);}
-.spec-list dd{grid-column:2;margin:0;font-size:13.5px;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);text-align:right;}
-.spec-row{display:contents;}
-@media (max-width:860px){.finish-grid{grid-template-columns:1fr;gap:var(--space-4);}}
-
 /* ---------- lead / CTA (dark) ---------- */
 .lead-section{background:var(--charcoal-2);}
 .lead-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--space-7);align-items:start;}
