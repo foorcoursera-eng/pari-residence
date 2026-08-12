@@ -221,8 +221,13 @@ section{padding:var(--space-8) 0;position:relative;}
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-7);align-items:center;}
 .about-copy p + p{margin-top:var(--space-3);color:var(--ink-soft);}
 .about-copy .signoff{margin-top:var(--space-4);font-family:'Tenor Sans';font-size:22px;color:var(--ink);}
-.about-motif{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;}
-@media (max-width:860px){.about-grid{grid-template-columns:1fr;gap:var(--space-5);}.about-motif{order:-1;max-width:280px;margin:0 auto;}}
+.about-motif{margin:0;border:1px solid var(--gold);}
+.about-motif img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;}
+.about-motif figcaption{
+  padding:13px;text-align:center;border-top:1px solid var(--line);
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
+}
+@media (max-width:860px){.about-grid{grid-template-columns:1fr;gap:var(--space-5);}.about-motif{order:-1;max-width:340px;margin:0 auto;}}
 
 /* ---------- stats ---------- */
 .stats-panel{background:var(--stone);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
