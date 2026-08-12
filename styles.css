@@ -293,6 +293,9 @@ section{padding:var(--space-8) 0;position:relative;}
   background:var(--surface);border:1px solid var(--gold);color:var(--ink);
   font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 14px;
 }
+.map-block{display:flex;flex-direction:column;height:100%;}
+.map-block .map-frame{flex:1;}
+.map-address{margin-top:12px;font-size:13.5px;color:var(--ink-soft);}
 @media (max-width:860px){.location-grid{grid-template-columns:1fr;}}
 
 /* ---------- infrastructure (dark) ---------- */
