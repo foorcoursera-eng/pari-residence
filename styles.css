@@ -141,6 +141,7 @@ p{margin:0;}
 .logo-on-dark img{filter:brightness(0) invert(1);}
 @media (max-width:520px){.logo img{height:42px;}}
 .main-nav{display:flex;align-items:center;gap:var(--space-4);}
+.nav-drawer-label{display:none;}
 .main-nav a{
   font-size:13px;letter-spacing:.04em;color:var(--ink-soft);
   padding:6px 0;border-bottom:1px solid transparent;
@@ -158,18 +159,36 @@ p{margin:0;}
 
 @media (max-width:900px){
   .main-nav{
-    position:fixed;inset:0 0 0 30%;background:var(--surface);
-    flex-direction:column;justify-content:center;align-items:flex-start;gap:var(--space-3);
-    padding:var(--space-6) var(--space-4);
+    position:fixed;inset:0 0 0 28%;background:var(--charcoal);
+    display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:0;
+    padding:var(--space-7) var(--space-5);
     transform:translateX(100%);transition:transform var(--dur) var(--ease);
-    border-left:1px solid var(--line);
+    box-shadow:-24px 0 60px -20px rgba(0,0,0,.35);
   }
   .main-nav.open{transform:translateX(0);}
-  .main-nav a{font-size:18px;}
-  .nav-cta{display:inline-flex;margin-top:var(--space-3);}
+  .nav-drawer-label{
+    display:block;margin:0 0 var(--space-4);font-family:'Jost';font-size:11px;
+    letter-spacing:.24em;text-transform:uppercase;color:var(--gold-d);
+  }
+  .main-nav a{
+    font-family:'Tenor Sans';font-size:24px;color:var(--paper);border:none;
+    padding:16px 0;border-top:1px solid var(--line-d);
+  }
+  .main-nav a:first-of-type{border-top:none;}
+  .main-nav a:hover{color:var(--gold-d);}
+  .nav-cta{
+    width:100%;text-align:center;margin-top:var(--space-5);
+    background:var(--gold-d);color:var(--charcoal-2);border-color:var(--gold-d);
+  }
+  .nav-cta:hover{background:var(--paper);border-color:var(--paper);}
   .header-actions .btn-primary{display:none;}
   .nav-toggle{display:flex;}
   body.nav-open{overflow:hidden;}
+}
+@media (max-width:420px){
+  .main-nav{inset:0 0 0 20%;padding:var(--space-6) var(--space-3);}
+  .main-nav a{font-size:20px;padding:14px 0;}
+  .nav-cta{font-size:11.5px;padding:14px 16px;}
 }
 
 /* ---------- sections generic ---------- */
