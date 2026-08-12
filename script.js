@@ -34,13 +34,17 @@
   const closeNav = () => {
     mainNav.classList.remove('open');
     mainNav.style.transform = '';
+    navToggle.classList.remove('open');
     navToggle.setAttribute('aria-expanded', 'false');
+    navToggle.setAttribute('aria-label', 'Открыть меню');
     document.body.classList.remove('nav-open');
   };
   navToggle.addEventListener('click', () => {
     const open = mainNav.classList.toggle('open');
     mainNav.style.transform = open ? 'translateX(0)' : '';
+    navToggle.classList.toggle('open', open);
     navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
     document.body.classList.toggle('nav-open', open);
   });
   mainNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));

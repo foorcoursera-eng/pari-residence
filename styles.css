@@ -149,9 +149,12 @@ p{margin:0;}
 .main-nav a:hover{color:var(--ink);border-color:var(--gold);}
 .nav-cta{display:none;}
 .header-actions{display:flex;align-items:center;gap:var(--space-3);}
-.nav-toggle{display:none;flex-direction:column;width:44px;height:44px;align-items:center;justify-content:center;cursor:pointer;}
+.nav-toggle{display:none;flex-direction:column;width:44px;height:44px;align-items:center;justify-content:center;cursor:pointer;position:relative;z-index:101;}
 .nav-toggle span,.nav-toggle::before,.nav-toggle::after{content:'';display:block;width:22px;height:1.5px;background:var(--ink);transition:transform var(--dur) var(--ease),opacity var(--dur) var(--ease);}
 .nav-toggle span{margin:5px 0;}
+.nav-toggle.open::before{transform:translateY(6.5px) rotate(45deg);}
+.nav-toggle.open span{opacity:0;}
+.nav-toggle.open::after{transform:translateY(-6.5px) rotate(-45deg);}
 
 @media (max-width:900px){
   .main-nav{
