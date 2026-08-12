@@ -129,7 +129,7 @@ p{margin:0;}
 /* ---------- header ---------- */
 .site-header{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:18px 0;
+  padding:12px 0;
   background:rgba(246,242,231,.97);
   border-bottom:1px solid transparent;
   transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease);
@@ -137,8 +137,9 @@ p{margin:0;}
 .site-header.scrolled{border-bottom-color:var(--line);}
 .site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;}
 .logo{display:inline-flex;align-items:center;}
-.logo img{height:26px;width:auto;display:block;}
+.logo img{height:52px;width:auto;display:block;}
 .logo-on-dark img{filter:brightness(0) invert(1);}
+@media (max-width:520px){.logo img{height:42px;}}
 .main-nav{display:flex;align-items:center;gap:var(--space-4);}
 .main-nav a{
   font-size:13px;letter-spacing:.04em;color:var(--ink-soft);
@@ -180,6 +181,25 @@ section{padding:var(--space-8) 0;position:relative;}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity 700ms var(--ease),transform 700ms var(--ease);}
 .reveal.in{opacity:1;transform:none;}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;}}
+
+/* ---------- section transition marker ---------- */
+.section-divider{display:flex;justify-content:center;padding:8px 0;background:var(--cream);}
+.section-divider span{position:relative;width:64px;height:22px;}
+.section-divider span::before,.section-divider span::after{
+  content:'';position:absolute;top:0;width:26px;height:22px;
+  border:1px solid var(--gold);border-bottom:none;border-radius:26px 26px 0 0;opacity:.55;
+}
+.section-divider span::before{left:0;}
+.section-divider span::after{right:0;}
+
+/* subtle brand-texture wash behind a section */
+.has-texture{position:relative;}
+.has-texture::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:url('assets/img/texture-arabesque.jpg') center/380px repeat;
+  opacity:.09;mix-blend-mode:multiply;
+}
+.has-texture > .wrap{position:relative;z-index:1;}
 
 /* ---------- hero (split: copy left, photo right) ---------- */
 .hero{position:relative;}
