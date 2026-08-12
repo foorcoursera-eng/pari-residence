@@ -42,6 +42,7 @@
   --ink:#211A12;
   --ink-soft:#5B5040;
   --gold:#B3832B;
+  --gold-text:#8C6519; /* darkened for small text on cream — #B3832B is only 3:1, fails WCAG AA at eyebrow size */
   --gold-hover:#96691E;
   --gold-pale:#E4CFA0;
   --cream:#F6F2E7;
@@ -100,12 +101,12 @@ p{margin:0;}
 
 .eyebrow{
   font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--gold);margin:0 0 var(--space-2);
+  color:var(--gold-text);margin:0 0 var(--space-2);
 }
 .on-dark .eyebrow{color:var(--gold-d);}
 
 :focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
-.on-dark :focus-visible{outline-color:var(--gold-d);}
+.on-dark :focus-visible,.main-nav :focus-visible{outline-color:var(--gold-d);}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -138,8 +139,11 @@ p{margin:0;}
 .site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;}
 .logo{display:inline-flex;align-items:center;}
 .logo img{height:52px;width:auto;display:block;}
-.logo-on-dark img{filter:brightness(0) invert(1);}
 @media (max-width:520px){.logo img{height:42px;}}
+.logo-text{
+  font-family:'Tenor Sans';font-size:20px;letter-spacing:.16em;color:var(--paper);
+}
+.logo-text span{color:var(--gold-d);margin:0 2px;}
 .main-nav{display:flex;align-items:center;gap:var(--space-4);}
 .nav-drawer-label{display:none;}
 .main-nav a{
@@ -292,7 +296,7 @@ section{padding:var(--space-8) 0;position:relative;}
 .infra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-d);border:1px solid var(--line-d);margin-top:var(--space-2);}
 .infra-item{background:var(--charcoal);padding:var(--space-4);}
 .infra-item svg{color:var(--gold-d);}
-.infra-item h4{margin-top:var(--space-2);font-family:'Jost';font-weight:500;font-size:15.5px;color:var(--paper);}
+.infra-item h3{margin-top:var(--space-2);font-family:'Jost';font-weight:500;font-size:15.5px;color:var(--paper);}
 .infra-item p{margin-top:8px;font-size:13.5px;color:var(--paper-soft);}
 @media (max-width:880px){.infra-grid{grid-template-columns:1fr 1fr;}}
 @media (max-width:520px){.infra-grid{grid-template-columns:1fr;}}
