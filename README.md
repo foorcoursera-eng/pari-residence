@@ -6,7 +6,7 @@
 
 ```
 index.html        — вся разметка страницы
-styles.css         — стили (шрифты Tenor Sans + Jost подключены локально, без внешних CDN)
+styles.css         — стили (фирменные шрифты Tenor Sans + Cygre подключены локально, без внешних CDN)
 script.js          — фильтр планировок, форма заявки, анимации появления
 api/lead.js        — serverless-функция: принимает заявку, пересылает в Telegram и (при наличии ключей) в Macroserver
 assets/fonts/      — файлы шрифтов (.woff2)
