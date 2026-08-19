@@ -438,7 +438,7 @@
       btn.textContent = say.sending;
       track('lead_form_submit', { page: location.pathname });
 
-      fetch('/api/lead', {
+      fetch('/api/lead/', {   /* со слэшем: иначе Vercel делает лишний редирект */
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.assign({
