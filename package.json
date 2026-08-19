@@ -1,0 +1,16 @@
+{
+  "name": "pari-residence",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Сайт жилого квартала PARI Residence в Самарканде: статика + serverless-функция приёма заявок",
+  "scripts": {
+    "build": "node build.js",
+    "check": "node check.js",
+    "verify": "node build.js && node check.js && node test/lead.test.js",
+    "serve": "node -e \"const h=require('http'),f=require('fs'),p=require('path');h.createServer((q,s)=>{let u=decodeURIComponent(q.url.split('?')[0]);if(u.endsWith('/'))u+='index.html';let t=p.join('dist',u);if(!f.existsSync(t)){t=p.join('dist','404.html');s.statusCode=404}const e=p.extname(t),m={'.html':'text/html;charset=utf-8','.css':'text/css','.js':'text/javascript','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.mp4':'video/mp4','.webm':'video/webm','.woff2':'font/woff2','.xml':'application/xml','.txt':'text/plain'};s.setHeader('Content-Type',m[e]||'application/octet-stream');f.createReadStream(t).pipe(s)}).listen(5174,()=>console.log('http://localhost:5174'))\"",
+    "test": "node test/lead.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
