@@ -76,16 +76,24 @@
     });
   });
 
-
-  /* петля в первом экране: грузим только если это не телефон, не экономия
-     трафика и пользователь не просил убрать анимации */
+  /* ══════════════ петля первого экрана ══════════════
+     На широком экране идёт горизонтальная петля (1920 или 1280 по ширине окна),
+     на телефоне — отдельная вертикальная 720×1280 весом 1,4 МБ.
+     Не грузим её при включённой экономии трафика, на медленной сети
+     и когда человек попросил убрать анимации. */
   var v = document.getElementById('heroVideo');
-  var thrifty = navigator.connection && navigator.connection.saveData;
-  if (v && hero && !calm && !thrifty && innerWidth > 700) {
-    /* на широких экранах — 1920, иначе 1280: качество там, где оно видно */
-    var w = innerWidth * (devicePixelRatio > 1.5 ? 1.5 : 1) >= 1400 ? '1920' : '1280';
-    [['video/webm', v.dataset.webm.replace('{w}', w)],
-     ['video/mp4', v.dataset.mp4.replace('{w}', w)]].forEach(function (pair) {
+  var net = navigator.connection || {};
+  var thrifty = net.saveData === true;
+  var slow = typeof net.effectiveType === 'string' && /2g$/.test(net.effectiveType);
+
+  if (v && hero && !calm && !thrifty && !slow) {
+    var portrait = innerWidth <= 700;
+    var pick = function (kind) {
+      if (portrait) { return v.dataset[kind + 'Portrait']; }
+      var wide = innerWidth * (devicePixelRatio > 1.5 ? 1.5 : 1) >= 1400 ? '1920' : '1280';
+      return v.dataset[kind].replace('{w}', wide);
+    };
+    [['video/webm', pick('webm')], ['video/mp4', pick('mp4')]].forEach(function (pair) {
       var s = document.createElement('source');
       s.type = pair[0]; s.src = pair[1];
       v.appendChild(s);
@@ -94,13 +102,86 @@
       v.classList.add('is-playing');
       if (hero) { hero.classList.add('has-video'); }
     }, { once: true });
-    v.load();
-    var go = v.play();
-    if (go && go.catch) { go.catch(function () {}); }
+    /* на телефоне ждём, пока страница дорисуется: петля не должна мешать
+       первой отрисовке и конкурировать за канал со шрифтами и кадром-постером */
+    var start = function () {
+      v.load();
+      var go = v.play();
+      if (go && go.catch) { go.catch(function () {}); }
+    };
+    if (!portrait) { start(); }
+    else if (document.readyState === 'complete') { setTimeout(start, 400); }
+    else { addEventListener('load', function () { setTimeout(start, 400); }); }
   }
 
+  /* ══════════════ аналитика ══════════════
+     Счётчики не подключены: идентификаторы выдаёт владелец (Метрика/GA).
+     Скрипт кладёт события в dataLayer и вызывает ym/gtag, если они появятся, —
+     подключение сводится к вставке кода счётчика, код страницы менять не нужно. */
+  window.dataLayer = window.dataLayer || [];
+  var track = function (event, params) {
+    var data = params || {};
+    window.dataLayer.push(Object.assign({ event: event }, data));
+    var cfg = window.PARI_ANALYTICS || {};
+    if (cfg.metrika && typeof window.ym === 'function') { window.ym(cfg.metrika, 'reachGoal', event, data); }
+    if (typeof window.gtag === 'function') { window.gtag('event', event, data); }
+  };
+  window.pariTrack = track;
 
+  /* ══════════════ источник визита ══════════════
+     utm_* и referrer запоминаем при первом заходе и держим на время сессии,
+     чтобы заявка со второй-третьей страницы всё равно знала, откуда пришёл человек. */
+  var SOURCE_KEY = 'pari:source';
+  var readSource = function () {
+    var saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(SOURCE_KEY) || 'null'); } catch (e) { saved = null; }
+    var q = new URLSearchParams(location.search);
+    var fresh = {};
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (k) {
+      var v = q.get(k);
+      if (v) { fresh[k] = v.slice(0, 120); }
+    });
+    if (Object.keys(fresh).length || !saved) {
+      var data = Object.assign({
+        landing_page: location.pathname,
+        referrer: document.referrer ? document.referrer.slice(0, 200) : '',
+        language: document.documentElement.lang,
+        device: innerWidth < 700 ? 'mobile' : innerWidth < 1024 ? 'tablet' : 'desktop'
+      }, saved || {}, fresh);
+      try { sessionStorage.setItem(SOURCE_KEY, JSON.stringify(data)); } catch (e) {}
+      return data;
+    }
+    return saved;
+  };
+  var source = readSource();
+  track('page_view', { page: location.pathname });
 
+  /* клики по телефону и кнопкам — размечены атрибутом data-track */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-track]');
+    if (el) { track(el.getAttribute('data-track'), { page: location.pathname }); }
+  });
+
+  /* ══════════════ шапка вне главной ══════════════
+     На внутренних страницах нет первого экрана, поэтому шапка нужна сразу. */
+  if (!hero && bar) { bar.classList.add('is-solid'); }
+
+  /* ══════════════ карта ══════════════
+     Виджет Яндекса подключается по нажатию: страница не тянет сторонний скрипт заранее. */
+  document.querySelectorAll('[data-map]').forEach(function (box) {
+    var btn = box.querySelector('.map__btn');
+    if (!btn) { return; }
+    btn.addEventListener('click', function () {
+      var frame = document.createElement('iframe');
+      frame.src = box.dataset.src;
+      frame.loading = 'lazy';
+      frame.title = document.documentElement.lang === 'uz' ? 'Xarita' : 'Карта';
+      frame.setAttribute('allowfullscreen', '');
+      box.classList.add('is-live');
+      box.innerHTML = '';
+      box.appendChild(frame);
+    });
+  });
 
   /* ══════════════ полёт бабочек ══════════════
      Кейфреймы дают «рельсы», поэтому движение считается покадрово:
@@ -346,8 +427,6 @@
       bar.classList.toggle('is-solid', !entries[0].isIntersecting);
     }, { rootMargin: '-88% 0px 0px 0px' }).observe(hero);
   }
-
-
 
   /* ── мобильное меню ── */
   var burger = document.getElementById('burger');

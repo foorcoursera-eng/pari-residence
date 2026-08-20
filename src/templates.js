@@ -259,7 +259,9 @@ function home(t, page) {
          preload="none" aria-hidden="true" tabindex="-1"
          poster="/assets/img/hero-poster-1600.webp"
          data-webm="/assets/video/hero-loop-{w}.webm"
-         data-mp4="/assets/video/hero-loop-{w}.mp4"></video>
+         data-mp4="/assets/video/hero-loop-{w}.mp4"
+         data-webm-portrait="/assets/video/hero-portrait.webm"
+         data-mp4-portrait="/assets/video/hero-portrait.mp4"></video>
 
   <div class="hero__veil" aria-hidden="true"></div>
 
