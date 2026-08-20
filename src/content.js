@@ -8,8 +8,14 @@
 
 'use strict';
 
+/* Адрес сайта. Пока домен pari-residence.uz не привязан к проекту в Vercel,
+   canonical и карта сайта обязаны указывать на рабочий адрес — иначе поисковики
+   уйдут на несуществующий хост. Переключение делается переменной окружения
+   SITE_ORIGIN=https://pari-residence.uz в настройках проекта, без правки кода. */
+const ORIGIN = process.env.SITE_ORIGIN || 'https://pari-residence.vercel.app';
+
 const site = {
-  origin: 'https://pari-residence.vercel.app',   // TODO: заменить на .uz-домен, когда подключат
+  origin: ORIGIN,
   brand: 'PARI Residence',
   phone: { display: '55 705 05 05', tel: '+998557050505', intl: '+998 55 705 05 05' },
   address: {
@@ -21,12 +27,13 @@ const site = {
   },
   geo: { lat: 39.68594, lon: 66.940637 },        // подтверждено владельцем
   hours: {
-    // TODO: владелец не подтвердил расхождение — в ТЗ 09:00–19:00, на прежнем сайте 09:00–20:00.
-    // До подтверждения оставляем прежние данные и не выводим их в микроразметку.
+    // Подтверждено владельцем 19.08.2026: ежедневно 09:00–20:00.
     ru: 'Ежедневно с 9:00 до 20:00',
     uz: 'Har kuni 9:00 dan 20:00 gacha',
-    confirmed: false,
+    schema: 'Mo-Su 09:00-20:00',
+    confirmed: true,
   },
+  // Цена подтверждена владельцем; периодичность обновления он назовёт отдельно.
   price: { from: 10, unit: 'млн сум', unitUz: 'mln soʻm', confirmed: true },
   instagram: 'https://www.instagram.com/pari_residence/',
   facts: { blocks: 13, apartments: 1202, green: 30, yardHa: 1, areaFrom: 26, areaTo: 89 },

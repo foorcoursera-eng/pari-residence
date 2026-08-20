@@ -73,8 +73,8 @@ const complexLd = (t) => ({
   ],
 });
 
-/* Контакты: LocalBusiness-подтип. Часы работы в разметку не кладём —
-   владелец их пока не подтвердил (см. site.hours.confirmed). */
+/* Контакты: LocalBusiness-подтип. Часы работы попадают в разметку только
+   когда владелец их подтвердил (см. site.hours.confirmed). */
 const agentLd = (t) => {
   const o = {
     '@context': 'https://schema.org',
@@ -87,7 +87,7 @@ const agentLd = (t) => {
     geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lon },
     parentOrganization: { '@id': T.url('/#organization') },
   };
-  if (site.hours.confirmed) { o.openingHours = site.hours.schema; }
+  if (site.hours.confirmed && site.hours.schema) { o.openingHours = site.hours.schema; }
   return o;
 };
 
@@ -191,6 +191,7 @@ Sitemap: ${T.url('/sitemap.xml')}
   console.log('Собрано страниц:', written.length);
   written.forEach((w) => console.log('  ', w));
   console.log('Версия ассетов:', v);
+  console.log('Адрес сайта:', site.origin);
 }
 
 build();
