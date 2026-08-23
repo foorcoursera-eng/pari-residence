@@ -155,6 +155,7 @@ const ru = {
     cineNext: 'Следующий кадр',
     cine: [
       { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Двор открывается аркой' },
+      { img: 'cine-lobby', w: [1280, 1672], cap: 'Лобби в латуни и камне' },
       { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Галерея, полная света' },
       { img: 'cine-pergola', w: [1440, 2048], cap: 'Тень и цветение' },
       { img: 'cine-stone', w: [1440, 2048], cap: 'Травертин, тёплый на ощупь' },
@@ -377,6 +378,7 @@ const uz = {
     cineNext: 'Keyingi kadr',
     cine: [
       { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Hovli darvoza kabi ochiladi' },
+      { img: 'cine-lobby', w: [1280, 1672], cap: 'Guruch va toshdagi lobbi' },
       { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Nurga toʻla galereya' },
       { img: 'cine-pergola', w: [1440, 2048], cap: 'Soya va gullash' },
       { img: 'cine-stone', w: [1440, 2048], cap: 'Travertin — issiq tosh' },

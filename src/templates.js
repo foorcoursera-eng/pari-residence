@@ -322,11 +322,6 @@ ${tiles}
     <p class="homes__note reveal">${esc(h.homesNote)}</p>
     <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
   </div>
-  <div class="figure-mask">
-    <img class="homes__photo" src="/assets/img/lobby-1920.webp"
-         srcset="/assets/img/lobby-1080.webp 1080w, /assets/img/lobby-1920.webp 1920w"
-         sizes="100vw" alt="${esc(h.homesAlt)}" width="1672" height="941" loading="lazy" decoding="async">
-  </div>
 </section>
 
 <!-- ══════════════ 3 · КИНОЛЕНТА ══════════════

@@ -433,7 +433,8 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
 .place__relief{width:100%;max-width:420px;justify-self:center;mix-blend-mode:multiply}
 
 /* ══════════════ 6 · КВАРТИРЫ — чистая типографика + буквенный паттерн (7.1) ══════════════ */
-.homes{position:relative;isolation:isolate;overflow:clip;background:var(--milk);padding:clamp(72px,11vh,132px) 0 0}
+.homes{position:relative;isolation:isolate;overflow:clip;background:var(--milk);
+  padding:clamp(72px,11vh,132px) 0 clamp(64px,10vh,110px)}
 .homes::before{               /* digital-фон из буквенного паттерна, деликатно */
   content:"";position:absolute;inset:0;z-index:-1;
   background:url('assets/img/letter-pattern.png') 50% 0/clamp(520px,52vw,760px) auto repeat;
@@ -456,7 +457,6 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
   transition:color .3s ease,border-color .3s ease;
 }
 .link-call:hover{color:var(--gold)}
-.homes__photo{width:100%;height:clamp(280px,52svh,560px);object-fit:cover;margin-top:clamp(52px,8vh,96px)}
 
 /* ══════════════ 7 · ФИНАЛ — логотип в рамке на чистом фоне (9.1) ══════════════ */
 .final{background:var(--paper);padding:clamp(72px,11vh,128px) 0 clamp(40px,6vh,64px);color:var(--ink)}
