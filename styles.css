@@ -325,20 +325,41 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
   line-height:1.5;color:var(--ink);letter-spacing:.02em;
 }
 
-/* ══════════════ 3 · КИНОЛЕНТА — фотографическая композиция ══════════════ */
-.cine{background:var(--black)}
-.frame{position:relative;margin:0;height:min(86svh,780px);overflow:clip}
+/* ══════════════ 3 · КИНОЛЕНТА ══════════════
+   По умолчанию кадры идут сверху вниз — так работает и без скрипта.
+   Скрипт добавляет .is-live, и лента едет вбок при обычном вертикальном скролле. */
+.cine{position:relative;background:var(--black)}
+.cine__track{display:flex;flex-direction:column}
+.frame{position:relative;margin:0;height:min(86svh,780px);overflow:hidden}
 .frame img{width:100%;height:100%;object-fit:cover}
 .frame::after{
-  content:"";position:absolute;inset:auto 0 0;height:46%;
-  background:linear-gradient(0deg,rgba(0,0,0,.74),rgba(0,0,0,0));
+  content:"";position:absolute;inset:auto 0 0;height:52%;
+  background:linear-gradient(0deg,rgba(0,0,0,.76),rgba(0,0,0,0));
 }
 .frame__cap{
-  position:absolute;left:var(--gutter);bottom:clamp(28px,5vh,54px);z-index:2;margin:0;
+  position:absolute;left:var(--gutter);bottom:clamp(30px,7vh,68px);z-index:2;margin:0;
+  max-width:min(24ch,80vw);
   font-family:var(--display);color:#fff;letter-spacing:.06em;
-  font-size:clamp(19px,2.6vw,34px);
+  font-size:clamp(19px,2.6vw,34px);line-height:1.24;
 }
 .frame__cap::before{content:"";display:block;width:44px;height:1px;background:var(--gold);margin-bottom:16px}
+
+.cine__rail{position:absolute;left:var(--gutter);right:var(--gutter);bottom:20px;z-index:3;
+  height:1px;background:rgba(255,255,255,.2)}
+.cine__rail i{display:block;height:100%;width:0;background:var(--gold);transition:width .12s linear}
+
+/* горизонтальный режим */
+.cine.is-live{height:calc(100svh + (var(--frames) - 1) * 78svh)}
+.cine.is-live .cine__stage{position:sticky;top:0;height:100svh;overflow:hidden}
+.cine.is-live .cine__track{flex-direction:row;height:100%;will-change:transform}
+.cine.is-live .frame{flex:0 0 100vw;height:100%}
+/* стык кадров отмечаем фирменной линией — иначе край читается как дефект */
+.cine.is-live .frame + .frame::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:1px;z-index:3;
+  background:linear-gradient(180deg,rgba(179,131,43,0),var(--gold) 22%,var(--gold) 78%,rgba(179,131,43,0));
+}
+/* кадр внутри едет чуть медленнее ленты — получается глубина */
+.cine.is-live .frame img{will-change:transform}
 
 /* ══════════════ 4 · ДВОР-ПАРК — фото + светлая панель ══════════════ */
 .split{display:grid;grid-template-columns:minmax(0,1fr);background:var(--milk)}
@@ -491,6 +512,52 @@ main:focus{outline:none}
   .scroll-hint__mark{animation:none}
 }
 
+/* ══════════════ анимации ══════════════
+   Всё держится на transform и clip-path — они не заставляют браузер
+   пересчитывать раскладку, поэтому скролл остаётся плавным. */
+
+/* кадр открывается снизу вверх, картинка внутри сходит с наезда */
+.figure-mask{overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1.15s cubic-bezier(.22,.61,.36,1)}
+.figure-mask.is-in{clip-path:inset(0 0 0 0)}
+.figure-mask img{transform:scale(1.08);transition:transform 1.5s cubic-bezier(.22,.61,.36,1)}
+.figure-mask.is-in img{transform:none}
+
+/* заголовок выезжает построчно из-под невидимой линии */
+[data-lines] .line{display:block;overflow:hidden}
+[data-lines] .line>span{
+  display:block;transform:translateY(112%);
+  transition:transform .95s cubic-bezier(.22,.61,.36,1);
+}
+[data-lines].is-in .line>span{transform:none}
+[data-lines].is-in .line:nth-child(2)>span{transition-delay:.1s}
+[data-lines].is-in .line:nth-child(3)>span{transition-delay:.2s}
+
+/* по барельефу скользит мягкий блик — рельеф читается объёмным */
+.sheen{position:relative;display:block}
+.sheen::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(104deg,transparent 38%,rgba(255,255,255,.85) 50%,transparent 62%);
+  mix-blend-mode:soft-light;opacity:.9;
+  transform:translateX(calc(var(--sheen,0) * 220% - 110%));
+}
+
+/* мягкая смена страниц вместо белой вспышки (Chrome, Edge, Safari 18+) */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.42s;animation-timing-function:cubic-bezier(.22,.61,.36,1)}
+.bar{view-transition-name:bar}
+
+@media (prefers-reduced-motion:reduce){
+  .figure-mask{clip-path:none;transition:none}
+  .figure-mask img{transform:none;transition:none}
+  [data-lines] .line>span{transform:none;transition:none}
+  .sheen::after{display:none}
+  .cine.is-live{height:auto}
+  .cine.is-live .cine__stage{position:static;height:auto}
+  .cine.is-live .cine__track{flex-direction:column;transform:none !important}
+  .cine.is-live .frame{flex:auto;height:min(86svh,780px)}
+  @view-transition{navigation:none}
+}
+
 /* ---------- появление на скролле ---------- */
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s cubic-bezier(.22,.61,.36,1)}
 .reveal.is-in{opacity:1;transform:none}
@@ -602,3 +669,21 @@ main:focus{outline:none}
 @media (max-width:700px){
   .nap dd a{display:inline-block;padding:9px 0}   /* телефон и соцсети — удобная зона нажатия */
 }
+
+/* ══════════════ заставка первого захода ══════════════
+   Показывается один раз за сессию и уезжает вверх, открывая первый экран.
+   Отключается флагом site.splash в src/content.js. */
+.splash{
+  position:fixed;inset:0;z-index:60;display:grid;place-items:center;
+  background:var(--paper);
+  transition:transform .62s cubic-bezier(.76,0,.24,1);
+}
+.splash.is-gone{transform:translateY(-101%)}
+.splash__mark{position:relative;width:clamp(150px,22vw,210px)}
+.splash__mark img{width:100%;height:auto;
+  opacity:0;transform:scale(.94);
+  animation:splash-in .7s cubic-bezier(.22,.61,.36,1) forwards}
+.splash__logo{position:absolute;left:50%;top:50%;translate:-50% -50%;width:52%;animation-delay:.12s}
+@keyframes splash-in{to{opacity:1;transform:none}}
+body.is-splash{overflow:hidden}
+@media (prefers-reduced-motion:reduce){.splash{display:none}}

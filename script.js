@@ -7,6 +7,27 @@
   var hero = document.querySelector('.hero');
   var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+
+  /* ══════════════ заставка первого захода ══════════════
+     Держим не дольше 900 мс: сайт не должен ждать медленную сеть. */
+  var splash = document.getElementById('splash');
+  if (splash) {
+    if (calm || sessionStorage.getItem('pari:seen')) {
+      splash.remove();
+    } else {
+      document.body.classList.add('is-splash');
+      var hideSplash = function () {
+        if (!splash.parentNode) { return; }
+        splash.classList.add('is-gone');
+        document.body.classList.remove('is-splash');
+        sessionStorage.setItem('pari:seen', '1');
+        setTimeout(function () { splash.remove(); }, 700);
+      };
+      setTimeout(hideSplash, 900);
+      addEventListener('load', function () { setTimeout(hideSplash, 350); });
+    }
+  }
+
   /* ══════════════ аналитика ══════════════
      Счётчики не подключены: идентификаторы выдаёт владелец (Метрика/GA).
      Скрипт кладёт события в dataLayer и вызывает ym/gtag, если они появятся, —
@@ -112,6 +133,27 @@
     if (!portrait) { start(); }
     else if (document.readyState === 'complete') { setTimeout(start, 400); }
     else { addEventListener('load', function () { setTimeout(start, 400); }); }
+  }
+
+
+  /* ══════════════ заставка первого захода ══════════════
+     Держим не дольше 900 мс: сайт не должен ждать медленную сеть. */
+  var splash = document.getElementById('splash');
+  if (splash) {
+    if (calm || sessionStorage.getItem('pari:seen')) {
+      splash.remove();
+    } else {
+      document.body.classList.add('is-splash');
+      var hideSplash = function () {
+        if (!splash.parentNode) { return; }
+        splash.classList.add('is-gone');
+        document.body.classList.remove('is-splash');
+        sessionStorage.setItem('pari:seen', '1');
+        setTimeout(function () { splash.remove(); }, 700);
+      };
+      setTimeout(hideSplash, 900);
+      addEventListener('load', function () { setTimeout(hideSplash, 350); });
+    }
   }
 
   /* ══════════════ аналитика ══════════════
@@ -465,6 +507,95 @@
     addEventListener('resize', function () {
       if (innerWidth >= 980 && burger.getAttribute('aria-expanded') === 'true') { setMenu(false); }
     });
+  }
+
+
+  /* ══════════════ анимации ══════════════
+     Один общий обработчик скролла на requestAnimationFrame: все эффекты
+     считаются в одном кадре, поэтому лишних пересчётов раскладки не возникает. */
+  var scenes = [];                       /* функции, которым нужен скролл */
+  var ticking = false;
+  var onScroll = function () {
+    if (ticking) { return; }
+    ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      for (var i = 0; i < scenes.length; i++) { scenes[i](); }
+    });
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+
+  /* появление: маска кадров и построчные заголовки */
+  if ('IntersectionObserver' in window) {
+    var inView = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) { return; }
+        e.target.classList.add('is-in');
+        inView.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px' });
+
+    document.querySelectorAll('.figure-mask').forEach(function (el) { inView.observe(el); });
+
+    /* заголовок делим по строкам, которые уже заданы в тексте через <br> */
+    document.querySelectorAll('[data-lines]').forEach(function (el) {
+      if (calm) { el.classList.add('is-in'); return; }
+      var parts = el.innerHTML.split(/<br\s*\/?>/i);
+      el.innerHTML = parts.map(function (part) {
+        return '<span class="line"><span>' + part.trim() + '</span></span>';
+      }).join('');
+      inView.observe(el);
+    });
+  } else {
+    document.querySelectorAll('.figure-mask,[data-lines]').forEach(function (el) { el.classList.add('is-in'); });
+  }
+
+  /* ── кинолента: кадры едут вбок при обычном вертикальном скролле ── */
+  var cine = document.querySelector('[data-cine]');
+  if (cine && !calm) {
+    var stage = cine.querySelector('.cine__stage');
+    var track = cine.querySelector('.cine__track');
+    var rail = cine.querySelector('.cine__rail i');
+    var shots = [].slice.call(cine.querySelectorAll('.frame img'));
+    cine.classList.add('is-live');
+
+    var runCine = function () {
+      var box = cine.getBoundingClientRect();
+      var travel = cine.offsetHeight - stage.offsetHeight;      /* сколько скролла на всю ленту */
+      if (travel <= 0) { return; }
+      var p = Math.min(1, Math.max(0, -box.top / travel));
+      var shift = track.scrollWidth - stage.clientWidth;
+      track.style.transform = 'translate3d(' + (-p * shift).toFixed(1) + 'px,0,0)';
+      if (rail) { rail.style.width = (p * 100).toFixed(1) + '%'; }
+      /* картинка внутри кадра идёт чуть медленнее ленты — появляется глубина */
+      var per = 1 / Math.max(1, shots.length - 1);
+      shots.forEach(function (img, i) {
+        var local = Math.min(1, Math.max(-1, (p - i * per) / per));
+        /* запас масштаба больше сдвига — край кадра не оголяется */
+        img.style.transform = 'translate3d(' + (local * 5).toFixed(2) + '%,0,0) scale(1.14)';
+      });
+    };
+    scenes.push(runCine);
+    runCine();
+  }
+
+  /* ── блик по барельефу ── */
+  var reliefs = [].slice.call(document.querySelectorAll('[data-relief]'));
+  if (reliefs.length && !calm) {
+    reliefs.forEach(function (img) {
+      var wrap = document.createElement('span');
+      wrap.className = 'sheen';
+      img.parentNode.insertBefore(wrap, img);
+      wrap.appendChild(img);
+      scenes.push(function () {
+        var r = wrap.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight) { return; }
+        var p = 1 - (r.top + r.height) / (innerHeight + r.height);
+        wrap.style.setProperty('--sheen', p.toFixed(3));
+      });
+    });
+    onScroll();
   }
 
   /* ══════════════ заявка ══════════════

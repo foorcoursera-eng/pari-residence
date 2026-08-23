@@ -36,6 +36,9 @@ const site = {
   // Цена подтверждена владельцем; периодичность обновления он назовёт отдельно.
   price: { from: 10, unit: 'млн сум', unitUz: 'mln soʻm', confirmed: true },
   instagram: 'https://www.instagram.com/pari_residence/',
+  // Заставка при первом заходе (медальон, уезжающий вверх). Выключается одной строкой:
+  // splash: false — и разметка со скриптом на страницу не попадут.
+  splash: true,
   facts: { blocks: 13, apartments: 1202, green: 30, yardHa: 1, areaFrom: 26, areaTo: 89 },
 };
 
@@ -71,7 +74,7 @@ const ru = {
   },
 
   nav: {
-    concept: 'Концепция',
+    yard: 'Двор-парк',
     apartments: 'Квартиры',
     location: 'Локация',
     contacts: 'Контакты',
@@ -172,7 +175,7 @@ const ru = {
     placeTitle: 'Самарканд<br>в шаге отсюда',
     placeReliefAlt: 'Барельеф: девушка на велосипеде у парижского фасада',
 
-    homesNum: '04',
+    homesNum: '01',
     homesEyebrow: 'Квартиры',
     homesTitle: 'От компактных студий<br>до семейных четырёхкомнатных',
     homesTiles: [
@@ -292,7 +295,7 @@ const uz = {
   },
 
   nav: {
-    concept: 'Konsepsiya',
+    yard: 'Hovli-bogʻ',
     apartments: 'Xonadonlar',
     location: 'Joylashuv',
     contacts: 'Aloqa',
@@ -390,7 +393,7 @@ const uz = {
     placeTitle: 'Samarqand<br>bir qadam narida',
     placeReliefAlt: 'Barelyef: parij fasadi yonida velosipedda ketayotgan qiz',
 
-    homesNum: '04',
+    homesNum: '01',
     homesEyebrow: 'Xonadonlar',
     homesTitle: 'Ixcham studiyalardan<br>toʻrt xonali oilaviylarigacha',
     homesTiles: [

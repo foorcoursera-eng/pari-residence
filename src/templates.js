@@ -33,6 +33,17 @@ const fly = (mod, id) =>
   `<div class="fly fly--${mod}"${id ? ` id="${id}"` : ''} aria-hidden="true">`
   + `<div class="fly__bob">${BUTTERFLY}</div></div>`;
 
+/* ── заставка первого захода: медальон, уезжающий вверх ── */
+function splash() {
+  return `<div class="splash" id="splash" aria-hidden="true">
+  <div class="splash__mark">
+    <img src="/assets/img/brand-frame.png" alt="" width="640" height="616">
+    <img class="splash__logo" src="/assets/img/pari-logo-vector.png" alt="" width="1872" height="1031">
+  </div>
+</div>
+`;
+}
+
 /* ── переключатель языка ── */
 function langSwitch(t, path, extraClass) {
   const other = swap(path);
@@ -50,7 +61,7 @@ function langSwitch(t, path, extraClass) {
 function navItems(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   return [
-    [`${p || '/'}${p ? '/' : ''}#concept`, t.nav.concept],
+    [`${p || '/'}${p ? '/' : ''}#yard`, t.nav.yard],
     [`${p}/apartments/`, t.nav.apartments],
     [`${p}/location/`, t.nav.location],
     [`${p}/contacts/`, t.nav.contacts],
@@ -213,6 +224,7 @@ ${ld}
 </head>
 <body${page.bodyClass ? ` class="${page.bodyClass}"` : ''}>
 <a class="skip-link" href="#main">${esc(t.ui.skip)}</a>
+${page.splash ? splash() : ''}
 
 ${header(t, page.path)}
 
@@ -230,19 +242,22 @@ ${page.body}
 `;
 }
 
-/* ══════════════ главная ══════════════ */
+/* ══════════════ главная ══════════════
+   Порядок разделов: титул → квартиры → кинолента → двор-парк → локация → заявка. */
 function home(t, page) {
   const h = t.home;
-  const cine = h.cine.map((c) => `  <figure class="frame">
-    <img src="/assets/img/${c.img}-1920.webp"
-         srcset="/assets/img/${c.img}-1080.webp 1080w, /assets/img/${c.img}-1920.webp 1920w"
-         sizes="100vw" alt="${esc(c.cap)}" width="1920" height="960" loading="lazy" decoding="async">
-    <figcaption class="frame__cap reveal">${esc(c.cap)}</figcaption>
-  </figure>`).join('\n');
+  const cine = h.cine.map((c, i) => `      <figure class="frame">
+        <img src="/assets/img/${c.img}-1920.webp"
+             srcset="/assets/img/${c.img}-1080.webp 1080w, /assets/img/${c.img}-1920.webp 1920w"
+             sizes="100vw" alt="${esc(c.cap)}" width="1920" height="960"
+             loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">
+        <figcaption class="frame__cap">${esc(c.cap)}</figcaption>
+      </figure>`).join('\n');
 
   const stats = h.stats.map((s) => `      <li><b data-count="${s.value}"${s.suffix ? ` data-suffix="${s.suffix}"` : ''}>${s.value}${s.suffix || ''}</b><span>${esc(s.label)}</span></li>`).join('\n');
   const tiles = h.homesTiles.map((x) => `      <li class="reveal"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></li>`).join('\n');
   const apartmentsHref = t.lang === 'ru' ? '/apartments/' : '/uz/apartments/';
+  const locationHref = t.lang === 'ru' ? '/location/' : '/uz/location/';
 
   page.body = `<!-- ══════════════ 1 · ТИТУЛ ══════════════ -->
 <section class="hero" aria-label="${site.brand}">
@@ -254,7 +269,7 @@ function home(t, page) {
          sizes="100vw" alt="${esc(h.heroAlt)}" fetchpriority="high" width="1920" height="960">
   </picture>
 
-  <!-- петля из имиджевого ролика: src подставляет скрипт (только десктоп) -->
+  <!-- петля из имиджевого ролика: источник подставляет скрипт -->
   <video class="hero__media hero__media--video" id="heroVideo" muted loop playsinline
          preload="none" aria-hidden="true" tabindex="-1"
          poster="/assets/img/hero-poster-1600.webp"
@@ -290,38 +305,41 @@ function home(t, page) {
     </div>
   </div>
 
-  <a class="scroll-hint" href="#concept" aria-label="${esc(t.ui.scrollNext)}"><img class="scroll-hint__mark" src="/assets/img/brand-frame.png" alt="" width="640" height="616"></a>
+  <a class="scroll-hint" href="#homes" aria-label="${esc(t.ui.scrollNext)}"><img class="scroll-hint__mark" src="/assets/img/brand-frame.png" alt="" width="640" height="616"></a>
 </section>
 
-<!-- ══════════════ 2 · КОНЦЕПЦИЯ ══════════════ -->
-<section class="concept" id="concept">
-  <div class="concept__inner">
-    <p class="eyebrow reveal"><span class="num">${h.conceptNum}</span> ${esc(h.conceptEyebrow)}</p>
-    <h2 class="display reveal">${h.conceptTitle}</h2>
-
-    <div class="concept__cols">
-      <p class="reveal">${esc(h.conceptLeft)}</p>
-      <p class="reveal">${esc(h.conceptRight)}</p>
-    </div>
+<!-- ══════════════ 2 · КВАРТИРЫ ══════════════ -->
+<section class="homes" id="homes">
+  <div class="homes__inner">
+    <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
+    <h2 class="display" data-lines>${h.homesTitle}</h2>
+    <ul class="homes__tiles">
+${tiles}
+    </ul>
+    <p class="homes__note reveal">${esc(h.homesNote)}</p>
+    <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
   </div>
-
-  <figure class="relief reveal">
-    <img src="/assets/img/relief-two-worlds.webp" alt="${esc(h.conceptReliefAlt)}"
-         width="1347" height="941" loading="lazy" decoding="async">
-  </figure>
-
-  <p class="whisper reveal">${esc(h.conceptWhisper)}</p>
+  <div class="figure-mask">
+    <img class="homes__photo" src="/assets/img/lobby-1920.webp"
+         srcset="/assets/img/lobby-1080.webp 1080w, /assets/img/lobby-1920.webp 1920w"
+         sizes="100vw" alt="${esc(h.homesAlt)}" width="1672" height="941" loading="lazy" decoding="async">
+  </div>
 </section>
 
-<!-- ══════════════ 3 · КИНОЛЕНТА ══════════════ -->
-<section class="cine" id="film">
-  <div class="cine__rail" aria-hidden="true"><i></i></div>
+<!-- ══════════════ 3 · КИНОЛЕНТА ══════════════
+     Кадры едут вбок при обычном вертикальном скролле. -->
+<section class="cine" id="film" data-cine style="--frames:${h.cine.length}">
+  <div class="cine__stage">
+    <div class="cine__track">
 ${cine}
+    </div>
+    <div class="cine__rail" aria-hidden="true"><i></i></div>
+  </div>
 </section>
 
 <!-- ══════════════ 4 · ДВОР-ПАРК ══════════════ -->
 <section class="split" id="yard">
-  <div class="split__media">
+  <div class="split__media figure-mask">
     <img src="/assets/img/yard-1920.webp"
          srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
          sizes="(min-width:900px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
@@ -329,7 +347,7 @@ ${cine}
   </div>
   <div class="split__panel">
     <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
-    <h2 class="display reveal">${h.yardTitle}</h2>
+    <h2 class="display" data-lines>${h.yardTitle}</h2>
     <p class="split__text reveal">${esc(h.yardText)}</p>
     <ul class="stats reveal">
 ${stats}
@@ -342,30 +360,14 @@ ${stats}
   <div class="place__inner">
     <div>
       <p class="eyebrow reveal"><span class="num">${h.placeNum}</span> ${esc(h.placeEyebrow)}</p>
-      <h2 class="display reveal">${h.placeTitle}</h2>
+      <h2 class="display" data-lines>${h.placeTitle}</h2>
       ${distanceList(t)}
       <p class="place__addr reveal">${esc(addressLine(t))}</p>
-      <a class="link-call reveal" href="${t.lang === 'ru' ? '/location/' : '/uz/location/'}">${esc(t.nav.location)}</a>
+      <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
     </div>
-    <img class="place__relief reveal" src="/assets/img/relief-bicycle.webp"
+    <img class="place__relief reveal" data-relief src="/assets/img/relief-bicycle.webp"
          alt="${esc(h.placeReliefAlt)}" width="926" height="1076" loading="lazy" decoding="async">
   </div>
-</section>
-
-<!-- ══════════════ 6 · КВАРТИРЫ ══════════════ -->
-<section class="homes" id="homes">
-  <div class="homes__inner">
-    <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
-    <h2 class="display reveal">${h.homesTitle}</h2>
-    <ul class="homes__tiles">
-${tiles}
-    </ul>
-    <p class="homes__note reveal">${esc(h.homesNote)}</p>
-    <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
-  </div>
-  <img class="homes__photo" src="/assets/img/lobby-1920.webp"
-       srcset="/assets/img/lobby-1080.webp 1080w, /assets/img/lobby-1920.webp 1920w"
-       sizes="100vw" alt="${esc(h.homesAlt)}" width="1672" height="941" loading="lazy" decoding="async">
 </section>
 
 ${leadSection(t, {})}`;
@@ -376,7 +378,7 @@ ${leadSection(t, {})}`;
 function apartments(t, page) {
   const a = t.apartments;
   const cards = a.types.map((x) => `    <article class="type reveal">
-      <img src="/assets/img/${x.img}-1080.webp" alt="${esc(x.alt)}" width="1080" height="540" loading="lazy" decoding="async">
+      <div class="figure-mask"><img src="/assets/img/${x.img}-1080.webp" alt="${esc(x.alt)}" width="1080" height="540" loading="lazy" decoding="async"></div>
       <div class="type__body">
         <h3 class="type__title">${esc(x.title)}</h3>
         <p class="type__area">${esc(x.area)}</p>
@@ -388,7 +390,7 @@ function apartments(t, page) {
   page.body = `<section class="page">
   <div class="page__inner">
     ${breadcrumbs(t, [[page.path, t.nav.apartments]])}
-    <h1 class="display">${esc(a.h1)}</h1>
+    <h1 class="display" data-lines>${esc(a.h1)}</h1>
     <p class="page__lead">${esc(a.lead)}</p>
     <p class="page__price">${esc(a.priceLine)}<span>${esc(t.ui.priceNote)}</span></p>
   </div>
@@ -413,7 +415,7 @@ function location(t, page) {
   page.body = `<section class="page">
   <div class="page__inner">
     ${breadcrumbs(t, [[page.path, t.nav.location]])}
-    <h1 class="display">${esc(l.h1)}</h1>
+    <h1 class="display" data-lines>${esc(l.h1)}</h1>
     <p class="page__lead">${esc(l.lead)}</p>
   </div>
 
@@ -422,7 +424,7 @@ function location(t, page) {
       ${distanceList(t)}
       <p class="place__addr">${esc(addressLine(t))}</p>
     </div>
-    <img class="place__relief" src="/assets/img/relief-bicycle.webp"
+    <img class="place__relief" data-relief src="/assets/img/relief-bicycle.webp"
          alt="${esc(t.home.placeReliefAlt)}" width="926" height="1076" loading="lazy" decoding="async">
   </div>
 
@@ -444,7 +446,7 @@ function contacts(t, page) {
   page.body = `<section class="page">
   <div class="page__inner">
     ${breadcrumbs(t, [[page.path, t.nav.contacts]])}
-    <h1 class="display">${esc(c.h1)}</h1>
+    <h1 class="display" data-lines>${esc(c.h1)}</h1>
     <p class="page__lead">${esc(c.lead)}</p>
 
     <dl class="nap">
@@ -469,7 +471,7 @@ function notFound(t, page) {
   page.body = `<section class="page page--404">
   <div class="page__inner">
     <img class="page__mark" src="/assets/img/brand-frame.png" alt="" width="640" height="616">
-    <h1 class="display">${esc(n.h1)}</h1>
+    <h1 class="display" data-lines>${esc(n.h1)}</h1>
     <p class="page__lead">${esc(n.text)}</p>
     <ul class="page__links">
       <li><a href="${p || '/'}${p ? '/' : ''}">${esc(t.ui.home)}</a></li>

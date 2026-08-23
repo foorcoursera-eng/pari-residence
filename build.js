@@ -111,6 +111,7 @@ function pagesFor(t) {
       key: 'home', path: home, render: T.home,
       title: t.meta.home.title, description: t.meta.home.description,
       preload: preloadHome,
+      splash: site.splash,
       jsonld: [orgLd(t), siteLd(t), complexLd(t)],
       sitemap: { priority: '1.0', changefreq: 'weekly' },
     },
