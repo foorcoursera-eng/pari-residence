@@ -127,6 +127,15 @@ function leadForm(t, idSuffix) {
                autocomplete="tel" inputmode="tel" required>
         <span class="field__err">${esc(t.form.phoneError)}</span>
       </div>
+      <div class="field">
+        <label for="f-rooms${id}">${esc(t.form.rooms)}</label>
+        <div class="select">
+          <select id="f-rooms${id}" name="rooms">
+            <option value="">${esc(t.form.roomsAny)}</option>
+${t.form.roomsList.map((r) => `            <option value="${esc(r)}">${esc(r)}</option>`).join('\n')}
+          </select>
+        </div>
+      </div>
       <div class="hp" aria-hidden="true">
         <label for="f-company${id}">${esc(t.form.company)}</label>
         <input id="f-company${id}" name="company" type="text" tabindex="-1" autocomplete="off">
@@ -235,6 +244,15 @@ ${mobileMenu(t, page.path)}
 ${page.body}
 
 </main>
+
+<div class="viewer" id="viewer" hidden>
+  <button class="viewer__close" type="button" data-viewer-close aria-label="${esc(t.ui.closeViewer)}"></button>
+  <p class="viewer__label" data-viewer-label></p>
+  <div class="viewer__stage" data-viewer-stage>
+    <img alt="" data-viewer-img width="1600" height="1200">
+  </div>
+  <p class="viewer__hint">${esc(t.ui.viewerHint)}</p>
+</div>
 
 <script src="/script.js?v=${page.v}" defer></script>
 </body>
@@ -380,15 +398,23 @@ ${leadSection(t, {})}`;
 /* ══════════════ квартиры ══════════════ */
 function apartments(t, page) {
   const a = t.apartments;
-  const cards = a.types.map((x) => `    <article class="type reveal">
-      <div class="figure-mask"><img src="/assets/img/${x.img}-${x.w}.webp" alt="${esc(x.alt)}" width="${x.w}" height="${Math.round(x.w / 2)}" loading="lazy" decoding="async"></div>
-      <div class="type__body">
-        <h3 class="type__title">${esc(x.title)}</h3>
-        <p class="type__area">${esc(x.area)}</p>
-        <p class="type__text">${esc(x.text)}</p>
-        <a class="link-call" href="#call">${esc(t.cta.availability)}</a>
-      </div>
-    </article>`).join('\n');
+  const p = t.plans;
+
+  const cards = p.items.map((x) => `      <article class="plan reveal">
+        <button class="plan__view" type="button"
+                data-zoom="/assets/img/plans/${x.id}-1400.webp"
+                data-zoom-label="${esc(p.roomWord[x.rooms])} · ${x.area} м²"
+                aria-label="${esc(p.zoom)}: ${esc(p.roomWord[x.rooms])} ${x.area} м²">
+          <img src="/assets/img/plans/${x.id}-800.webp" alt="${esc(p.roomWord[x.rooms])} ${x.area} м² — планировка"
+               width="800" height="1000" loading="lazy" decoding="async">
+          <span class="plan__zoom">${esc(p.zoom)}</span>
+        </button>
+        <div class="plan__meta">
+          <p class="plan__area">${x.area} <span>м²</span></p>
+          <p class="plan__rooms">${esc(p.roomWord[x.rooms])}${x.euro ? ` · ${esc(p.euro)}` : ''}</p>
+          <a class="link-call" href="#call">${esc(t.cta.price)}</a>
+        </div>
+      </article>`).join('\n');
 
   page.body = `<section class="page">
   <div class="page__inner">
@@ -398,11 +424,17 @@ function apartments(t, page) {
     <p class="page__price">${esc(a.priceLine)}<span>${esc(t.ui.priceNote)}</span></p>
   </div>
 
-  <div class="types">
+  <div class="page__inner">
+    <h2 class="page__h2">${esc(p.title)}</h2>
+    <p class="page__text">${esc(p.lead)}</p>
+  </div>
+
+  <div class="plans">
 ${cards}
   </div>
 
   <div class="page__inner">
+    <p class="plans__note">${esc(p.note)}</p>
     <h2 class="page__h2">${esc(a.finishTitle)}</h2>
     <p class="page__text">${esc(a.finishText)}</p>
   </div>
@@ -433,6 +465,19 @@ function location(t, page) {
   <div class="page__inner">
     <h2 class="page__h2">${esc(l.districtTitle)}</h2>
     <p class="page__text">${esc(l.districtText)}</p>
+
+    <h2 class="page__h2">${esc(l.masterTitle)}</h2>
+    <p class="page__text">${esc(l.masterText)}</p>
+    <button class="master reveal" type="button"
+            data-zoom="/assets/img/masterplan-2560.webp"
+            data-zoom-label="${esc(l.masterTitle)}"
+            aria-label="${esc(t.ui.zoomOpen)}: ${esc(l.masterTitle)}">
+      <img src="/assets/img/masterplan-1600.webp"
+           srcset="/assets/img/masterplan-1000.webp 1000w, /assets/img/masterplan-1600.webp 1600w"
+           sizes="(min-width:900px) 70vw, 100vw" alt="${esc(l.masterAlt)}"
+           width="1600" height="893" loading="lazy" decoding="async">
+      <span class="master__zoom">${esc(t.ui.zoomOpen)}</span>
+    </button>
   </div>
 </section>
 

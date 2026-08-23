@@ -247,6 +247,105 @@
     onScroll();
   }
 
+
+  /* ══════════════ просмотр планов и мастер-плана ══════════════
+     Колесо и щипок — масштаб, перетаскивание — сдвиг. Esc и клик по фону закрывают. */
+  var viewer = document.getElementById('viewer');
+  if (viewer) {
+    var vStage = viewer.querySelector('[data-viewer-stage]');
+    var vImg = viewer.querySelector('[data-viewer-img]');
+    var vLabel = viewer.querySelector('[data-viewer-label]');
+    var scale = 1, tx = 0, ty = 0, back = null;
+
+    var apply = function () {
+      vImg.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+    };
+    var reset = function () { scale = 1; tx = 0; ty = 0; apply(); };
+
+    var openViewer = function (src, label, source) {
+      back = source || null;
+      vImg.src = src;
+      vImg.alt = label || '';
+      vLabel.textContent = label || '';
+      viewer.hidden = false;
+      document.body.classList.add('is-locked');
+      requestAnimationFrame(function () { viewer.classList.add('is-open'); });
+      reset();
+      viewer.querySelector('[data-viewer-close]').focus({ preventScroll: true });
+      track('plan_zoom', { image: src });
+    };
+    var closeViewer = function () {
+      viewer.classList.remove('is-open');
+      document.body.classList.remove('is-locked');
+      setTimeout(function () { viewer.hidden = true; vImg.removeAttribute('src'); }, 300);
+      if (back) { back.focus({ preventScroll: true }); }
+    };
+
+    document.querySelectorAll('[data-zoom]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        openViewer(btn.dataset.zoom, btn.dataset.zoomLabel, btn);
+      });
+    });
+    viewer.querySelector('[data-viewer-close]').addEventListener('click', closeViewer);
+    viewer.addEventListener('click', function (e) { if (e.target === viewer) { closeViewer(); } });
+    addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !viewer.hidden) { closeViewer(); }
+    });
+
+    /* масштаб колесом — вокруг курсора */
+    vStage.addEventListener('wheel', function (e) {
+      if (viewer.hidden) { return; }
+      e.preventDefault();
+      var prev = scale;
+      scale = Math.min(6, Math.max(1, scale * (e.deltaY < 0 ? 1.18 : 1 / 1.18)));
+      var r = vStage.getBoundingClientRect();
+      var cx = e.clientX - r.left - r.width / 2;
+      var cy = e.clientY - r.top - r.height / 2;
+      tx = (tx - cx) * (scale / prev) + cx;
+      ty = (ty - cy) * (scale / prev) + cy;
+      if (scale === 1) { tx = 0; ty = 0; }
+      apply();
+    }, { passive: false });
+
+    /* двойной клик — приблизить или вернуть */
+    vStage.addEventListener('dblclick', function () {
+      scale = scale > 1.2 ? 1 : 2.6;
+      if (scale === 1) { tx = 0; ty = 0; }
+      apply();
+    });
+
+    /* перетаскивание мышью и пальцем, щипок двумя пальцами */
+    var drag = null, pinch = null;
+    var point = function (e) { return { x: e.clientX, y: e.clientY }; };
+    vStage.addEventListener('pointerdown', function (e) {
+      if (viewer.hidden) { return; }
+      vStage.setPointerCapture(e.pointerId);
+      drag = { id: e.pointerId, start: point(e), tx: tx, ty: ty };
+      vStage.classList.add('is-dragging');
+    });
+    vStage.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id || scale === 1) { return; }
+      tx = drag.tx + (e.clientX - drag.start.x);
+      ty = drag.ty + (e.clientY - drag.start.y);
+      apply();
+    });
+    var endDrag = function () { drag = null; vStage.classList.remove('is-dragging'); };
+    vStage.addEventListener('pointerup', endDrag);
+    vStage.addEventListener('pointercancel', endDrag);
+
+    vStage.addEventListener('touchmove', function (e) {
+      if (e.touches.length !== 2) { return; }
+      e.preventDefault();
+      var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                         e.touches[0].clientY - e.touches[1].clientY);
+      if (!pinch) { pinch = { d: d, scale: scale }; return; }
+      scale = Math.min(6, Math.max(1, pinch.scale * (d / pinch.d)));
+      if (scale === 1) { tx = 0; ty = 0; }
+      apply();
+    }, { passive: false });
+    vStage.addEventListener('touchend', function (e) { if (e.touches.length < 2) { pinch = null; } });
+  }
+
   /* ══════════════ заявка ══════════════
      Форм на сайте несколько (главная, квартиры, локация, контакты) — обработчик один. */
   var uzPage = document.documentElement.lang === 'uz';
@@ -303,6 +402,7 @@
         body: JSON.stringify(Object.assign({
           name: form.elements.name.value.trim(),
           phone: form.elements.phone.value.trim(),
+          rooms: form.elements.rooms ? form.elements.rooms.value : '',
           page: location.pathname
         }, source))
       }).then(function (res) {

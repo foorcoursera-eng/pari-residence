@@ -70,6 +70,9 @@ const ru = {
     legal: 'Материал носит информационный характер и не является публичной офертой',
     priceNote: 'Актуальную стоимость и наличие уточняйте в отделе продаж.',
     openMap: 'Открыть карту',
+    closeViewer: 'Закрыть',
+    zoomOpen: 'Рассмотреть подробно',
+    viewerHint: 'Колесо или щипок — увеличить, перетаскивание — двигать',
     mapHint: 'Карта загрузится по нажатию — так страница открывается быстрее',
   },
 
@@ -95,6 +98,9 @@ const ru = {
     phone: 'Телефон',
     phoneError: 'Проверьте номер телефона',
     company: 'Компания',
+    rooms: 'Интересующая квартира',
+    roomsAny: 'Ещё не выбрал',
+    roomsList: ['Студия', '1-комнатная', '2-комнатная', '3-комнатная', '4-комнатная'],
     consent: 'Даю согласие на обработку персональных данных',
     submit: 'Записаться в отдел продаж',
     sending: 'Отправляем…',
@@ -207,6 +213,25 @@ const ru = {
     ['Международный аэропорт', '15 минут'],
   ],
 
+  /* Планировки: показываем выборку, а не каталог — задача сайта довести до звонка.
+     Данные взяты из рабочих листов застройщика (блоки 1–3). */
+  plans: {
+    title: 'Планировки',
+    lead: 'Несколько популярных вариантов — от компактной однокомнатной до четырёхкомнатной '
+      + 'с кухней-гостиной. Планы кликабельны: откроются крупно, с размерами и подписями комнат.',
+    note: 'Это выборка. Полный список планировок, свободные квартиры и стоимость — в отделе продаж.',
+    zoom: 'Открыть план крупно',
+    euro: 'кухня-гостиная',
+    roomWord: ['', '1-комнатная', '2-комнатная', '3-комнатная', '4-комнатная'],
+    items: [
+      { id: 'b1-04', area: '45,34', rooms: 1, euro: false },
+      { id: 'b1-10', area: '65,95', rooms: 2, euro: true },
+      { id: 'b2-07', area: '74,03', rooms: 2, euro: false },
+      { id: 'b3-06', area: '85,31', rooms: 3, euro: true },
+      { id: 'b2-05', area: '89,11', rooms: 4, euro: true },
+    ],
+  },
+
   /* ── страница квартир ── */
   apartments: {
     h1: 'Квартиры в PARI Residence',
@@ -251,6 +276,10 @@ const ru = {
     lead: 'Жилой квартал строится на улице Гуругли, 1 — в новом районе «Залиния». Рядом железнодорожный '
       + 'вокзал, супермаркеты, школы и торговый центр, а до международного аэропорта 15 минут на машине.',
     districtTitle: 'Район, который строится вместе с домом',
+    masterTitle: 'Мастер-план района «Залиния»',
+    masterText: 'PARI Residence отмечен золотом у улицы Гуругли. Нажмите на план, чтобы '
+      + 'рассмотреть кварталы, парк, школы и водные объекты вблизи.',
+    masterAlt: 'Мастер-план района «Залиния» в Самарканде: кварталы, парк и водные объекты',
     districtText: 'Территории бывших промышленных предприятий выкуплены застройщиками и активно '
       + 'развиваются: здесь появятся парковая зона, пешеходные бульвары, кафе и рестораны, '
       + 'спортивные комплексы, детские сады, школы и поликлиника. Город строит рядом новый университет.',
@@ -296,6 +325,9 @@ const uz = {
     legal: 'Material maʼlumot uchun boʻlib, ommaviy taklif hisoblanmaydi',
     priceNote: 'Dolzarb narx va boʻsh xonadonlarni savdo boʻlimidan aniqlang.',
     openMap: 'Xaritani ochish',
+    closeViewer: 'Yopish',
+    zoomOpen: 'Batafsil koʻrish',
+    viewerHint: 'Gʻildirak yoki barmoqlar bilan kattalashtiring, surib koʻchiring',
     mapHint: 'Xarita bosilganda yuklanadi — sahifa shu tufayli tez ochiladi',
   },
 
@@ -321,6 +353,9 @@ const uz = {
     phone: 'Telefon',
     phoneError: 'Telefon raqamini tekshiring',
     company: 'Kompaniya',
+    rooms: 'Qiziqtirgan xonadon',
+    roomsAny: 'Hali tanlamadim',
+    roomsList: ['Studiya', 'Bir xonali', 'Ikki xonali', 'Uch xonali', 'Toʻrt xonali'],
     consent: 'Shaxsiy maʼlumotlarni qayta ishlashga rozilik beraman',
     submit: 'Savdo boʻlimiga yozilish',
     sending: 'Yuborilmoqda…',
@@ -429,6 +464,23 @@ const uz = {
     ['Xalqaro aeroport', '15 daqiqa'],
   ],
 
+  plans: {
+    title: 'Rejalar',
+    lead: 'Bir nechta ommabop variant — ixcham bir xonalidan oshxona-mehmonxonali toʻrt xonaligacha. '
+      + 'Rejalarni bosing: oʻlchamlari va xona nomlari bilan kattalashib ochiladi.',
+    note: 'Bu tanlov. Rejalarning toʻliq roʻyxati, boʻsh xonadonlar va narxlar — savdo boʻlimida.',
+    zoom: 'Rejani kattalashtirish',
+    euro: 'oshxona-mehmonxona',
+    roomWord: ['', 'Bir xonali', 'Ikki xonali', 'Uch xonali', 'Toʻrt xonali'],
+    items: [
+      { id: 'b1-04', area: '45,34', rooms: 1, euro: false },
+      { id: 'b1-10', area: '65,95', rooms: 2, euro: true },
+      { id: 'b2-07', area: '74,03', rooms: 2, euro: false },
+      { id: 'b3-06', area: '85,31', rooms: 3, euro: true },
+      { id: 'b2-05', area: '89,11', rooms: 4, euro: true },
+    ],
+  },
+
   apartments: {
     h1: 'PARI Residence xonadonlari',
     lead: 'PARI Residence’da 13 blokda 1202 xonadon: ixcham studiyalardan oilaviy toʻrt xonaligacha. '
@@ -471,6 +523,10 @@ const uz = {
       + 'Yaqinida temir yoʻl vokzali, supermarketlar, maktablar va savdo markazi, xalqaro aeroportgacha '
       + 'mashinada 15 daqiqa.',
     districtTitle: 'Uy bilan birga oʻsib borayotgan mahalla',
+    masterTitle: '«Zaliniya» mahallasining bosh rejasi',
+    masterText: 'PARI Residence Gurugli koʻchasi yonida oltin rangda belgilangan. Kvartallar, park, '
+      + 'maktablar va suv havzalarini koʻrish uchun rejani bosing.',
+    masterAlt: 'Samarqanddagi «Zaliniya» mahallasi bosh rejasi: kvartallar, park va suv havzalari',
     districtText: 'Sobiq sanoat korxonalari hududlari quruvchilar tomonidan sotib olinib, faol '
       + 'rivojlanmoqda: bu yerda park zonasi, piyodalar bulvarlari, kafe va restoranlar, sport '
       + 'majmualari, bogʻchalar, maktablar va poliklinika paydo boʻladi. Shahar yonida yangi '

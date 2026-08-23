@@ -64,6 +64,7 @@ console.info = () => {};
     name: 'Азиз', phone: '90 123 45 67', page: '/apartments/',
     utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'pari_august',
     landing_page: '/', referrer: 'https://google.com', device: 'mobile', language: 'ru',
+    rooms: '2-комнатная',
   }, '10.0.0.2');
   assert.strictEqual(ok.code, 200);
   assert.strictEqual(sent.length, 1);
@@ -71,7 +72,8 @@ console.info = () => {};
   assert.ok(text.includes('+998901234567'), 'в сообщении нормализованный номер');
   assert.ok(text.includes('google / cpc / pari_august'), 'в сообщении источник');
   assert.ok(text.includes('/apartments/'), 'в сообщении страница');
-  console.log('✓ заявка уходит с нормализованным номером и источником');
+  assert.ok(text.includes('Интересует: 2-комнатная'), 'в сообщении выбранная комнатность');
+  console.log('✓ заявка уходит с номером, источником и выбранной комнатностью');
 
   /* 5. лимит: шестая заявка с того же адреса отклоняется */
   const ip = '10.0.0.3';
