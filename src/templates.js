@@ -175,12 +175,12 @@ function breadcrumbs(t, items) {
 }
 
 /* ── карта: грузится только по клику, чтобы не тянуть сторонний скрипт ── */
-function mapBlock(t) {
+function mapBlock(t, mod) {
   const q = `${site.geo.lon}%2C${site.geo.lat}`;
   const src = `https://yandex.uz/map-widget/v1/?ll=${q}&z=16&pt=${q},pm2rdm&lang=${t.lang}_UZ`;
-  return `<div class="map reveal" data-map data-src="${src}">
+  return `<div class="map${mod ? ' ' + mod : ''}" data-map data-src="${src}">
       <button class="map__btn" type="button" data-track="map_click">${esc(t.ui.openMap)}</button>
-      <p class="map__hint">${esc(t.ui.mapHint)}</p>
+      <p class="map__hint">${esc(addressLine(t))}</p>
     </div>`;
 }
 
@@ -246,13 +246,16 @@ ${page.body}
    Порядок разделов: титул → квартиры → кинолента → двор-парк → локация → заявка. */
 function home(t, page) {
   const h = t.home;
-  const cine = h.cine.map((c, i) => `      <figure class="frame">
-        <img src="/assets/img/${c.img}-1920.webp"
-             srcset="/assets/img/${c.img}-1080.webp 1080w, /assets/img/${c.img}-1920.webp 1920w"
-             sizes="100vw" alt="${esc(c.cap)}" width="1920" height="960"
+  const cine = h.cine.map((c, i) => {
+    const max = c.w[c.w.length - 1];
+    const set = c.w.map((w) => `/assets/img/${c.img}-${w}.webp ${w}w`).join(', ');
+    return `      <figure class="frame">
+        <img src="/assets/img/${c.img}-${c.w[0]}.webp" srcset="${set}"
+             sizes="100vw" alt="${esc(c.cap)}" width="${max}" height="${Math.round(max / 2)}"
              loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">
         <figcaption class="frame__cap">${esc(c.cap)}</figcaption>
-      </figure>`).join('\n');
+      </figure>`;
+  }).join('\n');
 
   const stats = h.stats.map((s) => `      <li><b data-count="${s.value}"${s.suffix ? ` data-suffix="${s.suffix}"` : ''}>${s.value}${s.suffix || ''}</b><span>${esc(s.label)}</span></li>`).join('\n');
   const tiles = h.homesTiles.map((x) => `      <li class="reveal"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></li>`).join('\n');
@@ -328,12 +331,18 @@ ${tiles}
 
 <!-- ══════════════ 3 · КИНОЛЕНТА ══════════════
      Кадры едут вбок при обычном вертикальном скролле. -->
-<section class="cine" id="film" data-cine style="--frames:${h.cine.length}">
+<section class="cine" id="film" data-cine aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
   <div class="cine__stage">
     <div class="cine__track">
 ${cine}
     </div>
-    <div class="cine__rail" aria-hidden="true"><i></i></div>
+
+    <button class="cine__arrow cine__arrow--prev" type="button" data-cine-prev aria-label="${esc(h.cinePrev)}"></button>
+    <button class="cine__arrow cine__arrow--next" type="button" data-cine-next aria-label="${esc(h.cineNext)}"></button>
+
+    <div class="cine__dots" role="tablist" aria-label="${esc(h.cineLabel)}">
+${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}" type="button" role="tab" data-cine-go="${i}" aria-label="${esc(c.cap)}"${i === 0 ? ' aria-selected="true"' : ''}><i></i></button>`).join('\n')}
+    </div>
   </div>
 </section>
 
@@ -365,8 +374,7 @@ ${stats}
       <p class="place__addr reveal">${esc(addressLine(t))}</p>
       <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
     </div>
-    <img class="place__relief reveal" data-relief src="/assets/img/relief-bicycle.webp"
-         alt="${esc(h.placeReliefAlt)}" width="926" height="1076" loading="lazy" decoding="async">
+    ${mapBlock(t, 'map--tall')}
   </div>
 </section>
 
@@ -378,7 +386,7 @@ ${leadSection(t, {})}`;
 function apartments(t, page) {
   const a = t.apartments;
   const cards = a.types.map((x) => `    <article class="type reveal">
-      <div class="figure-mask"><img src="/assets/img/${x.img}-1080.webp" alt="${esc(x.alt)}" width="1080" height="540" loading="lazy" decoding="async"></div>
+      <div class="figure-mask"><img src="/assets/img/${x.img}-${x.w}.webp" alt="${esc(x.alt)}" width="${x.w}" height="${Math.round(x.w / 2)}" loading="lazy" decoding="async"></div>
       <div class="type__body">
         <h3 class="type__title">${esc(x.title)}</h3>
         <p class="type__area">${esc(x.area)}</p>
@@ -424,15 +432,12 @@ function location(t, page) {
       ${distanceList(t)}
       <p class="place__addr">${esc(addressLine(t))}</p>
     </div>
-    <img class="place__relief" data-relief src="/assets/img/relief-bicycle.webp"
-         alt="${esc(t.home.placeReliefAlt)}" width="926" height="1076" loading="lazy" decoding="async">
+    ${mapBlock(t, 'map--tall')}
   </div>
 
   <div class="page__inner">
     <h2 class="page__h2">${esc(l.districtTitle)}</h2>
     <p class="page__text">${esc(l.districtText)}</p>
-    <h2 class="page__h2">${esc(l.mapTitle)}</h2>
-    ${mapBlock(t)}
   </div>
 </section>
 

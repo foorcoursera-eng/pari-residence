@@ -25,7 +25,7 @@ const site = {
     cityUz: 'Samarqand',
     country: 'UZ',
   },
-  geo: { lat: 39.68594, lon: 66.940637 },        // подтверждено владельцем
+  geo: { lat: 39.685917, lon: 66.94061 },        // офис продаж, подтверждено владельцем
   hours: {
     // Подтверждено владельцем 19.08.2026: ежедневно 09:00–20:00.
     ru: 'Ежедневно с 9:00 до 20:00',
@@ -150,12 +150,16 @@ const ru = {
     conceptReliefAlt: 'Барельеф: Регистан и Париж в едином орнаменте',
     conceptWhisper: 'В восточной традиции PARI — фея, образ лёгкости и почти волшебного очарования.',
 
+    cineLabel: 'Кадры проекта',
+    cinePrev: 'Предыдущий кадр',
+    cineNext: 'Следующий кадр',
     cine: [
-      { img: 'cine-arch', cap: 'Двор открывается аркой' },
-      { img: 'cine-arcade', cap: 'Аркада после дождя' },
-      { img: 'cine-pergola', cap: 'Тень и цветение' },
-      { img: 'cine-stone', cap: 'Травертин, тёплый на ощупь' },
-      { img: 'cine-balcony', cap: 'Утро на балконе' },
+      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Двор открывается аркой' },
+      { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Галерея, полная света' },
+      { img: 'cine-pergola', w: [1440, 2048], cap: 'Тень и цветение' },
+      { img: 'cine-stone', w: [1440, 2048], cap: 'Травертин, тёплый на ощупь' },
+      { img: 'cine-balcony', w: [1280, 1920, 2560], cap: 'Утро с видом на город' },
+      { img: 'cine-butterflies', w: [1280, 1920, 2560], cap: 'Бабочки над двором' },
     ],
 
     yardNum: '02',
@@ -215,7 +219,7 @@ const ru = {
         area: 'от 26 м²',
         text: 'Компактные и функциональные планировки для тех, кто покупает первую квартиру '
           + 'или рассматривает вложение.',
-        img: 'cine-balcony',
+        img: 'cine-balcony', w: 1280,
         alt: 'Балкон квартиры PARI Residence на рассвете',
       },
       {
@@ -223,7 +227,7 @@ const ru = {
         area: 'для семьи',
         text: 'Просторные комнаты, кухни-гостиные и балконы с видом на двор-парк — формат '
           + 'для семьи с детьми.',
-        img: 'cine-arch',
+        img: 'cine-arch', w: 1280,
         alt: 'Вид на двор PARI Residence через арку входной группы',
       },
       {
@@ -231,7 +235,7 @@ const ru = {
         area: 'до 89 м²',
         text: 'Самый большой формат в проекте: место для каждого члена семьи и отдельная '
           + 'зона для гостей.',
-        img: 'lobby',
+        img: 'lobby', w: 1080,
         alt: 'Лобби PARI Residence с латунью и натуральным камнем',
       },
     ],
@@ -249,7 +253,7 @@ const ru = {
     districtText: 'Территории бывших промышленных предприятий выкуплены застройщиками и активно '
       + 'развиваются: здесь появятся парковая зона, пешеходные бульвары, кафе и рестораны, '
       + 'спортивные комплексы, детские сады, школы и поликлиника. Город строит рядом новый университет.',
-    mapTitle: 'На карте',
+    mapTitle: 'Офис продаж на карте',
   },
 
   /* ── страница контактов ── */
@@ -368,12 +372,16 @@ const uz = {
     conceptReliefAlt: 'Barelyef: Registon va Parij yagona naqshda',
     conceptWhisper: 'Sharq anʼanasida PARI — pari, yengillik va sehrli joziba timsoli.',
 
+    cineLabel: 'Loyiha kadrlari',
+    cinePrev: 'Oldingi kadr',
+    cineNext: 'Keyingi kadr',
     cine: [
-      { img: 'cine-arch', cap: 'Hovli darvoza kabi ochiladi' },
-      { img: 'cine-arcade', cap: 'Yomgʻirdan keyingi ayvon' },
-      { img: 'cine-pergola', cap: 'Soya va gullash' },
-      { img: 'cine-stone', cap: 'Travertin — issiq tosh' },
-      { img: 'cine-balcony', cap: 'Balkonda tong' },
+      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Hovli darvoza kabi ochiladi' },
+      { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Nurga toʻla galereya' },
+      { img: 'cine-pergola', w: [1440, 2048], cap: 'Soya va gullash' },
+      { img: 'cine-stone', w: [1440, 2048], cap: 'Travertin — issiq tosh' },
+      { img: 'cine-balcony', w: [1280, 1920, 2560], cap: 'Shahar manzarali tong' },
+      { img: 'cine-butterflies', w: [1280, 1920, 2560], cap: 'Hovli uzra kapalaklar' },
     ],
 
     yardNum: '02',
@@ -430,7 +438,7 @@ const uz = {
         area: '26 m²dan',
         text: 'Birinchi uyini olayotganlar yoki sarmoya kiritishni rejalashtirganlar uchun '
           + 'ixcham va funksional rejalar.',
-        img: 'cine-balcony',
+        img: 'cine-balcony', w: 1280,
         alt: 'PARI Residence xonadoni balkoni tong palasida',
       },
       {
@@ -438,7 +446,7 @@ const uz = {
         area: 'oila uchun',
         text: 'Keng xonalar, oshxona-mehmonxonalar va hovli-bogʻga qaragan balkonlar — '
           + 'bolali oilalar uchun format.',
-        img: 'cine-arch',
+        img: 'cine-arch', w: 1280,
         alt: 'Kirish guruhi ravogʻi orqali PARI Residence hovlisiga nazar',
       },
       {
@@ -446,7 +454,7 @@ const uz = {
         area: '89 m²gacha',
         text: 'Loyihadagi eng katta format: oilaning har bir aʼzosiga joy va mehmonlar uchun '
           + 'alohida zona.',
-        img: 'lobby',
+        img: 'lobby', w: 1080,
         alt: 'PARI Residence lobbisi: guruch va tabiiy tosh',
       },
     ],
@@ -465,7 +473,7 @@ const uz = {
       + 'rivojlanmoqda: bu yerda park zonasi, piyodalar bulvarlari, kafe va restoranlar, sport '
       + 'majmualari, bogʻchalar, maktablar va poliklinika paydo boʻladi. Shahar yonida yangi '
       + 'universitet qurmoqda.',
-    mapTitle: 'Xaritada',
+    mapTitle: 'Savdo boʻlimi xaritada',
   },
 
   contacts: {

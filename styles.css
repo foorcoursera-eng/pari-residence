@@ -326,8 +326,8 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
 }
 
 /* ══════════════ 3 · КИНОЛЕНТА ══════════════
-   По умолчанию кадры идут сверху вниз — так работает и без скрипта.
-   Скрипт добавляет .is-live, и лента едет вбок при обычном вертикальном скролле. */
+   Кадры сменяют друг друга сами и не держат скролл: страница листается обычно.
+   Без скрипта кадры остаются вертикальной лентой — сайт не ломается. */
 .cine{position:relative;background:var(--black)}
 .cine__track{display:flex;flex-direction:column}
 .frame{position:relative;margin:0;height:min(86svh,780px);overflow:hidden}
@@ -337,29 +337,71 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
   background:linear-gradient(0deg,rgba(0,0,0,.76),rgba(0,0,0,0));
 }
 .frame__cap{
-  position:absolute;left:var(--gutter);bottom:clamp(30px,7vh,68px);z-index:2;margin:0;
+  position:absolute;left:var(--gutter);bottom:clamp(52px,9vh,92px);z-index:2;margin:0;
   max-width:min(24ch,80vw);
   font-family:var(--display);color:#fff;letter-spacing:.06em;
   font-size:clamp(19px,2.6vw,34px);line-height:1.24;
 }
 .frame__cap::before{content:"";display:block;width:44px;height:1px;background:var(--gold);margin-bottom:16px}
 
-.cine__rail{position:absolute;left:var(--gutter);right:var(--gutter);bottom:20px;z-index:3;
-  height:1px;background:rgba(255,255,255,.2)}
-.cine__rail i{display:block;height:100%;width:0;background:var(--gold);transition:width .12s linear}
-
-/* горизонтальный режим */
-.cine.is-live{height:calc(100svh + (var(--frames) - 1) * 78svh)}
-.cine.is-live .cine__stage{position:sticky;top:0;height:100svh;overflow:hidden}
-.cine.is-live .cine__track{flex-direction:row;height:100%;will-change:transform}
-.cine.is-live .frame{flex:0 0 100vw;height:100%}
-/* стык кадров отмечаем фирменной линией — иначе край читается как дефект */
-.cine.is-live .frame + .frame::before{
-  content:"";position:absolute;left:0;top:0;bottom:0;width:1px;z-index:3;
-  background:linear-gradient(180deg,rgba(179,131,43,0),var(--gold) 22%,var(--gold) 78%,rgba(179,131,43,0));
+/* режим слайдера */
+.cine.is-live .cine__stage{position:relative;height:min(86svh,780px);overflow:hidden}
+.cine.is-live .cine__track{
+  flex-direction:row;height:100%;
+  transition:transform .95s cubic-bezier(.65,0,.35,1);will-change:transform;
 }
-/* кадр внутри едет чуть медленнее ленты — получается глубина */
-.cine.is-live .frame img{will-change:transform}
+.cine.is-live .frame{flex:0 0 100%;height:100%}
+.cine.is-live .frame img{transform:scale(1.06);transition:transform 5.4s linear}
+.cine.is-live .frame.is-current img{transform:scale(1)}
+.cine.is-live .frame__cap{
+  opacity:0;transform:translateY(14px);
+  transition:opacity .7s ease .15s,transform .7s cubic-bezier(.22,.61,.36,1) .15s;
+}
+.cine.is-live .frame.is-current .frame__cap{opacity:1;transform:none}
+
+/* точки-переключатели: полоски, активная наливается золотом за время показа */
+.cine__dots{
+  position:absolute;left:var(--gutter);right:var(--gutter);bottom:clamp(20px,3.4vh,32px);z-index:3;
+  display:flex;gap:10px;
+}
+.cine__dot{
+  flex:1 1 0;height:22px;padding:0;border:0;background:none;cursor:pointer;
+  display:flex;align-items:flex-end;
+}
+.cine__dot i{display:block;width:100%;height:1px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}
+.cine__dot i::after{
+  content:"";position:absolute;inset:0;background:var(--gold);
+  transform:scaleX(0);transform-origin:left;
+}
+.cine__dot.is-on i::after{animation:dot-fill var(--cine-hold,5s) linear forwards}
+.cine__dot.is-done i::after{transform:scaleX(1)}
+@keyframes dot-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* стрелки: появляются на наведении, на телефоне их нет — там свайп */
+.cine__arrow{
+  position:absolute;top:50%;translate:0 -50%;z-index:3;
+  width:clamp(44px,4.4vw,56px);height:clamp(44px,4.4vw,56px);
+  border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.28);backdrop-filter:blur(2px);
+  cursor:pointer;transition:background .35s ease,border-color .35s ease;
+}
+.cine__arrow:hover{background:var(--gold);border-color:var(--gold)}
+.cine__arrow::before{
+  content:"";position:absolute;left:50%;top:50%;width:11px;height:11px;
+  border-left:1px solid currentColor;border-bottom:1px solid currentColor;color:#fff;
+}
+.cine__arrow:hover::before{color:var(--black)}
+.cine__arrow--prev{left:clamp(12px,2vw,28px)}
+.cine__arrow--prev::before{translate:-30% -50%;rotate:45deg}
+.cine__arrow--next{right:clamp(12px,2vw,28px)}
+.cine__arrow--next::before{translate:-70% -50%;rotate:-135deg}
+@media (max-width:700px){.cine__arrow{width:42px;height:42px;background:rgba(0,0,0,.34)}}
+
+@media (prefers-reduced-motion:reduce){
+  .cine.is-live .cine__track{transition:none}
+  .cine.is-live .frame img{transition:none;transform:none}
+  .cine__dot.is-on i::after{animation:none;transform:scaleX(1)}
+  .cine.is-live .frame__cap{opacity:1;transform:none;transition:none}
+}
 
 /* ══════════════ 4 · ДВОР-ПАРК — фото + светлая панель ══════════════ */
 .split{display:grid;grid-template-columns:minmax(0,1fr);background:var(--milk)}
@@ -641,6 +683,9 @@ main:focus{outline:none}
 .map__btn:hover{background:transparent;color:var(--ink)}
 .map__hint{margin:0;font-size:12px;color:var(--ink-3);max-width:34ch;text-align:center}
 .map.is-live{background:none;border-color:transparent}
+/* карта на месте фотографии: вытянутая по вертикали на широком экране */
+.map--tall{aspect-ratio:4/3;margin:0}
+@media (min-width:900px){.map--tall{aspect-ratio:3/4;height:100%}}
 
 /* 404 */
 .page--404{min-height:72svh;display:grid;place-items:center;text-align:center}
