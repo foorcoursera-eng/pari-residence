@@ -160,7 +160,7 @@ function leadSection(t, opts) {
         <img class="medallion__logo" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="1872" height="1031" loading="lazy" decoding="async">
       </div>
       <p class="eyebrow reveal">${esc(o.eyebrow || t.home.finalEyebrow)}</p>
-      <${o.h || 'h2'} class="display reveal">${o.title || t.home.finalTitle}</${o.h || 'h2'}>
+      <${o.h || 'h2'} class="display script reveal"${o.title ? '' : ' data-write="finalTitle"'}>${o.title || t.home.finalTitle}</${o.h || 'h2'}>
       <p class="final__text reveal">${esc(o.text || t.home.finalText)}</p>
       <a class="final__tel reveal" href="tel:${site.phone.tel}" data-track="phone_click">${site.phone.display}</a>
       <p class="final__meta reveal">${esc(t.lang === 'ru' ? site.hours.ru : site.hours.uz)}<br>${esc(addressLine(t))}</p>
@@ -276,7 +276,7 @@ function home(t, page) {
   }).join('\n');
 
   const stats = h.stats.map((s) => `      <li><b data-count="${s.value}"${s.suffix ? ` data-suffix="${s.suffix}"` : ''}>${s.value}${s.suffix || ''}</b><span>${esc(s.label)}</span></li>`).join('\n');
-  const tiles = h.homesTiles.map((x) => `      <li class="reveal"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></li>`).join('\n');
+  const tiles = h.homesTiles.map((x) => `      <li class="reveal"><a href="${x.href}"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></a></li>`).join('\n');
   const apartmentsHref = t.lang === 'ru' ? '/apartments/' : '/uz/apartments/';
   const locationHref = t.lang === 'ru' ? '/location/' : '/uz/location/';
 
@@ -312,11 +312,11 @@ function home(t, page) {
     <div class="hero__top">
       <p class="eyebrow eyebrow--light">${h.heroEyebrow}</p>
       <img class="hero__logo" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="360" height="120">
-      <h1 class="hero__slogan" lang="uz">${h.heroSlogan}</h1>
+      <h1 class="hero__slogan script" data-write="heroSlogan">${h.heroSlogan}</h1>
     </div>
 
     <div class="hero__bottom">
-      <p class="hero__sub">${esc(h.heroSub)}</p>
+      <p class="hero__sub" lang="${t.lang === 'ru' ? 'uz' : 'ru'}">${esc(h.heroSub)}</p>
       <div class="cta-wrap">
         <a class="cta" href="tel:${site.phone.tel}" data-track="phone_click">
           <span class="cta__label">${esc(t.ui.call)}</span>
@@ -333,7 +333,7 @@ function home(t, page) {
 <section class="homes" id="homes">
   <div class="homes__inner">
     <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
-    <h2 class="display" data-lines>${h.homesTitle}</h2>
+    <h2 class="display script" data-write="homesTitle">${h.homesTitle}</h2>
     <ul class="homes__tiles">
 ${tiles}
     </ul>
@@ -369,7 +369,7 @@ ${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}
   </div>
   <div class="split__panel">
     <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
-    <h2 class="display" data-lines>${h.yardTitle}</h2>
+    <h2 class="display script" data-write="yardTitle">${h.yardTitle}</h2>
     <p class="split__text reveal">${esc(h.yardText)}</p>
     <ul class="stats reveal">
 ${stats}
@@ -382,7 +382,7 @@ ${stats}
   <div class="place__inner">
     <div>
       <p class="eyebrow reveal"><span class="num">${h.placeNum}</span> ${esc(h.placeEyebrow)}</p>
-      <h2 class="display" data-lines>${h.placeTitle}</h2>
+      <h2 class="display script" data-write="placeTitle">${h.placeTitle}</h2>
       ${distanceList(t)}
       <p class="place__addr reveal">${esc(addressLine(t))}</p>
       <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
@@ -400,7 +400,7 @@ function apartments(t, page) {
   const a = t.apartments;
   const p = t.plans;
 
-  const cards = p.items.map((x) => `      <article class="plan reveal">
+  const cards = p.items.map((x) => `      <article class="plan reveal" id="plan-${x.rooms}">
         <button class="plan__view" type="button"
                 data-zoom="/assets/img/plans/${x.id}-1400.webp"
                 data-zoom-label="${esc(p.roomWord[x.rooms])} · ${x.area} м²"

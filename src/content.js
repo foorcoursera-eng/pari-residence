@@ -114,13 +114,13 @@ const ru = {
     home: {
       title: 'PARI Residence — квартиры бизнес-класса в Самарканде',
       description: 'PARI Residence — жилой комплекс бизнес-класса в Самарканде на улице Гуругли: '
-        + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 26 до 89 м² с отделкой white-box. '
+        + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 26 до 89 м². '
         + 'Узнайте актуальные условия в отделе продаж.',
     },
     apartments: {
       title: 'Квартиры в Самарканде — PARI Residence',
       description: 'Квартиры в жилом комплексе PARI Residence в Самарканде: студии, одно-, двух-, трёх- '
-        + 'и четырёхкомнатные площадью от 26 до 89 м², отделка white-box. Наличие и стоимость — '
+        + 'и четырёхкомнатные площадью от 26 до 89 м². Наличие и стоимость — '
         + 'в отделе продаж.',
     },
     location: {
@@ -142,8 +142,8 @@ const ru = {
   /* ── главная ── */
   home: {
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Gurugli&nbsp;1',
-    heroSlogan: 'Parijona&nbsp;Joziba.<br>Samarqand&nbsp;ruhi.',
-    heroSub: 'Парижское очарование. Самаркандская душа.',
+    heroSlogan: 'Парижское&nbsp;очарование.<br>Самаркандская&nbsp;душа.',
+    heroSub: 'Parijona Joziba. Samarqand ruhi.',
     heroAlt: 'PARI Residence — Самарканд на рассвете',
 
     conceptNum: '01',
@@ -160,13 +160,14 @@ const ru = {
     cinePrev: 'Предыдущий кадр',
     cineNext: 'Следующий кадр',
     cine: [
-      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Двор открывается аркой' },
-      { img: 'cine-lobby', w: [1280, 1672], cap: 'Лобби в латуни и камне' },
-      { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Галерея, полная света' },
-      { img: 'cine-pergola', w: [1440, 2048], cap: 'Тень и цветение' },
-      { img: 'cine-stone', w: [1440, 2048], cap: 'Травертин, тёплый на ощупь' },
-      { img: 'cine-balcony', w: [1280, 1920, 2560], cap: 'Утро с видом на город' },
-      { img: 'cine-butterflies', w: [1280, 1920, 2560], cap: 'Бабочки над двором' },
+      { img: 'cine-yard', w: [1280, 1920, 2560], cap: 'Двор с зонами отдыха' },
+      { img: 'cine-aerial', w: [1280, 1672], cap: 'Двор-парк площадью 1 гектар' },
+      { img: 'cine-pergola', w: [1440, 2048], cap: 'Беседки и места для встреч' },
+      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Двор закрыт для машин' },
+      { img: 'cine-lobby', w: [1280, 1672], cap: 'Входная группа с лобби' },
+      { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Галерея вдоль первых этажей' },
+      { img: 'cine-parking', w: [1280, 1536], cap: 'Подземный паркинг' },
+      { img: 'cine-balcony', w: [1280, 1920, 2560], cap: 'Вид на Самарканд с балкона' },
     ],
 
     yardNum: '02',
@@ -190,11 +191,11 @@ const ru = {
     homesEyebrow: 'Квартиры',
     homesTitle: 'От компактных студий<br>до семейных четырёхкомнатных',
     homesTiles: [
-      { value: 'от 26 м²', label: 'Студии и однокомнатные' },
-      { value: 'для семьи', label: 'Двух- и трёхкомнатные' },
-      { value: 'до 89 м²', label: 'Четырёхкомнатные' },
+      { value: 'от 26 м²', label: 'Студии и однокомнатные', href: '/apartments/#plan-1' },
+      { value: 'для семьи', label: 'Двух- и трёхкомнатные', href: '/apartments/#plan-2' },
+      { value: 'до 89 м²', label: 'Четырёхкомнатные', href: '/apartments/#plan-4' },
     ],
-    homesNote: 'Отделка white-box: можно заходить и сразу делать чистовой ремонт.',
+    homesNote: 'Планировки на выбор — свободные квартиры и этажи покажем в отделе продаж.',
     homesLink: 'Смотреть квартиры',
     homesAlt: 'Входная группа PARI Residence: лобби с латунью и натуральным камнем',
 
@@ -226,7 +227,6 @@ const ru = {
     items: [
       { id: 'b1-04', area: '45,34', rooms: 1, euro: false },
       { id: 'b1-10', area: '65,95', rooms: 2, euro: true },
-      { id: 'b2-07', area: '74,03', rooms: 2, euro: false },
       { id: 'b3-06', area: '85,31', rooms: 3, euro: true },
       { id: 'b2-05', area: '89,11', rooms: 4, euro: true },
     ],
@@ -236,7 +236,7 @@ const ru = {
   apartments: {
     h1: 'Квартиры в PARI Residence',
     lead: 'В PARI Residence — 1202 квартиры в 13 блоках: от компактных студий до семейных '
-      + 'четырёхкомнатных. Площади от 26 до 89 м², отделка white-box, панорамное остекление '
+      + 'четырёхкомнатных. Площади от 26 до 89 м², просторные балконы '
       + 'и закрытый двор-парк без машин.',
     priceLine: 'Квартиры от 10 млн сум',
     types: [
@@ -265,9 +265,10 @@ const ru = {
         alt: 'Лобби PARI Residence с латунью и натуральным камнем',
       },
     ],
-    finishTitle: 'Отделка white-box',
-    finishText: 'Квартиры передаются с выровненными стенами, стяжкой, разводкой электрики '
-      + 'и установленными окнами. Можно заходить и сразу начинать чистовой ремонт по своему проекту.',
+    finishTitle: 'Как выбрать квартиру',
+    finishText: 'Позвоните — менеджер уточнит, что вам подходит, и назначит удобное время. '
+      + 'В отделе продаж покажем свободные квартиры на этажах, планировки в деталях, '
+      + 'виды из окон и расскажем об условиях покупки и рассрочки.',
   },
 
   /* ── страница локации ── */
@@ -368,13 +369,13 @@ const uz = {
     home: {
       title: 'PARI Residence — Samarqandda biznes-klass xonadonlar',
       description: 'PARI Residence — Samarqand, Gurugli koʻchasidagi biznes-klass turar-joy majmuasi: '
-        + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 26–89 m² white-box xonadonlar. '
+        + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 26–89 m² xonadonlar. '
         + 'Shartlarni savdo boʻlimidan aniqlang.',
     },
     apartments: {
       title: 'Samarqandda xonadonlar — PARI Residence',
       description: 'PARI Residence turar-joy majmuasidagi xonadonlar: studiya, bir, ikki, uch va toʻrt '
-        + 'xonali, maydoni 26–89 m², white-box pardoz. Narx va boʻsh xonadonlar — savdo boʻlimida.',
+        + 'xonali, maydoni 26–89 m². Narx va boʻsh xonadonlar — savdo boʻlimida.',
     },
     location: {
       title: 'Joylashuvi — Samarqanddagi PARI Residence',
@@ -395,7 +396,7 @@ const uz = {
   home: {
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Gurugli&nbsp;1',
     heroSlogan: 'Parijona&nbsp;Joziba.<br>Samarqand&nbsp;ruhi.',
-    heroSub: 'Uyga aylangan joziba.',
+    heroSub: 'Парижское очарование. Самаркандская душа.',
     heroAlt: 'PARI Residence — tong otishida Samarqand',
 
     conceptNum: '01',
@@ -412,13 +413,14 @@ const uz = {
     cinePrev: 'Oldingi kadr',
     cineNext: 'Keyingi kadr',
     cine: [
-      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Hovli darvoza kabi ochiladi' },
-      { img: 'cine-lobby', w: [1280, 1672], cap: 'Guruch va toshdagi lobbi' },
-      { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Nurga toʻla galereya' },
-      { img: 'cine-pergola', w: [1440, 2048], cap: 'Soya va gullash' },
-      { img: 'cine-stone', w: [1440, 2048], cap: 'Travertin — issiq tosh' },
-      { img: 'cine-balcony', w: [1280, 1920, 2560], cap: 'Shahar manzarali tong' },
-      { img: 'cine-butterflies', w: [1280, 1920, 2560], cap: 'Hovli uzra kapalaklar' },
+      { img: 'cine-yard', w: [1280, 1920, 2560], cap: 'Dam olish zonalari boʻlgan hovli' },
+      { img: 'cine-aerial', w: [1280, 1672], cap: '1 gektarlik hovli-bogʻ' },
+      { img: 'cine-pergola', w: [1440, 2048], cap: 'Soʻrilar va uchrashuv joylari' },
+      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Hovli mashinalarsiz' },
+      { img: 'cine-lobby', w: [1280, 1672], cap: 'Kirish guruhi va lobbi' },
+      { img: 'cine-arcade', w: [1280, 1920, 2560], cap: 'Birinchi qavatlar boʻylab galereya' },
+      { img: 'cine-parking', w: [1280, 1536], cap: 'Yer osti avtoturargohi' },
+      { img: 'cine-balcony', w: [1280, 1920, 2560], cap: 'Balkondan Samarqand manzarasi' },
     ],
 
     yardNum: '02',
@@ -442,11 +444,11 @@ const uz = {
     homesEyebrow: 'Xonadonlar',
     homesTitle: 'Ixcham studiyalardan<br>toʻrt xonali oilaviylarigacha',
     homesTiles: [
-      { value: '26 m²dan', label: 'Studiya va bir xonali' },
-      { value: 'oila uchun', label: 'Ikki va uch xonali' },
-      { value: '89 m²gacha', label: 'Toʻrt xonali' },
+      { value: '26 m²dan', label: 'Studiya va bir xonali', href: '/uz/apartments/#plan-1' },
+      { value: 'oila uchun', label: 'Ikki va uch xonali', href: '/uz/apartments/#plan-2' },
+      { value: '89 m²gacha', label: 'Toʻrt xonali', href: '/uz/apartments/#plan-4' },
     ],
-    homesNote: 'White-box pardoz: kelib, darhol oʻz loyihangiz boʻyicha taʼmirni boshlash mumkin.',
+    homesNote: 'Rejalar tanlovi — boʻsh xonadonlar va qavatlarni savdo boʻlimida koʻrsatamiz.',
     homesLink: 'Xonadonlarni koʻrish',
     homesAlt: 'PARI Residence kirish guruhi: guruch va tabiiy toshli lobbi',
 
@@ -475,7 +477,6 @@ const uz = {
     items: [
       { id: 'b1-04', area: '45,34', rooms: 1, euro: false },
       { id: 'b1-10', area: '65,95', rooms: 2, euro: true },
-      { id: 'b2-07', area: '74,03', rooms: 2, euro: false },
       { id: 'b3-06', area: '85,31', rooms: 3, euro: true },
       { id: 'b2-05', area: '89,11', rooms: 4, euro: true },
     ],
@@ -484,7 +485,7 @@ const uz = {
   apartments: {
     h1: 'PARI Residence xonadonlari',
     lead: 'PARI Residence’da 13 blokda 1202 xonadon: ixcham studiyalardan oilaviy toʻrt xonaligacha. '
-      + 'Maydoni 26–89 m², white-box pardoz, panoramali oynalar va mashinasiz yopiq hovli-bogʻ.',
+      + 'Maydoni 26–89 m², keng balkonlar va mashinasiz yopiq hovli-bogʻ.',
     priceLine: 'Xonadonlar 10 mln soʻmdan',
     types: [
       {
@@ -512,9 +513,10 @@ const uz = {
         alt: 'PARI Residence lobbisi: guruch va tabiiy tosh',
       },
     ],
-    finishTitle: 'White-box pardoz',
-    finishText: 'Xonadonlar tekislangan devorlar, styajka, elektr tarmogʻi va oʻrnatilgan '
-      + 'oynalar bilan topshiriladi. Kelib, oʻz loyihangiz boʻyicha taʼmirni boshlash mumkin.',
+    finishTitle: 'Xonadonni qanday tanlash mumkin',
+    finishText: 'Qoʻngʻiroq qiling — menejer sizga nima mos kelishini aniqlaydi va qulay vaqt belgilaydi. '
+      + 'Savdo boʻlimida qavatlardagi boʻsh xonadonlarni, rejalarni batafsil, deraza manzaralarini '
+      + 'koʻrsatamiz va sotib olish hamda boʻlib toʻlash shartlarini tushuntiramiz.',
   },
 
   location: {

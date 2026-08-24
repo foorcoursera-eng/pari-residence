@@ -159,6 +159,72 @@
     document.querySelectorAll('.figure-mask,[data-lines]').forEach(function (el) { el.classList.add('is-in'); });
   }
 
+
+  /* ── письмо пером ──
+     Контуры букв лежат отдельным файлом и подгружаются, когда фраза подходит
+     к экрану. Каждая буква сначала обводится, потом заливается. */
+  var penData = null;
+  var loadPen = function () {
+    if (!penData) {
+      penData = fetch('/assets/pen/' + (document.documentElement.lang || 'ru') + '.json')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+    }
+    return penData;
+  };
+
+  var writePhrase = function (el, phrase) {
+    var pen = document.createElement('span');
+    pen.className = 'pen';
+    pen.setAttribute('aria-hidden', 'true');
+
+    var index = 0;
+    phrase.forEach(function (line) {
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'pen__line');
+      svg.setAttribute('viewBox', '0 0 ' + line.width + ' ' + line.height);
+      /* размер берём от кегля заголовка: ширина строки в em-квадратах */
+      svg.style.width = (line.width / (line.upem || 1000)).toFixed(3) + 'em';
+      var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', 'translate(0,' + line.baseline + ') scale(1,-1)');
+      line.letters.forEach(function (letter) {
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', letter.d);
+        path.setAttribute('transform', 'translate(' + letter.x + ',0)');
+        path.setAttribute('pathLength', '1');
+        path.style.setProperty('--i', index++);
+        g.appendChild(path);
+      });
+      svg.appendChild(g);
+      pen.appendChild(svg);
+    });
+
+    var text = document.createElement('span');
+    text.className = 'pen__text';
+    text.innerHTML = el.innerHTML;
+    el.innerHTML = '';
+    el.appendChild(pen);
+    el.appendChild(text);
+    requestAnimationFrame(function () { pen.classList.add('is-writing'); });
+  };
+
+  var penTargets = [].slice.call(document.querySelectorAll('[data-write]'));
+  if (penTargets.length && !calm && 'IntersectionObserver' in window && window.fetch) {
+    var penIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) { return; }
+        var el = e.target;
+        penIO.unobserve(el);
+        var key = el.dataset.write;
+        if (!key) { return; }
+        loadPen().then(function (data) {
+          if (data && data[key] && data[key].length) { writePhrase(el, data[key]); }
+        });
+      });
+    }, { rootMargin: '150px 0px 0px 0px' });
+    penTargets.forEach(function (el) { penIO.observe(el); });
+  }
+
   /* ── кинолента: кадры меняются сами, скролл страницы не перехватывается ── */
   var cine = document.querySelector('[data-cine]');
   if (cine) {

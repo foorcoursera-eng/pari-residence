@@ -15,6 +15,10 @@
   unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap}
 @font-face{font-family:'Tenor Sans';font-weight:400;src:url('assets/fonts/tenor-lat.woff2') format('woff2');
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2000-206F,U+2122;font-display:swap}
+@font-face{font-family:'Great Vibes';font-weight:400;src:url('assets/fonts/greatvibes-cyr.woff2') format('woff2');
+  unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap}
+@font-face{font-family:'Great Vibes';font-weight:400;src:url('assets/fonts/greatvibes-lat.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2000-206F,U+2122;font-display:swap}
 @font-face{font-family:'Cygre';font-weight:300;src:url('assets/fonts/cygre-light.woff2') format('woff2');font-display:swap}
 @font-face{font-family:'Cygre';font-weight:400;src:url('assets/fonts/cygre-regular.woff2') format('woff2');font-display:swap}
 @font-face{font-family:'Cygre';font-weight:500;src:url('assets/fonts/cygre-medium.woff2') format('woff2');font-display:swap}
@@ -33,6 +37,8 @@
 
   --display:'Tenor Sans',Georgia,serif;
   --text:'Cygre','Helvetica Neue',Arial,sans-serif;
+  /* каллиграфия — только для акцентных фраз, набор текста ею запрещён */
+  --script:'Great Vibes','Tenor Sans',Georgia,serif;
 
   --gutter:clamp(20px,5vw,72px);
   --measure:min(1180px,100% - var(--gutter)*2);
@@ -446,7 +452,19 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
   list-style:none;margin:clamp(34px,5.4vh,56px) 0 0;padding:0;
   display:grid;grid-template-columns:minmax(0,1fr);gap:1px;background:var(--hair);
 }
-.homes__tiles li{background:var(--milk);padding:clamp(22px,3vw,32px)}
+.homes__tiles li{background:var(--milk)}
+.homes__tiles a{
+  display:block;height:100%;padding:clamp(22px,3vw,32px);
+  transition:background .4s ease;
+}
+.homes__tiles a:hover{background:rgba(179,131,43,.08)}
+.homes__tiles a::after{
+  content:"";display:block;width:22px;height:22px;margin-top:14px;
+  border-right:1px solid var(--gold);border-bottom:1px solid var(--gold);
+  transform:rotate(-45deg) scale(.7);transform-origin:left center;
+  transition:transform .4s cubic-bezier(.22,.61,.36,1);
+}
+.homes__tiles a:hover::after{transform:rotate(-45deg) scale(.7) translate(6px,-6px)}
 .homes__tiles b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(24px,2.8vw,34px);color:var(--ink);line-height:1}
 .homes__tiles span{display:block;margin-top:12px;font-size:clamp(13px,1.3vw,15px);color:var(--ink-2)}
 .homes__note{margin:clamp(26px,4vh,40px) 0 0;max-width:52ch;color:var(--ink-2)}
@@ -605,7 +623,7 @@ main:focus{outline:none}
   width:var(--measure);margin:clamp(30px,5vh,50px) auto 0;
   display:grid;grid-template-columns:minmax(0,1fr);gap:1px;background:var(--hair);
 }
-.plan{margin:0;background:var(--paper);display:flex;flex-direction:column}
+.plan{margin:0;background:var(--paper);display:flex;flex-direction:column;scroll-margin-top:96px}
 .plan__view{
   position:relative;display:block;width:100%;padding:clamp(18px,2.4vw,30px);
   border:0;background:var(--paper);cursor:zoom-in;
@@ -676,6 +694,43 @@ body.is-locked .viewer{overflow:visible}
 @media (prefers-reduced-motion:reduce){
   .viewer,.viewer__stage img{transition:none}
   .plan__view img{transition:none}
+}
+
+/* ══════════════ акцентные фразы каллиграфией ══════════════
+   Только короткие фразы: слоган и заголовки разделов. Наборный текст, подписи
+   и навигация остаются на Tenor Sans и Cygre, как требует гайдбук (4.1–4.2).
+
+   Письмо пером: контуры букв берутся из самой гарнитуры (assets/pen/<язык>.json),
+   каждая буква обводится по очереди и только потом заливается. Пока контуры
+   не загрузились — на месте фразы обычный текст, поэтому без скрипта ничего не теряется. */
+.script{font-family:var(--script);font-weight:400;letter-spacing:.01em;line-height:1.12}
+.hero__slogan.script{font-size:clamp(38px,6.4vw,86px);letter-spacing:.005em}
+.display.script{font-size:clamp(36px,5.4vw,74px);line-height:1.06}
+.final .display.script{font-size:clamp(38px,5.4vw,72px)}
+
+.pen{display:block}
+.pen__line{display:block;height:auto;overflow:visible}
+.hero .pen__line{margin-inline:auto}
+.pen__line + .pen__line{margin-top:.06em}
+.pen path{
+  fill:transparent;stroke:var(--gold);stroke-width:7;
+  stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1;stroke-dashoffset:1;
+}
+.pen.is-writing path{
+  animation:pen-draw .52s linear forwards, pen-ink .4s ease forwards;
+  animation-delay:calc(var(--i) * 52ms), calc(var(--i) * 52ms + .44s);
+}
+@keyframes pen-draw{to{stroke-dashoffset:0}}
+@keyframes pen-ink{to{fill:currentColor;stroke-opacity:0}}
+
+/* текст остаётся в разметке для поиска и скринридеров */
+.pen + .pen__text,.pen__text{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+[data-write]{position:relative}
+
+@media (prefers-reduced-motion:reduce){
+  .pen{display:none}
+  .pen__text{position:static;width:auto;height:auto;clip-path:none;white-space:normal}
 }
 
 /* ---------- появление на скролле ---------- */
