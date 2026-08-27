@@ -159,7 +159,7 @@ function build() {
     /* 404 — по одной на язык, отдаём русскую как общую */
     const nf = { path: t.lang === 'ru' ? '/404.html' : '/uz/404.html', v, render: T.notFound,
       title: t.meta.notFound.title, description: t.meta.notFound.description, jsonld: [] };
-    const html404 = T.shell(t, T.notFound(t, nf));
+    const html404 = T.shell(t, T.notFound(t, nf, t.lang === 'ru' ? uz : null));
     write(nf.path.replace(/^\//, ''), html404);
     written.push(nf.path);
   });

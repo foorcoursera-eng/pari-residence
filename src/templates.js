@@ -71,6 +71,7 @@ function navItems(t) {
 function header(t, path) {
   const items = navItems(t).map(([href, label]) => `      <a href="${href}">${esc(label)}</a>`).join('\n');
   return `<header class="bar" id="bar">
+  <span class="bar__progress" aria-hidden="true"></span>
   <a class="bar__logo" href="${t.lang === 'ru' ? '/' : '/uz/'}" aria-label="${site.brand}">
     <img src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="96" height="32">
   </a>
@@ -91,22 +92,43 @@ ${items}
 }
 
 function mobileMenu(t, path) {
-  const items = navItems(t).map(([href, label]) => `        <a href="${href}">${esc(label)}</a>`).join('\n');
+  const items = navItems(t).map(([href, label], i) => `        <a class="menu__link" href="${href}">
+          <i>${String(i + 1).padStart(2, '0')}</i><span>${esc(label)}</span>
+        </a>`).join('\n');
   return `<div class="menu" id="menu" hidden>
-  <img class="menu__mark" src="/assets/img/brand-frame.png" alt="" width="640" height="616" aria-hidden="true">
   <div class="menu__inner">
-    <nav class="menu__nav" aria-label="${esc(t.ui.menu)}">
+    <nav class="menu__nav" aria-label="${esc(t.ui.navLabel)}">
 ${items}
     </nav>
 
     <div class="menu__foot">
-      <a class="menu__tel" href="tel:${site.phone.tel}" data-track="phone_click">${site.phone.display}</a>
+      <a class="menu__call" href="tel:${site.phone.tel}" data-track="phone_click">
+        <span>${esc(t.ui.call)}</span><b>${site.phone.display}</b>
+      </a>
       <p class="menu__meta">${esc(t.lang === 'ru' ? site.hours.ru : site.hours.uz)}<br>${esc(addressLine(t))}</p>
+      <p class="menu__social">
+        <a href="${site.telegram}" target="_blank" rel="noopener noreferrer" data-track="telegram_click">Telegram</a>
+        <a href="${site.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </p>
       ${langSwitch(t, path, 'menu__lang')}
     </div>
   </div>
 </div>`;
 }
+
+
+/* Рассрочка тянется до сдачи первой очереди, значит срок сокращается сам собой.
+   Считаем его при сборке и ограничиваем максимумом, который назвал владелец. */
+function instalmentMonths() {
+  const stage = site.stages.find((x) => x.no === site.instalment.untilStage);
+  const end = new Date(Date.UTC(stage.year, stage.quarter * 3, 0));
+  const now = new Date();
+  const months = (end.getUTCFullYear() - now.getUTCFullYear()) * 12
+    + (end.getUTCMonth() - now.getUTCMonth());
+  return Math.max(1, Math.min(site.instalment.maxMonths, months));
+}
+
+const romans = ['', 'I', 'II', 'III', 'IV'];
 
 const addressLine = (t) => (t.lang === 'ru'
   ? `${site.address.city}, ${site.address.street}`
@@ -115,7 +137,10 @@ const addressLine = (t) => (t.lang === 'ru'
 /* ── форма заявки: одна на весь сайт ── */
 function leadForm(t, idSuffix) {
   const id = idSuffix ? `-${idSuffix}` : '';
-  return `<form class="lead reveal" id="leadForm${id}" data-lead novalidate>
+  return `<form class="lead reveal" id="leadForm${id}" data-lead novalidate
+      data-say-ok="${esc(t.form.ok)}" data-say-late="${esc(t.form.okLate)}"
+      data-say-bad="${esc(t.form.bad)}" data-say-fail="${esc(t.form.fail)}"
+      data-say-sending="${esc(t.form.sending)}">
       <div class="field">
         <label for="f-name${id}">${esc(t.form.name)}</label>
         <input id="f-name${id}" name="name" type="text" placeholder="${esc(t.form.namePlaceholder)}" autocomplete="name" required>
@@ -127,15 +152,16 @@ function leadForm(t, idSuffix) {
                autocomplete="tel" inputmode="tel" required>
         <span class="field__err">${esc(t.form.phoneError)}</span>
       </div>
-      <div class="field">
-        <label for="f-rooms${id}">${esc(t.form.rooms)}</label>
-        <div class="select">
-          <select id="f-rooms${id}" name="rooms">
-            <option value="">${esc(t.form.roomsAny)}</option>
-${t.form.roomsList.map((r) => `            <option value="${esc(r)}">${esc(r)}</option>`).join('\n')}
-          </select>
+      <fieldset class="rooms">
+        <legend>${esc(t.form.rooms)}</legend>
+        <div class="rooms__set">
+${[t.form.roomsAny].concat(t.form.roomsList).map((r, i) => `          <label class="chip">
+            <input type="radio" name="rooms" value="${i === 0 ? '' : esc(r)}"${i === 0 ? ' checked' : ''}>
+            <span>${esc(r)}</span>
+          </label>`).join('\n')}
         </div>
-      </div>
+        <p class="rooms__hint">${esc(t.form.roomsHint)}</p>
+      </fieldset>
       <div class="hp" aria-hidden="true">
         <label for="f-company${id}">${esc(t.form.company)}</label>
         <input id="f-company${id}" name="company" type="text" tabindex="-1" autocomplete="off">
@@ -144,6 +170,7 @@ ${t.form.roomsList.map((r) => `            <option value="${esc(r)}">${esc(r)}</
         <input type="checkbox" name="consent" required>
         <span>${esc(t.form.consent)}</span>
       </label>
+      <p class="lead__privacy">${esc(t.form.privacy)}</p>
       <button class="btn-gold" type="submit" data-submit>${esc(t.form.submit)}</button>
       <p class="lead__status" data-status role="status" aria-live="polite"></p>
     </form>`;
@@ -160,11 +187,14 @@ function leadSection(t, opts) {
         <img class="medallion__logo" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="1872" height="1031" loading="lazy" decoding="async">
       </div>
       <p class="eyebrow reveal">${esc(o.eyebrow || t.home.finalEyebrow)}</p>
-      <${o.h || 'h2'} class="display script reveal"${o.title ? '' : ' data-write="finalTitle"'}>${o.title || t.home.finalTitle}</${o.h || 'h2'}>
+      <${o.h || 'h2'} class="display reveal">${o.title || t.home.finalTitle}</${o.h || 'h2'}>
       <p class="final__text reveal">${esc(o.text || t.home.finalText)}</p>
       <a class="final__tel reveal" href="tel:${site.phone.tel}" data-track="phone_click">${site.phone.display}</a>
-      <p class="final__meta reveal">${esc(t.lang === 'ru' ? site.hours.ru : site.hours.uz)}<br>${esc(addressLine(t))}</p>
-      <a class="final__ig reveal" href="${site.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <p class="final__meta reveal">${esc(t.lang === 'ru' ? site.hours.ru : site.hours.uz)}<br>${esc(addressLine(t))}<br>${esc(site.developer.name)}</p>
+      <p class="final__social reveal">
+        <a href="${site.telegram}" target="_blank" rel="noopener noreferrer" data-track="telegram_click">Telegram</a>
+        <a href="${site.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </p>
     </div>
 
     ${leadForm(t, o.formId)}
@@ -188,15 +218,20 @@ function mapBlock(t, mod) {
   const q = `${site.geo.lon}%2C${site.geo.lat}`;
   const src = `https://yandex.uz/map-widget/v1/?ll=${q}&z=16&pt=${q},pm2rdm&lang=${t.lang}_UZ`;
   return `<div class="map${mod ? ' ' + mod : ''}" data-map data-src="${src}">
-      <button class="map__btn" type="button" data-track="map_click">${esc(t.ui.openMap)}</button>
-      <p class="map__hint">${esc(addressLine(t))}</p>
+      <div class="map__card">
+        <p class="map__addr">${esc(addressLine(t))}</p>
+        <p class="map__hours">${esc(t.lang === 'ru' ? site.hours.ru : site.hours.uz)}</p>
+        <button class="map__btn" type="button" data-track="map_click">${esc(t.ui.openMap)}</button>
+        <p class="map__hint">${esc(t.ui.mapHint)}</p>
+      </div>
     </div>`;
 }
 
 /* ── список расстояний ── */
 const distanceList = (t) => `<ul class="place__list">
 ${t.distances.map(([a, b]) => `      <li class="reveal"><span>${esc(a)}</span><b>${esc(b)}</b></li>`).join('\n')}
-      </ul>`;
+      </ul>
+      <p class="place__note reveal">${esc(t.distancesNote)}</p>`;
 
 /* ══════════════ каркас страницы ══════════════ */
 function shell(t, page) {
@@ -245,6 +280,16 @@ ${page.body}
 
 </main>
 
+<!-- телефон под рукой на всей длине страницы: на узких экранах панель
+     показывается, как только первый экран уходит вверх (класс на body ставит скрипт) -->
+<div class="callbar" aria-label="${esc(t.ui.call)}">
+  <a class="callbar__tel" href="tel:${site.phone.tel}" data-track="phone_click">
+    <span>${esc(t.ui.call)}</span><b>${site.phone.display}</b>
+  </a>
+  <a class="callbar__form" href="${site.telegram}" target="_blank" rel="noopener noreferrer"
+     data-track="telegram_click">Telegram</a>
+</div>
+
 <div class="viewer" id="viewer" hidden>
   <button class="viewer__close" type="button" data-viewer-close aria-label="${esc(t.ui.closeViewer)}"></button>
   <p class="viewer__label" data-viewer-label></p>
@@ -254,6 +299,10 @@ ${page.body}
   <p class="viewer__hint">${esc(t.ui.viewerHint)}</p>
 </div>
 
+<script src="/assets/js/lenis.min.js?v=${page.v}" defer></script>
+<script src="/assets/js/gsap.min.js?v=${page.v}" defer></script>
+<script src="/assets/js/ScrollTrigger.min.js?v=${page.v}" defer></script>
+<script src="/assets/js/motion.js?v=${page.v}" defer></script>
 <script src="/script.js?v=${page.v}" defer></script>
 </body>
 </html>
@@ -310,7 +359,7 @@ function home(t, page) {
 
   <div class="hero__inner">
     <div class="hero__top">
-      <p class="eyebrow eyebrow--light">${h.heroEyebrow}</p>
+      <p class="eyebrow eyebrow--light" lang="uz">${h.heroEyebrow}</p>
       <img class="hero__logo" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="360" height="120">
       <h1 class="hero__slogan script" data-write="heroSlogan">${h.heroSlogan}</h1>
     </div>
@@ -326,14 +375,14 @@ function home(t, page) {
     </div>
   </div>
 
-  <a class="scroll-hint" href="#homes" aria-label="${esc(t.ui.scrollNext)}"><img class="scroll-hint__mark" src="/assets/img/brand-frame.png" alt="" width="640" height="616"></a>
+  <a class="scroll-hint" href="#homes" aria-label="${esc(t.ui.scrollNext)}"><span aria-hidden="true"></span></a>
 </section>
 
 <!-- ══════════════ 2 · КВАРТИРЫ ══════════════ -->
 <section class="homes" id="homes">
   <div class="homes__inner">
     <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
-    <h2 class="display script" data-write="homesTitle">${h.homesTitle}</h2>
+    <h2 class="display" data-lines>${h.homesTitle}</h2>
     <ul class="homes__tiles">
 ${tiles}
     </ul>
@@ -369,11 +418,32 @@ ${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}
   </div>
   <div class="split__panel">
     <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
-    <h2 class="display script" data-write="yardTitle">${h.yardTitle}</h2>
+    <h2 class="display" data-lines>${h.yardTitle}</h2>
     <p class="split__text reveal">${esc(h.yardText)}</p>
     <ul class="stats reveal">
 ${stats}
     </ul>
+  </div>
+</section>
+
+<!-- ══════════════ ГАЛЕРЕЯ ══════════════
+     Разворот без номера: это дополнительный материал, а не шаг рассказа. -->
+<section class="gallery" id="gallery">
+  <div class="gallery__head">
+    <p class="eyebrow reveal">${esc(h.galleryEyebrow)}</p>
+    <h2 class="display reveal" data-lines>${h.galleryTitle}</h2>
+  </div>
+  <div class="gallery__grid">
+${h.gallery.map((g) => {
+    const max = g.w[g.w.length - 1];
+    const set = g.w.map((w) => `/assets/img/${g.img}-${w}.webp ${w}w`).join(', ');
+    return `    <figure class="shot${g.big ? ' shot--big' : ''}${g.wide ? ' shot--wide' : ''} reveal">
+      <img src="/assets/img/${g.img}-${g.w[0]}.webp" srcset="${set}"
+           sizes="(min-width:900px) ${g.big || g.wide ? '58vw' : '29vw'}, 100vw" alt="${esc(g.cap)}"
+           width="${max}" height="${g.h || Math.round(max / 1.6)}" loading="lazy" decoding="async">
+      <figcaption>${esc(g.cap)}</figcaption>
+    </figure>`;
+  }).join('\n')}
   </div>
 </section>
 
@@ -382,7 +452,7 @@ ${stats}
   <div class="place__inner">
     <div>
       <p class="eyebrow reveal"><span class="num">${h.placeNum}</span> ${esc(h.placeEyebrow)}</p>
-      <h2 class="display script" data-write="placeTitle">${h.placeTitle}</h2>
+      <h2 class="display" data-lines>${h.placeTitle}</h2>
       ${distanceList(t)}
       <p class="place__addr reveal">${esc(addressLine(t))}</p>
       <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
@@ -403,14 +473,14 @@ function apartments(t, page) {
   const cards = p.items.map((x) => `      <article class="plan reveal" id="plan-${x.rooms}">
         <button class="plan__view" type="button"
                 data-zoom="/assets/img/plans/${x.id}-1400.webp"
-                data-zoom-label="${esc(p.roomWord[x.rooms])} · ${x.area} м²"
-                aria-label="${esc(p.zoom)}: ${esc(p.roomWord[x.rooms])} ${x.area} м²">
-          <img src="/assets/img/plans/${x.id}-800.webp" alt="${esc(p.roomWord[x.rooms])} ${x.area} м² — планировка"
+                data-zoom-label="${esc(p.roomWord[x.rooms])} · ${x.area} ${t.ui.sqm}"
+                aria-label="${esc(p.zoom)}: ${esc(p.roomWord[x.rooms])} ${x.area} ${t.ui.sqm}">
+          <img src="/assets/img/plans/${x.id}-800.webp" alt="${esc(p.roomWord[x.rooms])} ${x.area} ${t.ui.sqm} — ${esc(t.ui.planWord)}"
                width="800" height="1000" loading="lazy" decoding="async">
           <span class="plan__zoom">${esc(p.zoom)}</span>
         </button>
         <div class="plan__meta">
-          <p class="plan__area">${x.area} <span>м²</span></p>
+          <p class="plan__area">${x.area} <span>${t.ui.sqm}</span></p>
           <p class="plan__rooms">${esc(p.roomWord[x.rooms])}${x.euro ? ` · ${esc(p.euro)}` : ''}</p>
           <a class="link-call" href="#call">${esc(t.cta.price)}</a>
         </div>
@@ -435,6 +505,36 @@ ${cards}
 
   <div class="page__inner">
     <p class="plans__note">${esc(p.note)}</p>
+
+    <h2 class="page__h2">${esc(a.termsTitle)}</h2>
+    <p class="page__text">${esc(a.termsLead)}</p>
+    <ul class="terms">
+      <li class="terms__item reveal">
+        <b>${esc(a.termsNowTitle)}</b>
+        <span>${esc(t.lang === 'ru' ? site.build.stage : site.build.stageUz)}</span>
+        <em>${esc(t.lang === 'ru' ? site.build.asOf : site.build.asOfUz)}</em>
+      </li>
+${site.stages.map((st) => `      <li class="terms__item reveal">
+        <b>${esc(a.termsStage.replace('{n}', st.no))}</b>
+        <span>${romans[st.quarter]} ${esc(a.termsQuarter)} ${st.year}</span>
+        <em>${st.blocks} ${esc(a.termsBlocks)}</em>
+      </li>`).join('\n')}
+      <li class="terms__item terms__item--gold reveal">
+        <b>${esc(a.termsInstalmentTitle)}</b>
+        <span>${esc(a.termsInstalmentText)}</span>
+        <em>${instalmentMonths()} ${esc(a.termsMonths)}</em>
+      </li>
+      <li class="terms__item reveal">
+        <b>${esc(a.termsDeveloperTitle)}</b>
+        <span>${esc(site.developer.name)}</span>
+      </li>
+      <li class="terms__item reveal">
+        <b>${esc(a.termsBankTitle)}</b>
+        <span>${esc(site.bank.name)}</span>
+      </li>
+    </ul>
+    <p class="plans__note">${esc(a.termsNote)}</p>
+
     <h2 class="page__h2">${esc(a.finishTitle)}</h2>
     <p class="page__text">${esc(a.finishText)}</p>
   </div>
@@ -498,7 +598,11 @@ function contacts(t, page) {
       <div><dt>${esc(c.phoneLabel)}</dt><dd><a class="nap__tel" href="tel:${site.phone.tel}" data-track="phone_click">${site.phone.display}</a></dd></div>
       <div><dt>${esc(c.hoursLabel)}</dt><dd>${esc(t.lang === 'ru' ? site.hours.ru : site.hours.uz)}</dd></div>
       <div><dt>${esc(c.addressLabel)}</dt><dd>${esc(addressLine(t))}</dd></div>
-      <div><dt>${esc(c.socialLabel)}</dt><dd><a href="${site.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a></dd></div>
+      <div><dt>${esc(c.socialLabel)}</dt><dd>
+        <a href="${site.telegram}" target="_blank" rel="noopener noreferrer" data-track="telegram_click">Telegram</a>
+        &nbsp;·&nbsp;
+        <a href="${site.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </dd></div>
     </dl>
 
     ${mapBlock(t)}
@@ -510,22 +614,36 @@ ${leadSection(t, { formId: 'contacts', h: 'h2', title: esc(c.visitTitle), text: 
 }
 
 /* ══════════════ 404 ══════════════ */
-function notFound(t, page) {
+function notFound(t, page, alt) {
   const n = t.notFound;
   const p = t.lang === 'ru' ? '' : '/uz';
+  const a = alt || null;                       /* словарь второго языка, если он передан */
+  const uz = (key, value) => (a ? ` data-alt="${esc(value)}"` : '');
   page.body = `<section class="page page--404">
   <div class="page__inner">
     <img class="page__mark" src="/assets/img/brand-frame.png" alt="" width="640" height="616">
-    <h1 class="display" data-lines>${esc(n.h1)}</h1>
-    <p class="page__lead">${esc(n.text)}</p>
+    <h1 class="display" data-lines${a ? ` data-alt="${esc(a.notFound.h1)}"` : ''}>${esc(n.h1)}</h1>
+    <p class="page__lead"${a ? ` data-alt="${esc(a.notFound.text)}"` : ''}>${esc(n.text)}</p>
     <ul class="page__links">
-      <li><a href="${p || '/'}${p ? '/' : ''}">${esc(t.ui.home)}</a></li>
-      <li><a href="${p}/apartments/">${esc(t.nav.apartments)}</a></li>
-      <li><a href="${p}/contacts/">${esc(t.nav.contacts)}</a></li>
+      <li><a href="${p || '/'}${p ? '/' : ''}"${a ? ` data-alt="${esc(a.ui.home)}" data-alt-href="/uz/"` : ''}>${esc(t.ui.home)}</a></li>
+      <li><a href="${p}/apartments/"${a ? ` data-alt="${esc(a.nav.apartments)}" data-alt-href="/uz/apartments/"` : ''}>${esc(t.nav.apartments)}</a></li>
+      <li><a href="${p}/contacts/"${a ? ` data-alt="${esc(a.nav.contacts)}" data-alt-href="/uz/contacts/"` : ''}>${esc(t.nav.contacts)}</a></li>
       <li><a href="tel:${site.phone.tel}" data-track="phone_click">${site.phone.display}</a></li>
     </ul>
   </div>
-</section>`;
+</section>${a ? `
+<script>
+/* Хостинг отдаёт эту страницу на любой ненайденный адрес. Для адресов /uz/…
+   переключаем тексты на узбекский, не меняя код ответа. */
+if (location.pathname.indexOf('/uz/') === 0) {
+  document.documentElement.lang = 'uz';
+  document.title = ${JSON.stringify(a.meta.notFound.title)};
+  document.querySelectorAll('[data-alt]').forEach(function (el) {
+    el.textContent = el.getAttribute('data-alt');
+    if (el.hasAttribute('data-alt-href')) { el.setAttribute('href', el.getAttribute('data-alt-href')); }
+  });
+}
+</script>` : ''}`;
   return page;
 }
 

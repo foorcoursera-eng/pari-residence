@@ -5,3 +5,6 @@
 dist/
 node_modules
 node_modules/
+
+# служебное
+tools/__pycache__/
