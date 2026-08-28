@@ -4,8 +4,9 @@
     {
       "name": "pari-dist",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "dist"],
-      "port": 5173
+      "runtimeArgs": ["tools/serve.py"],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }
