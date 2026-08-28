@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const pages = ['', 'apartments', 'location', 'contacts', 'uz', 'uz/apartments', 'uz/location', 'uz/contacts'];
+const pages = ['', 'project', 'apartments', 'location', 'contacts', 'uz', 'uz/project', 'uz/apartments', 'uz/location', 'uz/contacts'];
 const out = path.join('dist', '_shot');
 fs.mkdirSync(out, { recursive: true });
 

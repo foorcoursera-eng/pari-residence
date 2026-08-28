@@ -5,7 +5,34 @@
 
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
 const { site } = require('./content');
+
+/* ── размеры картинки прямо из файла ──
+   Планировки разной высоты, и проставлять width/height вручную — верный способ
+   рано или поздно соврать: браузер зарезервирует не ту площадь, страница
+   дёрнется при загрузке. Читаем заголовок WebP: RIFF → VP8X / VP8L / VP8. */
+const sizeCache = new Map();
+function imgSize(rel) {
+  if (sizeCache.has(rel)) { return sizeCache.get(rel); }
+  let out = null;
+  try {
+    const b = fs.readFileSync(path.join(__dirname, '..', rel));
+    const tag = b.toString('ascii', 12, 16);
+    if (tag === 'VP8X') {
+      out = { w: (b.readUIntLE(24, 3) & 0xffffff) + 1, h: (b.readUIntLE(27, 3) & 0xffffff) + 1 };
+    } else if (tag === 'VP8L') {
+      const n = b.readUInt32LE(21);
+      out = { w: (n & 0x3fff) + 1, h: ((n >> 14) & 0x3fff) + 1 };
+    } else if (tag === 'VP8 ') {
+      out = { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+    }
+  } catch (e) { out = null; }
+  sizeCache.set(rel, out);
+  return out;
+}
 
 const esc = (s) => String(s).replace(/&(?!#?\w+;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const url = (path) => site.origin.replace(/\/$/, '') + path;
@@ -57,11 +84,11 @@ function langSwitch(t, path, extraClass) {
     </nav>`;
 }
 
-/* ── пункты меню: на главной концепция ведёт к якорю ── */
+/* ── пункты меню ── */
 function navItems(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   return [
-    [`${p || '/'}${p ? '/' : ''}#yard`, t.nav.yard],
+    [`${p}/project/`, t.nav.project],
     [`${p}/apartments/`, t.nav.apartments],
     [`${p}/location/`, t.nav.location],
     [`${p}/contacts/`, t.nav.contacts],
@@ -227,6 +254,71 @@ function mapBlock(t, mod) {
     </div>`;
 }
 
+/* ── карточка планировки ──
+   В карточке — только чертёж, крупно и целиком. По нажатию открывается страница
+   буклета: там и размеры, и роза инсоляции, и расположение квартиры на этаже
+   и в комплексе. Раньше в карточку попадал обрезанный кусок чертежа — заказчик
+   справедливо это заметил. */
+function planCard(t, x) {
+  const p = t.plans;
+  const size = imgSize(`assets/img/plans/${x.id}-800.webp`) || { w: 900, h: 1100 };
+  const rooms = p.roomWord[x.rooms];
+  const blocks = `${p.blockWord[x.blocks.length > 1 ? 2 : 1]} ${x.blocks.join(', ')}`;
+  const label = `${rooms} · ${x.area} ${t.ui.sqm} · ${blocks}`;
+  return `      <article class="plan reveal" data-rooms="${x.rooms}">
+        <button class="plan__view" type="button"
+                data-zoom="/assets/img/plans/${x.id}-1400.webp"
+                data-zoom-label="${esc(label)}"
+                aria-label="${esc(p.zoom)}: ${esc(label)}">
+          <img src="/assets/img/plans/${x.id}-800.webp"
+               alt="${esc(rooms)} ${x.area} ${t.ui.sqm} — ${esc(t.ui.planWord)}"
+               width="${size.w}" height="${size.h}" loading="lazy" decoding="async">
+          <span class="plan__zoom">${esc(p.zoom)}</span>
+        </button>
+        <div class="plan__meta">
+          <p class="plan__area">${x.area} <span>${t.ui.sqm}</span></p>
+          <p class="plan__rooms">${esc(rooms)}</p>
+          <p class="plan__blocks">${esc(blocks)}</p>
+        </div>
+      </article>`;
+}
+
+/* ── ряд кадров: один крупный, остальные обычные ── */
+function shotGrid(items, sizes) {
+  return items.map((g) => `    <figure class="shot${g.big ? ' shot--big' : ''}${g.wide ? ' shot--wide' : ''} reveal">
+      <img src="/assets/img/${g.img}-1280.webp"
+           srcset="/assets/img/${g.img}-1280.webp 1280w, /assets/img/${g.img}-1920.webp 1920w, /assets/img/${g.img}-2560.webp 2560w"
+           sizes="${sizes}" alt="${esc(g.cap)}"
+           width="2560" height="1429" loading="lazy" decoding="async">
+      <figcaption>${esc(g.cap)}</figcaption>
+    </figure>`).join('\n');
+}
+
+/* ── мастер-план района с легендой ──
+   Легенда набирается разметкой, а не берётся с картинки: так она читается на
+   узбекском и не расплывается при увеличении. */
+function masterplan(t) {
+  const l = t.location;
+  return `<figure class="master">
+      <button class="master__view" type="button"
+              data-zoom="/assets/img/masterplan-2560.webp"
+              data-zoom-label="${esc(l.masterTitle)}"
+              aria-label="${esc(t.ui.zoomOpen)}: ${esc(l.masterTitle)}">
+        <img src="/assets/img/masterplan-1600.webp"
+             srcset="/assets/img/masterplan-1000.webp 1000w, /assets/img/masterplan-1600.webp 1600w, /assets/img/masterplan-2560.webp 2560w"
+             sizes="(min-width:900px) 70vw, 100vw" alt="${esc(l.masterAlt)}"
+             width="2560" height="1415" loading="lazy" decoding="async">
+        <span class="master__zoom">${esc(t.ui.zoomOpen)}</span>
+      </button>
+      <figcaption class="master__legend">
+        <b>${esc(t.ui.legend)}</b>
+        <ul>
+${l.masterLegend.map((x) => `          <li>${esc(x)}</li>`).join('\n')}
+        </ul>
+      </figcaption>
+    </figure>`;
+}
+
 /* ── список расстояний ── */
 const distanceList = (t) => `<ul class="place__list">
 ${t.distances.map(([a, b]) => `      <li class="reveal"><span>${esc(a)}</span><b>${esc(b)}</b></li>`).join('\n')}
@@ -326,8 +418,14 @@ function home(t, page) {
 
   const stats = h.stats.map((s) => `      <li><b data-count="${s.value}"${s.suffix ? ` data-suffix="${s.suffix}"` : ''}>${s.value}${s.suffix || ''}</b><span>${esc(s.label)}</span></li>`).join('\n');
   const tiles = h.homesTiles.map((x) => `      <li class="reveal"><a href="${x.href}"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></a></li>`).join('\n');
-  const apartmentsHref = t.lang === 'ru' ? '/apartments/' : '/uz/apartments/';
-  const locationHref = t.lang === 'ru' ? '/location/' : '/uz/location/';
+  const preview = h.homesPreview
+    .map((id) => t.plans.items.find((x) => x.id === id))
+    .filter(Boolean)
+    .map((x) => planCard(t, x)).join('\n');
+  const p = t.lang === 'ru' ? '' : '/uz';
+  const apartmentsHref = `${p}/apartments/`;
+  const locationHref = `${p}/location/`;
+  const projectHref = `${p}/project/`;
 
   page.body = `<!-- ══════════════ 1 · ТИТУЛ ══════════════ -->
 <section class="hero" aria-label="${site.brand}">
@@ -378,7 +476,8 @@ function home(t, page) {
   <a class="scroll-hint" href="#homes" aria-label="${esc(t.ui.scrollNext)}"><span aria-hidden="true"></span></a>
 </section>
 
-<!-- ══════════════ 2 · КВАРТИРЫ ══════════════ -->
+<!-- ══════════════ 2 · КВАРТИРЫ ══════════════
+     Планировки стоят прямо в ленте главной: в меню за ними заходят не все. -->
 <section class="homes" id="homes">
   <div class="homes__inner">
     <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
@@ -386,8 +485,29 @@ function home(t, page) {
     <ul class="homes__tiles">
 ${tiles}
     </ul>
+  </div>
+
+  <div class="plans">
+${preview}
+  </div>
+
+  <div class="homes__inner">
     <p class="homes__note reveal">${esc(h.homesNote)}</p>
     <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
+  </div>
+</section>
+
+<!-- ══════════════ АРХИТЕКТУРНЫЕ РЕШЕНИЯ ══════════════
+     Фасады и входные группы вблизи — заказчик просил показать их крупно. -->
+<section class="arch" id="architecture">
+  <div class="arch__head">
+    <p class="eyebrow reveal"><span class="num">${h.archNum}</span> ${esc(h.archEyebrow)}</p>
+    <h2 class="display" data-lines>${h.archTitle}</h2>
+    <p class="arch__text reveal">${esc(h.archText)}</p>
+    <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
+  </div>
+  <div class="gallery__grid">
+${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
   </div>
 </section>
 
@@ -461,6 +581,19 @@ ${h.gallery.map((g) => {
   </div>
 </section>
 
+<!-- ══════════════ МАСТЕР-ПЛАН РАЙОНА ══════════════
+     Каким «Залиния» станет через несколько лет: до этой страницы доходили не все,
+     поэтому план стоит и в общей ленте. -->
+<section class="district" id="district">
+  <div class="district__inner">
+    <p class="eyebrow reveal">${esc(h.masterEyebrow)}</p>
+    <h2 class="display" data-lines>${h.masterTitle}</h2>
+    <p class="district__text reveal">${esc(h.masterText)}</p>
+    ${masterplan(t)}
+    <a class="link-call reveal" href="${locationHref}">${esc(h.masterLink)}</a>
+  </div>
+</section>
+
 ${leadSection(t, {})}`;
   return page;
 }
@@ -470,21 +603,14 @@ function apartments(t, page) {
   const a = t.apartments;
   const p = t.plans;
 
-  const cards = p.items.map((x) => `      <article class="plan reveal" id="plan-${x.rooms}">
-        <button class="plan__view" type="button"
-                data-zoom="/assets/img/plans/${x.id}-1400.webp"
-                data-zoom-label="${esc(p.roomWord[x.rooms])} · ${x.area} ${t.ui.sqm}"
-                aria-label="${esc(p.zoom)}: ${esc(p.roomWord[x.rooms])} ${x.area} ${t.ui.sqm}">
-          <img src="/assets/img/plans/${x.id}-800.webp" alt="${esc(p.roomWord[x.rooms])} ${x.area} ${t.ui.sqm} — ${esc(t.ui.planWord)}"
-               width="800" height="1000" loading="lazy" decoding="async">
-          <span class="plan__zoom">${esc(p.zoom)}</span>
-        </button>
-        <div class="plan__meta">
-          <p class="plan__area">${x.area} <span>${t.ui.sqm}</span></p>
-          <p class="plan__rooms">${esc(p.roomWord[x.rooms])}${x.euro ? ` · ${esc(p.euro)}` : ''}</p>
-          <a class="link-call" href="#call">${esc(t.cta.price)}</a>
-        </div>
-      </article>`).join('\n');
+  const cards = p.items.map((x) => planCard(t, x)).join('\n');
+
+  /* Фильтр по комнатности: без него 33 планировки читаются как свалка.
+     Работает и без JavaScript — тогда просто видны все планировки. */
+  const roomsOn = [1, 2, 3, 4].filter((n) => p.items.some((x) => x.rooms === n));
+  const chips = [['', p.filterAll]].concat(roomsOn.map((n) => [String(n), p.filterRooms[n]]))
+    .map(([val, label], i) => `      <button class="pick${i === 0 ? ' is-on' : ''}" type="button"
+              data-filter="${val}"${val ? ` id="rooms-${val}"` : ''} aria-pressed="${i === 0}">${esc(label)}</button>`).join('\n');
 
   page.body = `<section class="page">
   <div class="page__inner">
@@ -495,11 +621,14 @@ function apartments(t, page) {
   </div>
 
   <div class="page__inner">
-    <h2 class="page__h2">${esc(p.title)}</h2>
+    <h2 class="page__h2" id="plans">${esc(p.title)}</h2>
     <p class="page__text">${esc(p.lead)}</p>
+    <div class="picks" role="group" aria-label="${esc(p.filterLabel)}" data-plan-filter>
+${chips}
+    </div>
   </div>
 
-  <div class="plans">
+  <div class="plans" data-plan-grid>
 ${cards}
   </div>
 
@@ -544,6 +673,103 @@ ${leadSection(t, { formId: 'apartments', title: t.cta.primary, text: t.contacts.
   return page;
 }
 
+/* ══════════════ о проекте ══════════════
+   Разделы и тексты повторяют буклет застройщика: о проекте, архитектурные
+   решения, входные группы, благоустройство, паркинг. */
+function project(t, page) {
+  const j = t.project;
+  const p = t.lang === 'ru' ? '' : '/uz';
+  const marks = (items) => `<ul class="marks">
+${items.map((x) => `      <li class="reveal">${esc(x)}</li>`).join('\n')}
+    </ul>`;
+
+  page.body = `<section class="page">
+  <div class="page__inner">
+    ${breadcrumbs(t, [[page.path, t.nav.project]])}
+    <h1 class="display" data-lines>${esc(j.h1)}</h1>
+    <p class="page__lead">${esc(j.lead)}</p>
+    <p class="page__text">${esc(j.lead2)}</p>
+    <ul class="figures">
+${j.facts.map((f) => `      <li class="reveal"><b>${esc(f.value)}</b><span>${esc(f.label)}</span></li>`).join('\n')}
+    </ul>
+  </div>
+
+  <figure class="wide-shot reveal">
+    <img src="/assets/img/complex-aerial-1280.webp"
+         srcset="/assets/img/complex-aerial-1280.webp 1280w, /assets/img/complex-aerial-1920.webp 1920w, /assets/img/complex-aerial-2560.webp 2560w"
+         sizes="100vw" alt="${esc(j.aerialAlt)}"
+         width="2560" height="1244" loading="lazy" decoding="async">
+  </figure>
+
+  <div class="page__inner">
+    <h2 class="page__h2">${esc(j.aerialTitle)}</h2>
+    <p class="page__text">${esc(j.aerialText)}</p>
+    ${marks(j.aerialList)}
+  </div>
+</section>
+
+<!-- ══════════════ АРХИТЕКТУРНЫЕ РЕШЕНИЯ ══════════════ -->
+<section class="page" id="architecture">
+  <div class="page__inner">
+    <h2 class="page__h2"><i class="num">${j.archNum}</i>${esc(j.archTitle)}</h2>
+    <p class="page__text">${esc(j.archText)}</p>
+    <p class="page__text">${esc(j.archText2)}</p>
+    ${marks(j.archList)}
+  </div>
+  <div class="gallery__grid">
+${shotGrid(j.archGallery, '(min-width:900px) 58vw, 100vw')}
+  </div>
+  <div class="page__inner">
+    <a class="link-call reveal" href="${p}/apartments/">${esc(j.plansLink)}</a>
+  </div>
+</section>
+
+<!-- ══════════════ ВХОДНЫЕ ГРУППЫ ══════════════ -->
+<section class="split split--flip" id="entry">
+  <div class="split__media figure-mask">
+    <img src="/assets/img/arch-entrance-1280.webp"
+         srcset="/assets/img/arch-entrance-1280.webp 1280w, /assets/img/arch-entrance-1920.webp 1920w"
+         sizes="(min-width:900px) 52vw, 100vw" alt="${esc(j.entryAlt)}"
+         width="1920" height="1072" loading="lazy" decoding="async">
+  </div>
+  <div class="split__panel">
+    <p class="eyebrow reveal"><span class="num">${j.entryNum}</span></p>
+    <h2 class="display" data-lines>${esc(j.entryTitle)}</h2>
+    <p class="split__text reveal">${esc(j.entryText)}</p>
+  </div>
+</section>
+
+<!-- ══════════════ БЛАГОУСТРОЙСТВО ══════════════ -->
+<section class="page" id="landscape">
+  <div class="page__inner">
+    <h2 class="page__h2"><i class="num">${j.yardNum}</i>${esc(j.yardTitle)}</h2>
+    <p class="page__text">${esc(j.yardText)}</p>
+    <p class="page__text">${esc(j.yardText2)}</p>
+    ${marks(j.yardList)}
+  </div>
+  <div class="gallery__grid">
+${shotGrid(j.yardGallery, '(min-width:900px) 58vw, 100vw')}
+  </div>
+</section>
+
+<!-- ══════════════ ПАРКИНГ И РАЙОН ══════════════ -->
+<section class="page" id="parking">
+  <div class="page__inner">
+    <h2 class="page__h2"><i class="num">${j.parkingNum}</i>${esc(j.parkingTitle)}</h2>
+    <p class="page__text">${esc(j.parkingText)}</p>
+    ${marks(j.parkingList)}
+
+    <h2 class="page__h2">${esc(j.districtTitle)}</h2>
+    <p class="page__text">${esc(j.districtText)}</p>
+    ${masterplan(t)}
+    <a class="link-call reveal" href="${p}/location/">${esc(j.districtLink)}</a>
+  </div>
+</section>
+
+${leadSection(t, { formId: 'project', title: t.cta.primary, text: t.contacts.visitText, eyebrow: t.nav.contacts })}`;
+  return page;
+}
+
 /* ══════════════ локация ══════════════ */
 function location(t, page) {
   const l = t.location;
@@ -568,16 +794,7 @@ function location(t, page) {
 
     <h2 class="page__h2">${esc(l.masterTitle)}</h2>
     <p class="page__text">${esc(l.masterText)}</p>
-    <button class="master reveal" type="button"
-            data-zoom="/assets/img/masterplan-2560.webp"
-            data-zoom-label="${esc(l.masterTitle)}"
-            aria-label="${esc(t.ui.zoomOpen)}: ${esc(l.masterTitle)}">
-      <img src="/assets/img/masterplan-1600.webp"
-           srcset="/assets/img/masterplan-1000.webp 1000w, /assets/img/masterplan-1600.webp 1600w"
-           sizes="(min-width:900px) 70vw, 100vw" alt="${esc(l.masterAlt)}"
-           width="1600" height="893" loading="lazy" decoding="async">
-      <span class="master__zoom">${esc(t.ui.zoomOpen)}</span>
-    </button>
+    ${masterplan(t)}
   </div>
 </section>
 
@@ -647,4 +864,4 @@ if (location.pathname.indexOf('/uz/') === 0) {
   return page;
 }
 
-module.exports = { shell, home, apartments, location, contacts, notFound, swap, url, esc };
+module.exports = { shell, home, project, apartments, location, contacts, notFound, swap, url, esc };

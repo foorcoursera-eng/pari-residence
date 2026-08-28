@@ -116,6 +116,12 @@ function pagesFor(t) {
       sitemap: { priority: '1.0', changefreq: 'weekly' },
     },
     {
+      key: 'project', path: `${p}/project/`, render: T.project,
+      title: t.meta.project.title, description: t.meta.project.description,
+      jsonld: [crumbsLd(t, [{ name: t.nav.project, path: `${p}/project/` }])],
+      sitemap: { priority: '0.9', changefreq: 'monthly' },
+    },
+    {
       key: 'apartments', path: `${p}/apartments/`, render: T.apartments,
       title: t.meta.apartments.title, description: t.meta.apartments.description,
       jsonld: [crumbsLd(t, [{ name: t.nav.apartments, path: `${p}/apartments/` }])],

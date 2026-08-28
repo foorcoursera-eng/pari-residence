@@ -47,7 +47,13 @@ const site = {
   // Заставка при первом заходе (медальон, уезжающий вверх). Выключается одной строкой:
   // splash: false — и разметка со скриптом на страницу не попадут.
   splash: true,
-  facts: { blocks: 13, apartments: 1202, green: 30, yardHa: 1, areaFrom: 26, areaTo: 89 },
+  /* Площади уточнены по финальному буклету (27,21 м² — самая маленькая
+     однокомнатная, 95,13 м² — самая большая трёхкомнатная). До 27.08.2026 на
+     сайте стояло «26–89 м²» — цифры из более раннего рабочего файла. */
+  facts: { blocks: 13, apartments: 1202, green: 30, yardHa: 1, areaFrom: 27, areaTo: 95 },
+
+  // Архитектурное бюро проекта, подтверждено буклетом (раздел 03).
+  architect: { name: 'SAFRONOVA PROJECT', confirmed: true },
 
   /* Подтверждено владельцем 26.08.2026: застройщик, деление на очереди,
      сроки сдачи и условия рассрочки. Срок рассрочки привязан к сдаче первой
@@ -63,9 +69,51 @@ const site = {
 /* Разделы сайта: адреса общие, подписи — в языковых словарях */
 const routes = [
   { key: 'home', ru: '/', uz: '/uz/' },
+  { key: 'project', ru: '/project/', uz: '/uz/project/' },
   { key: 'apartments', ru: '/apartments/', uz: '/uz/apartments/' },
   { key: 'location', ru: '/location/', uz: '/uz/location/' },
   { key: 'contacts', ru: '/contacts/', uz: '/uz/contacts/' },
+];
+
+/* Планировки: список общий для обоих языков — id, площадь и блоки от языка
+   не зависят, переводятся только подписи. */
+const planItems = [
+  { id: 'f1-2721', area: '27,21', rooms: 1, blocks: ['1.1/1'] },
+  { id: 'f1-3684', area: '36,84', rooms: 1, blocks: ['2/2.1', '2.2'] },
+  { id: 'f1-3751', area: '37,51', rooms: 1, blocks: ['1/1.2'] },
+  { id: 'f1-3981', area: '39,81', rooms: 1, blocks: ['3', '3.1'] },
+  { id: 'f1-4534', area: '45,34', rooms: 1, blocks: ['1/1.1'] },
+
+  { id: 'f2-4146', area: '41,46', rooms: 2, blocks: ['2', '2.1', '2/2'] },
+  { id: 'f2-4169', area: '41,69', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-4250', area: '42,50', rooms: 2, blocks: ['1.1/1'] },
+  { id: 'f2-4330', area: '43,30', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-4367', area: '43,67', rooms: 2, blocks: ['1', '1.1'] },
+  { id: 'f2-4389', area: '43,89', rooms: 2, blocks: ['2.2', '2.2/1'] },
+  { id: 'f2-5252', area: '52,52', rooms: 2, blocks: ['1.1/1'] },
+  { id: 'f2-5844', area: '58,44', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-6347', area: '63,47', rooms: 2, blocks: ['1/1.1'] },
+  { id: 'f2-6423', area: '64,23', rooms: 2, blocks: ['1/1.1'] },
+  { id: 'f2-6569', area: '65,69', rooms: 2, blocks: ['1/1.1'] },
+  { id: 'f2-6595', area: '65,95', rooms: 2, blocks: ['1/1.1'] },
+  { id: 'f2-6708', area: '67,08', rooms: 2, blocks: ['1', '1.1', '2', '2.1', '2.2', '3', '3.1'] },
+  { id: 'f2-6769', area: '67,69', rooms: 2, blocks: ['1', '2.1'] },
+  { id: 'f2-6863', area: '68,63', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-6995', area: '69,95', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-7015', area: '70,15', rooms: 2, blocks: ['2.1', '2.2'] },
+  { id: 'f2-7052', area: '70,52', rooms: 2, blocks: ['2/2.1', '2.2'] },
+  { id: 'f2-7285', area: '72,85', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-7327', area: '73,27', rooms: 2, blocks: ['3', '3.1'] },
+  { id: 'f2-7338', area: '73,38', rooms: 2, blocks: ['1/1.1'] },
+  { id: 'f2-7373', area: '73,73', rooms: 2, blocks: ['2/2.1', '2.2'] },
+  { id: 'f2-7388', area: '73,88', rooms: 2, blocks: ['1/1.1'] },
+  { id: 'f2-7403', area: '74,03', rooms: 2, blocks: ['2/2.1', '2.2'] },
+
+  { id: 'f3-7471', area: '74,71', rooms: 3, blocks: ['1/1.1'] },
+  { id: 'f3-8531', area: '85,31', rooms: 3, blocks: ['3', '3.1'] },
+  { id: 'f3-9513', area: '95,13', rooms: 3, blocks: ['4.4/1'] },
+
+  { id: 'f4-8911', area: '89,11', rooms: 4, blocks: ['2/2.1', '2.2'] },
 ];
 
 const ru = {
@@ -95,10 +143,11 @@ const ru = {
     mapHint: 'Карта загрузится по нажатию — так страница открывается быстрее',
     sqm: 'м²',
     planWord: 'планировка',
+    legend: 'Условные обозначения',
   },
 
   nav: {
-    yard: 'Двор-парк',
+    project: 'О проекте',
     apartments: 'Квартиры',
     location: 'Локация',
     contacts: 'Контакты',
@@ -138,16 +187,22 @@ const ru = {
   /* ── метаданные страниц: уникальные, без перечисления ключевых слов ── */
   meta: {
     home: {
-      title: 'PARI Residence — квартиры бизнес-класса в Самарканде',
-      description: 'PARI Residence — жилой комплекс бизнес-класса в Самарканде на улице Гуругли: '
-        + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 26 до 89 м². '
+      title: 'PARI Residence — квартиры премиум-класса в Самарканде',
+      description: 'PARI Residence — жилой квартал премиум-класса в Самарканде на улице Гуругли: '
+        + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 27 до 95 м². '
         + 'Узнайте актуальные условия в отделе продаж.',
+    },
+    project: {
+      title: 'О проекте PARI Residence — архитектура и благоустройство',
+      description: 'Жилой квартал PARI Residence в Самарканде: архитектура SAFRONOVA PROJECT, '
+        + 'фасады из натурального камня, дизайнерские входные группы, двор-парк 1 Га '
+        + 'без машин и подземный паркинг.',
     },
     apartments: {
       title: 'Квартиры в Самарканде — PARI Residence',
-      description: 'Квартиры в жилом комплексе PARI Residence в Самарканде: студии, одно-, двух-, трёх- '
-        + 'и четырёхкомнатные площадью от 26 до 89 м². Наличие и стоимость — '
-        + 'в отделе продаж.',
+      description: 'Планировки квартир в жилом квартале PARI Residence в Самарканде: одно-, двух-, '
+        + 'трёх- и четырёхкомнатные площадью от 27 до 95 м². На каждом плане — расположение '
+        + 'квартиры на этаже и в комплексе.',
     },
     location: {
       title: 'Расположение — PARI Residence в Самарканде',
@@ -205,7 +260,7 @@ const ru = {
       { img: 'cine-parking', w: [1280, 1535], h: 1024, cap: 'Подземный паркинг', wide: true },
     ],
 
-    yardNum: '02',
+    yardNum: '03',
     yardEyebrow: 'Двор-парк',
     yardTitle: 'Один гектар двора,<br>в котором нет машин',
     yardText: 'Закрытый двор-парк площадью 1 га: геопластика, водные объекты, многолетние кустарники, '
@@ -217,22 +272,49 @@ const ru = {
       { value: 30, suffix: '%', label: 'озеленения' },
     ],
 
-    placeNum: '03',
+    placeNum: '04',
     placeEyebrow: 'Локация',
     placeTitle: 'Самарканд<br>в шаге отсюда',
     placeReliefAlt: 'Барельеф: девушка на велосипеде у парижского фасада',
 
     homesNum: '01',
     homesEyebrow: 'Квартиры',
-    homesTitle: 'От компактных студий<br>до семейных четырёхкомнатных',
+    homesTitle: 'От компактных однокомнатных<br>до семейных четырёхкомнатных',
+    /* Планировки вынесены в общую ленту главной: раньше они жили только на
+       отдельной странице, а в меню заходят далеко не все. */
+    homesPreview: ['f1-2721', 'f1-3981', 'f2-4169', 'f2-6708', 'f3-8531', 'f4-8911'],
     homesTiles: [
-      { value: 'от 26 м²', label: 'Студии и однокомнатные', href: '/apartments/#plan-1' },
-      { value: 'для семьи', label: 'Двух- и трёхкомнатные', href: '/apartments/#plan-2' },
-      { value: 'до 89 м²', label: 'Четырёхкомнатные', href: '/apartments/#plan-4' },
+      { value: 'от 27 м²', label: 'Однокомнатные', href: '/apartments/#rooms-1' },
+      { value: 'для семьи', label: 'Двух- и трёхкомнатные', href: '/apartments/#rooms-2' },
+      { value: 'до 95 м²', label: 'Три и четыре комнаты', href: '/apartments/#rooms-4' },
     ],
     homesNote: 'Свободные квартиры и этажи покажем в отделе продаж.',
-    homesLink: 'Смотреть квартиры',
+    homesLink: 'Все планировки',
     homesAlt: 'Входная группа PARI Residence: лобби с латунью и натуральным камнем',
+
+    /* Раздел «Архитектурные решения» на главной: заказчик просил показать
+       фасады и входные группы вблизи — это то, что продаёт проект. */
+    archNum: '02',
+    archEyebrow: 'Архитектурные решения',
+    archTitle: 'Натуральный камень,<br>латунь и лепнина',
+    archText: 'Выразительные фасады с натуральным камнем и декоративными элементами, '
+      + 'дизайнерские входные группы, аркады вдоль первых этажей. '
+      + 'Проект разработан бюро SAFRONOVA PROJECT.',
+    archLink: 'Подробнее о проекте',
+    arch: [
+      { img: 'arch-facade', cap: 'Аркада вдоль первых этажей', big: true },
+      { img: 'arch-entrance', cap: 'Входная группа с лепниной' },
+      { img: 'arch-stone', cap: 'Травертин на парапетах двора' },
+      { img: 'arch-balcony', cap: 'Балкон: стекло и латунь', wide: true },
+    ],
+
+    /* Мастер-план района на главной: заказчик просил показать, каким «Залиния»
+       станет в будущем, а не прятать план на отдельной странице. */
+    masterEyebrow: 'Район «Залиния»',
+    masterTitle: 'Квартал растёт<br>вместе с районом',
+    masterText: 'PARI Residence отмечен золотом у улицы Гуругли. Вокруг — парк, пешеходные бульвары, '
+      + 'новые школы, детский сад, городской университет и торговый центр.',
+    masterLink: 'Смотреть мастер-план',
 
     finalEyebrow: 'Отдел продаж',
     finalTitle: 'Очарование,<br>ставшее домом',
@@ -252,28 +334,30 @@ const ru = {
     ['Международный аэропорт', '15 минут'],
   ],
 
-  /* Планировки: показываем выборку, а не каталог — задача сайта довести до звонка.
-     Данные взяты из рабочих листов застройщика (блоки 1–3). */
+  /* Планировки: по одной на каждую площадь из финального буклета застройщика.
+     Одинаковые площади повторяются в нескольких блоках зеркально — их собираем
+     в одну карточку и перечисляем блоки. Картинки готовит tools/make-plans.py:
+     в карточке — чертёж, в увеличении — страница буклета целиком, вместе с
+     розой инсоляции, расположением на этаже и расположением в комплексе. */
   plans: {
     title: 'Планировки',
-    lead: 'Четыре планировки — от однокомнатной до четырёхкомнатной с кухней-гостиной. '
-      + 'Нажмите на план, чтобы рассмотреть размеры и подписи комнат.',
-    note: 'Это выборка. Полный список планировок, свободные квартиры и стоимость — в отделе продаж.',
+    lead: 'Выберите комнатность и нажмите на план: он откроется целиком — с размерами, '
+      + 'подписями комнат, расположением квартиры на этаже и в комплексе.',
+    note: 'Показаны типовые планировки. Свободные квартиры, этажи и стоимость уточняйте в отделе продаж.',
     zoom: 'Открыть план крупно',
-    euro: 'кухня-гостиная',
+    filterLabel: 'Комнатность',
+    filterAll: 'Все',
+    filterRooms: ['', '1 комната', '2 комнаты', '3 комнаты', '4 комнаты'],
+    countWord: ['планировок', 'планировка', 'планировки'],
+    blockWord: ['', 'Блок', 'Блоки'],
     roomWord: ['', '1-комнатная', '2-комнатная', '3-комнатная', '4-комнатная'],
-    items: [
-      { id: 'b1-04', area: '45,34', rooms: 1, euro: false },
-      { id: 'b1-10', area: '65,95', rooms: 2, euro: true },
-      { id: 'b3-06', area: '85,31', rooms: 3, euro: true },
-      { id: 'b2-05', area: '89,11', rooms: 4, euro: true },
-    ],
+    items: planItems,
   },
 
   /* ── страница квартир ── */
   apartments: {
     h1: 'Квартиры в PARI Residence',
-    lead: '1202 квартиры в 13 блоках — от студии до четырёхкомнатной, от 26 до 89 м². '
+    lead: '1202 квартиры в 13 блоках — от однокомнатной до четырёхкомнатной, от 27 до 95 м². '
       + 'Балконы, кухни-гостиные и закрытый двор-парк без машин.',
     priceLine: 'Квартиры от 10 млн сум за м²',
     termsTitle: 'Сроки и условия',
@@ -295,6 +379,118 @@ const ru = {
       + 'виды из окон и расскажем об условиях покупки.',
   },
 
+  /* ── страница «О проекте» ──
+     Тексты и списки взяты из финального буклета застройщика, разделы 02–06 и 11.
+     Ничего не досочинено: если в буклете цифры нет, её нет и здесь. */
+  project: {
+    h1: 'О проекте PARI Residence',
+    lead: 'ЖК «PARI Residence» — современный жилой квартал премиум-класса в Самарканде, '
+      + 'возводимый в новом районе «Залиния» на улице Гуругли. Территории бывших промышленных '
+      + 'предприятий уже выкуплены крупными и средними девелоперами и активно развиваются.',
+    lead2: 'Здесь появится новый микрорайон с благоустроенной парковой зоной, пешеходными '
+      + 'бульварами, кафе и ресторанами, салонами красоты и спа, цветочными магазинами, '
+      + 'спортивными комплексами и зонами отдыха. Для семей построят детские сады, школы '
+      + 'и поликлинику, а рядом город построит новый университет.',
+
+    facts: [
+      { value: '13', label: 'жилых блоков' },
+      { value: '1202', label: 'квартиры' },
+      { value: '1 Га', label: 'двор-парк без машин' },
+      { value: '27–95', label: 'м² площадь квартир' },
+    ],
+
+    aerialTitle: 'Собственный двор-парк и коммерческая инфраструктура',
+    aerialText: 'В самом жилом комплексе PARI Residence будет собственный закрытый двор-парк '
+      + 'общей площадью 1 Га, а также коммерческая инфраструктура.',
+    aerialAlt: 'PARI Residence с высоты: закрытый двор-парк между жилыми блоками',
+    aerialList: [
+      'Закрытый двор-парк без машин',
+      'Собственная коммерческая инфраструктура',
+      'Пешеходный бульвар',
+      'Кафе и рестораны',
+      'Салоны красоты и спа',
+      'Бутики',
+    ],
+
+    archNum: '01',
+    archTitle: 'Архитектурные решения',
+    archText: 'Архитектурные и дизайнерские решения жилого квартала «PARI Residence» разработаны '
+      + '«SAFRONOVA PROJECT» — международным архитектурным бюро с опытом в создании проектов '
+      + 'бизнес- и премиум-класса. За последние 15 лет специалисты бюро реализовали более '
+      + '50 проектов в крупных городах СНГ.',
+    archText2: 'Выразительные фасады с применением натурального камня, декоративных элементов '
+      + 'и современных материалов, яркие дизайнерские решения оформления входных групп, '
+      + 'продуманное благоустройство дворов и ландшафтный дизайн. Квартиры передаются '
+      + 'в формате white-box: чистовой ремонт делается быстро и без лишних затрат.',
+    archList: [
+      'Выразительные фасады',
+      'Натуральные материалы',
+      'Дизайнерские входные группы',
+      'Продуманное благоустройство и ландшафтный дизайн',
+      'Квартиры в формате white-box',
+      'Широкий выбор планировочных решений',
+    ],
+    archGallery: [
+      { img: 'arch-facade', cap: 'Аркада первых этажей на закате', big: true },
+      { img: 'arch-line', cap: 'Фасады с первой линии' },
+      { img: 'arch-stone', cap: 'Травертин парапетов вблизи' },
+      { img: 'arch-balcony', cap: 'Балкон: стекло, латунь, камень', wide: true },
+    ],
+
+    entryNum: '02',
+    entryTitle: 'Входные группы',
+    entryText: 'Просторные входные группы каждого дома выполнены по индивидуальному '
+      + 'дизайн-проекту. В отделке используются натуральный камень, деревянные и декоративные '
+      + 'панели, латунь. Здесь предусмотрены уютные зоны ожидания с мягкой мебелью и тихой '
+      + 'музыкой, стены украшены панно и картинами. Для колясок, самокатов и велосипедов '
+      + 'отведены отдельные технические помещения.',
+    entryAlt: 'Входная группа PARI Residence: арка, лепнина и латунная фурнитура',
+
+    yardNum: '03',
+    yardTitle: 'Благоустройство',
+    yardText: 'Впервые в Самарканде в PARI Residence будет реализован закрытый двор без машин '
+      + 'с собственным парком общей площадью 1 Га. Мастер-план двора, ландшафтный дизайн, '
+      + 'геопластика, водные объекты и малые архитектурные формы способны удивить самого '
+      + 'искушённого покупателя.',
+    yardText2: 'Здесь высадят многолетние кустарники, плодовые и хвойные деревья, разобьют '
+      + 'клумбы с цветами. Оборудование игровых и детских площадок, зон отдыха выполняется '
+      + 'по индивидуальному дизайн-проекту. На территории парка запроектированы общественные '
+      + 'гостиные и крытые беседки для тихого, спокойного отдыха.',
+    yardList: [
+      'Геопластика',
+      'Ландшафтный дизайн',
+      'Малые архитектурные формы',
+      'Многолетние кустарники',
+      'Плодовые и хвойные деревья',
+      'Детские и игровые площадки',
+      'Оборудование дворов по индивидуальному дизайн-проекту',
+      'Общественные гостиные',
+    ],
+    yardGallery: [
+      { img: 'arch-arch', cap: 'Вид на двор через арку', big: true },
+      { img: 'arch-yard', cap: 'Беседки и клумбы во дворе' },
+      { img: 'arch-pergola', cap: 'Перголы с местами для отдыха' },
+    ],
+
+    parkingNum: '04',
+    parkingTitle: 'Паркинг',
+    parkingText: 'Парковочных мест хватает на всей территории жилого квартала: машину можно '
+      + 'оставить в любое время суток. Для молодой аудитории предусмотрены велопарковки '
+      + 'и места хранения самокатов.',
+    parkingList: [
+      'Подземный паркинг',
+      'Наземный паркинг',
+      'Велопарковка',
+      'Места для хранения самокатов',
+    ],
+
+    districtTitle: 'Район «Залиния»',
+    districtText: 'Квартал строится вместе с районом: рядом появятся парк, пешеходные бульвары, '
+      + 'новые школы, детский сад, городской университет и торговый центр.',
+    districtLink: 'Смотреть мастер-план района',
+    plansLink: 'Смотреть планировки',
+  },
+
   /* ── страница локации ── */
   location: {
     h1: 'Расположение PARI Residence в Самарканде',
@@ -305,6 +501,8 @@ const ru = {
     masterText: 'PARI Residence отмечен золотом у улицы Гуругли. Нажмите на план, чтобы '
       + 'рассмотреть кварталы, парк, школы и водные объекты вблизи.',
     masterAlt: 'Мастер-план района «Залиния» в Самарканде: кварталы, парк и водные объекты',
+    // Легенда набирается на сайте, а не берётся картинкой: так она есть и по-узбекски.
+    masterLegend: ['Новые школы', 'Новый детский сад', 'Городской университет', 'Новый торговый центр'],
     districtText: 'Район застраивается заново на месте бывших заводов. Мастер-план предусматривает парк, '
       + 'пешеходные бульвары, кафе, спортивные объекты, детские сады, школы и поликлинику; '
       + 'рядом строится университет.',
@@ -357,10 +555,11 @@ const uz = {
     mapHint: 'Xarita bosilganda yuklanadi — sahifa shu tufayli tez ochiladi',
     sqm: 'm²',
     planWord: 'tarh',
+    legend: 'Shartli belgilar',
   },
 
   nav: {
-    yard: 'Hovli-bogʻ',
+    project: 'Loyiha haqida',
     apartments: 'Xonadonlar',
     location: 'Joylashuv',
     contacts: 'Aloqa',
@@ -397,15 +596,22 @@ const uz = {
 
   meta: {
     home: {
-      title: 'PARI Residence — Samarqandda biznes-klass xonadonlar',
-      description: 'PARI Residence — Samarqand, Goʻroʻgʻli koʻchasidagi biznes-klass turar-joy majmuasi: '
-        + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 26–89 m² xonadonlar. '
+      title: 'PARI Residence — Samarqandda premium-klass xonadonlar',
+      description: 'PARI Residence — Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass turar-joy majmuasi: '
+        + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 27–95 m² xonadonlar. '
         + 'Shartlarni savdo boʻlimidan aniqlang.',
+    },
+    project: {
+      title: 'PARI Residence loyihasi — arxitektura va obodonlashtirish',
+      description: 'Samarqanddagi PARI Residence turar-joy kvartali: SAFRONOVA PROJECT arxitekturasi, '
+        + 'tabiiy toshli fasadlar, dizayner kirish guruhlari, 1 gektarlik mashinasiz hovli-bogʻ '
+        + 'va yer osti avtoturargohi.',
     },
     apartments: {
       title: 'Samarqandda xonadonlar — PARI Residence',
-      description: 'PARI Residence turar-joy majmuasidagi xonadonlar: studiya, bir, ikki, uch va toʻrt '
-        + 'xonali, maydoni 26–89 m². Narx va boʻsh xonadonlar — savdo boʻlimida.',
+      description: 'Samarqanddagi PARI Residence kvartalidagi xonadon tarhlari: bir, ikki, uch va '
+        + 'toʻrt xonali, maydoni 27–95 m². Har bir tarhda xonadonning qavatdagi va majmuadagi '
+        + 'oʻrni koʻrsatilgan.',
     },
     location: {
       title: 'Joylashuvi — Samarqanddagi PARI Residence',
@@ -460,7 +666,7 @@ const uz = {
       { img: 'cine-parking', w: [1280, 1535], h: 1024, cap: 'Yer osti avtoturargohi', wide: true },
     ],
 
-    yardNum: '02',
+    yardNum: '03',
     yardEyebrow: 'Hovli-bogʻ',
     yardTitle: 'Bir gektar hovli —<br>mashinalarsiz',
     yardText: '1 gektarlik yopiq hovli-bogʻ: geoplastika, suv havzalari, koʻp yillik butalar, '
@@ -472,22 +678,43 @@ const uz = {
       { value: 30, suffix: '%', label: 'koʻkalamzorlik' },
     ],
 
-    placeNum: '03',
+    placeNum: '04',
     placeEyebrow: 'Joylashuv',
     placeTitle: 'Samarqand<br>bir qadam narida',
     placeReliefAlt: 'Barelyef: parij fasadi yonida velosipedda ketayotgan qiz',
 
     homesNum: '01',
     homesEyebrow: 'Xonadonlar',
-    homesTitle: 'Ixcham studiyalardan<br>toʻrt xonali oilaviylarigacha',
+    homesTitle: 'Ixcham bir xonalidan<br>oilaviy toʻrt xonaligacha',
+    homesPreview: ['f1-2721', 'f1-3981', 'f2-4169', 'f2-6708', 'f3-8531', 'f4-8911'],
     homesTiles: [
-      { value: '26 m²dan', label: 'Studiya va bir xonali', href: '/uz/apartments/#plan-1' },
-      { value: 'oila uchun', label: 'Ikki va uch xonali', href: '/uz/apartments/#plan-2' },
-      { value: '89 m²gacha', label: 'Toʻrt xonali', href: '/uz/apartments/#plan-4' },
+      { value: '27 m²dan', label: 'Bir xonali', href: '/uz/apartments/#rooms-1' },
+      { value: 'oila uchun', label: 'Ikki va uch xonali', href: '/uz/apartments/#rooms-2' },
+      { value: '95 m²gacha', label: 'Uch va toʻrt xonali', href: '/uz/apartments/#rooms-4' },
     ],
     homesNote: 'Boʻsh xonadonlar va qavatlarni savdo boʻlimida koʻrsatamiz.',
-    homesLink: 'Xonadonlarni koʻrish',
+    homesLink: 'Barcha tarhlar',
     homesAlt: 'PARI Residence kirish guruhi: guruch va tabiiy toshli lobbi',
+
+    archNum: '02',
+    archEyebrow: 'Arxitektura yechimlari',
+    archTitle: 'Tabiiy tosh,<br>guruch va ganch',
+    archText: 'Tabiiy tosh va bezak elementlari bilan ishlangan taʼsirchan fasadlar, dizayner '
+      + 'kirish guruhlari, birinchi qavatlar boʻylab arkadalar. Loyihani SAFRONOVA PROJECT '
+      + 'byurosi ishlab chiqqan.',
+    archLink: 'Loyiha haqida batafsil',
+    arch: [
+      { img: 'arch-facade', cap: 'Birinchi qavatlar boʻylab arkada', big: true },
+      { img: 'arch-entrance', cap: 'Ganch bezakli kirish guruhi' },
+      { img: 'arch-stone', cap: 'Hovli parapetlaridagi travertin' },
+      { img: 'arch-balcony', cap: 'Balkon: shisha va guruch', wide: true },
+    ],
+
+    masterEyebrow: '«Zaliniya» mahallasi',
+    masterTitle: 'Kvartal mahalla bilan<br>birga oʻsib boradi',
+    masterText: 'PARI Residence Goʻroʻgʻli koʻchasi yonida oltin rangda belgilangan. Atrofda park, '
+      + 'piyodalar bulvarlari, yangi maktablar, bogʻcha, shahar universiteti va savdo markazi.',
+    masterLink: 'Bosh rejani koʻrish',
 
     finalEyebrow: 'Savdo boʻlimi',
     finalTitle: 'Uyga aylangan<br>joziba',
@@ -506,24 +733,23 @@ const uz = {
 
   plans: {
     title: 'Xonadon tarhlari',
-    lead: 'Toʻrtta tarh — bir xonalidan oshxona-mehmonxonali toʻrt xonaligacha. '
-      + 'Oʻlchamlari va xona nomlarini koʻrish uchun tarhni bosing.',
-    note: 'Bu tanlov. Tarhlarning toʻliq roʻyxati, boʻsh xonadonlar va narxlar — savdo boʻlimida.',
+    lead: 'Xonalar sonini tanlang va tarhni bosing: u toʻliq ochiladi — oʻlchamlari, xona '
+      + 'nomlari, xonadonning qavatdagi va majmuadagi oʻrni bilan.',
+    note: 'Namunaviy tarhlar koʻrsatilgan. Boʻsh xonadonlar, qavatlar va narxlarni savdo boʻlimidan aniqlang.',
     zoom: 'Tarhni kattalashtirish',
-    euro: 'oshxona-mehmonxona',
+    filterLabel: 'Xonalar soni',
+    filterAll: 'Barchasi',
+    filterRooms: ['', '1 xona', '2 xona', '3 xona', '4 xona'],
+    countWord: ['ta tarh', 'ta tarh', 'ta tarh'],
+    blockWord: ['', 'Blok', 'Bloklar'],
     roomWord: ['', 'Bir xonali', 'Ikki xonali', 'Uch xonali', 'Toʻrt xonali'],
-    items: [
-      { id: 'b1-04', area: '45,34', rooms: 1, euro: false },
-      { id: 'b1-10', area: '65,95', rooms: 2, euro: true },
-      { id: 'b3-06', area: '85,31', rooms: 3, euro: true },
-      { id: 'b2-05', area: '89,11', rooms: 4, euro: true },
-    ],
+    items: planItems,
   },
 
   apartments: {
     h1: 'PARI Residence xonadonlari',
-    lead: 'PARI Residence-da 13 blokda 1202 xonadon: ixcham studiyalardan oilaviy toʻrt xonaligacha. '
-      + 'Maydoni 26–89 m², keng balkonlar va mashinasiz yopiq hovli-bogʻ.',
+    lead: 'PARI Residence-da 13 blokda 1202 xonadon: bir xonalidan oilaviy toʻrt xonaligacha. '
+      + 'Maydoni 27–95 m², keng balkonlar va mashinasiz yopiq hovli-bogʻ.',
     priceLine: 'Xonadonlar 1 m² uchun 10 mln soʻmdan',
     termsTitle: 'Muddatlar va shartlar',
     termsLead: 'Uy ikki navbatda quriladi. Boʻlib toʻlash foizsiz va birinchi navbat '
@@ -544,6 +770,115 @@ const uz = {
       + 'koʻrsatamiz va sotib olish shartlarini tushuntiramiz.',
   },
 
+  /* ── «Loyiha haqida» sahifasi: matnlar buklet bo‘limlaridan (02–06, 11) ── */
+  project: {
+    h1: 'PARI Residence loyihasi haqida',
+    lead: '«PARI Residence» — Samarqandda, Goʻroʻgʻli koʻchasidagi yangi «Zaliniya» mahallasida '
+      + 'qurilayotgan zamonaviy premium-klass turar-joy kvartali. Sobiq sanoat korxonalari hududlari '
+      + 'yirik va oʻrta developerlar tomonidan sotib olingan va faol rivojlanmoqda.',
+    lead2: 'Bu yerda obod park zonasi, piyodalar bulvarlari, kafe va restoranlar, goʻzallik '
+      + 'salonlari va spa, gul doʻkonlari, sport majmualari va dam olish zonalari boʻlgan yangi '
+      + 'mahalla paydo boʻladi. Oilalar uchun bogʻchalar, maktablar va poliklinika quriladi, '
+      + 'yaqin atrofda esa shahar yangi universitet quradi.',
+
+    facts: [
+      { value: '13', label: 'turar-joy bloki' },
+      { value: '1202', label: 'xonadon' },
+      { value: '1 Ga', label: 'mashinasiz hovli-bogʻ' },
+      { value: '27–95', label: 'm² xonadon maydoni' },
+    ],
+
+    aerialTitle: 'Oʻz hovli-bogʻi va tijorat infratuzilmasi',
+    aerialText: 'PARI Residence turar-joy majmuasining oʻzida umumiy maydoni 1 gektar boʻlgan '
+      + 'yopiq hovli-bogʻ, shuningdek tijorat infratuzilmasi boʻladi.',
+    aerialAlt: 'PARI Residence tepadan: turar-joy bloklari orasidagi yopiq hovli-bogʻ',
+    aerialList: [
+      'Mashinasiz yopiq hovli-bogʻ',
+      'Oʻz tijorat infratuzilmasi',
+      'Piyodalar bulvari',
+      'Kafe va restoranlar',
+      'Goʻzallik salonlari va spa',
+      'Butiklar',
+    ],
+
+    archNum: '01',
+    archTitle: 'Arxitektura yechimlari',
+    archText: '«PARI Residence» turar-joy kvartalining arxitektura va dizayn yechimlari '
+      + '«SAFRONOVA PROJECT» — biznes va premium-klass loyihalarini yaratish tajribasiga ega '
+      + 'xalqaro arxitektura byurosi tomonidan ishlab chiqilgan. Soʻnggi 15 yilda byuro '
+      + 'mutaxassislari MDH yirik shaharlarida 50 dan ortiq loyihani amalga oshirgan.',
+    archText2: 'Tabiiy tosh, bezak elementlari va zamonaviy materiallar qoʻllangan taʼsirchan '
+      + 'fasadlar, kirish guruhlarining yorqin dizayn yechimlari, puxta oʻylangan hovli '
+      + 'obodonchiligi va landshaft dizayni. Xonadonlar white-box formatida topshiriladi: '
+      + 'taʼmirni tez va ortiqcha sarf-xarajatsiz yakunlash mumkin.',
+    archList: [
+      'Taʼsirchan fasadlar',
+      'Tabiiy materiallar',
+      'Dizayner kirish guruhlari',
+      'Puxta obodonchilik va landshaft dizayni',
+      'White-box formatidagi xonadonlar',
+      'Keng tarh tanlovi',
+    ],
+    archGallery: [
+      { img: 'arch-facade', cap: 'Quyosh botishida birinchi qavatlar arkadasi', big: true },
+      { img: 'arch-line', cap: 'Birinchi liniyadan fasadlar' },
+      { img: 'arch-stone', cap: 'Parapet travertini yaqindan' },
+      { img: 'arch-balcony', cap: 'Balkon: shisha, guruch, tosh', wide: true },
+    ],
+
+    entryNum: '02',
+    entryTitle: 'Kirish guruhlari',
+    entryText: 'Har bir uyning keng kirish guruhi alohida dizayn-loyiha boʻyicha bajarilgan. '
+      + 'Pardozda tabiiy tosh, yogʻoch va bezak panellari, guruch ishlatiladi. Bu yerda yumshoq '
+      + 'mebel va tinch musiqali kutish zonalari koʻzda tutilgan, devorlarni panno va suratlar '
+      + 'bezaydi. Kolyaska, samokat va velosipedlarni saqlash uchun alohida texnik xonalar bor.',
+    entryAlt: 'PARI Residence kirish guruhi: arka, ganch bezak va guruch furnitura',
+
+    yardNum: '03',
+    yardTitle: 'Obodonlashtirish',
+    yardText: 'Samarqandda birinchi marta PARI Residence-da umumiy maydoni 1 gektar boʻlgan '
+      + 'oʻz parki bilan mashinasiz yopiq hovli amalga oshiriladi. Hovlining bosh rejasi, '
+      + 'landshaft dizayni, geoplastika, suv obyektlari va kichik meʼmoriy shakllar eng talabchan '
+      + 'xaridorni ham hayratlantiradi.',
+    yardText2: 'Bu yerda koʻp yillik butalar, mevali va ignabargli daraxtlar oʻtqaziladi, gulzorlar '
+      + 'barpo etiladi. Oʻyin va bolalar maydonchalari, dam olish zonalari jihozlari alohida '
+      + 'dizayn-loyiha boʻyicha bajariladi. Park hududida tinch dam olish uchun umumiy '
+      + 'mehmonxonalar va yopiq soʻrilar loyihalangan.',
+    yardList: [
+      'Geoplastika',
+      'Landshaft dizayni',
+      'Kichik meʼmoriy shakllar',
+      'Koʻp yillik butalar',
+      'Mevali va ignabargli daraxtlar',
+      'Bolalar va oʻyin maydonchalari',
+      'Hovli jihozlari alohida dizayn-loyiha boʻyicha',
+      'Umumiy mehmonxonalar',
+    ],
+    yardGallery: [
+      { img: 'arch-arch', cap: 'Arka orqali hovli manzarasi', big: true },
+      { img: 'arch-yard', cap: 'Hovlidagi soʻrilar va gulzorlar' },
+      { img: 'arch-pergola', cap: 'Dam olish joylari boʻlgan pergolalar' },
+    ],
+
+    parkingNum: '04',
+    parkingTitle: 'Avtoturargoh',
+    parkingText: 'Turar-joy kvartalining butun hududida parkovka joylari yetarli: mashinani '
+      + 'kunning istalgan vaqtida qoldirish mumkin. Yosh auditoriya uchun velosiped parkovkalari '
+      + 'va samokat saqlash joylari koʻzda tutilgan.',
+    parkingList: [
+      'Yer osti avtoturargohi',
+      'Yer usti avtoturargohi',
+      'Velosiped parkovkasi',
+      'Samokat saqlash joylari',
+    ],
+
+    districtTitle: '«Zaliniya» mahallasi',
+    districtText: 'Kvartal mahalla bilan birga quriladi: yaqin atrofda park, piyodalar bulvarlari, '
+      + 'yangi maktablar, bogʻcha, shahar universiteti va savdo markazi paydo boʻladi.',
+    districtLink: 'Mahalla bosh rejasini koʻrish',
+    plansLink: 'Tarhlarni koʻrish',
+  },
+
   location: {
     h1: 'PARI Residence Samarqandda qayerda joylashgan',
     lead: 'Turar-joy majmuasi «Zaliniya» yangi mahallasida, Goʻroʻgʻli koʻchasi, 1 manzilida qurilmoqda. '
@@ -554,6 +889,7 @@ const uz = {
     masterText: 'PARI Residence Goʻroʻgʻli koʻchasi yonida oltin rangda belgilangan. Kvartallar, park, '
       + 'maktablar va suv havzalarini koʻrish uchun rejani bosing.',
     masterAlt: 'Samarqanddagi «Zaliniya» mahallasi bosh rejasi: kvartallar, park va suv havzalari',
+    masterLegend: ['Yangi maktablar', 'Yangi bogʻcha', 'Shahar universiteti', 'Yangi savdo markazi'],
     districtText: 'Mahalla sobiq zavodlar oʻrnida qaytadan quriladi. Bosh rejada park, piyodalar '
       + 'bulvarlari, kafelar, sport obyektlari, bogʻchalar, maktablar va poliklinika koʻzda tutilgan; '
       + 'yaqin atrofda yangi universitet qurilmoqda.',

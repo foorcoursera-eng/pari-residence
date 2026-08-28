@@ -194,13 +194,19 @@
        пересчитывает раскладку 60 раз в секунду */
     var box = { w: 0, h: 0 };
     var perch = null;
+    var visitEl = document.getElementById('flyVisit');
     var measure = function () {
       box.w = hero.clientWidth;
       box.h = hero.clientHeight;
       var cta = document.querySelector('.cta');
       if (cta) {
         var c = cta.getBoundingClientRect(), h = hero.getBoundingClientRect();
-        perch = { x: c.right - h.left - 52, y: c.top - h.top - 26 };
+        /* Посадка считается от размера самой бабочки, а не от фиксированных 52 px:
+           на телефоне кнопка вдвое уже, и постоянный отступ сажал бабочку прямо
+           на номер телефона. Так она садится на правый верхний угол кнопки. */
+        var fw = (visitEl && visitEl.offsetWidth) || 46;
+        var fh = (visitEl && visitEl.offsetHeight) || 40;
+        perch = { x: c.right - h.left - fw * 0.95, y: c.top - h.top - fh * 0.72 };
       }
     };
 
@@ -387,6 +393,7 @@
       resizeTimer = setTimeout(function () {
         measure();
         swarm.forEach(function (f) {
+          f.peak = parseFloat(getComputedStyle(f.el).getPropertyValue('--peak')) || f.peak;
           f.x = Math.min(f.x, box.w - 20);
           f.y = Math.min(f.y, box.h - 20);
           f.newTarget();
@@ -651,6 +658,42 @@
 
     show(0);
     play();
+  }
+
+  /* ══════════════ отбор планировок по комнатности ══════════════
+     Планировок много, поэтому без отбора страница читается как свалка.
+     Без скрипта кнопки просто не появляются: разметка отдаёт все планировки. */
+  var picks = document.querySelector('[data-plan-filter]');
+  var planGrid = document.querySelector('[data-plan-grid]');
+  if (picks && planGrid) {
+    var buttons = [].slice.call(picks.querySelectorAll('[data-filter]'));
+    var applyFilter = function (value, push) {
+      buttons.forEach(function (b) {
+        var on = b.dataset.filter === value;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      [].forEach.call(planGrid.children, function (card) {
+        card.hidden = !!value && card.dataset.rooms !== value;
+      });
+      if (push) {
+        history.replaceState(null, '', value ? '#rooms-' + value : location.pathname);
+        track('plans_filter', { rooms: value || 'all' });
+      }
+    };
+    picks.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-filter]');
+      if (b) { applyFilter(b.dataset.filter, true); }
+    });
+    /* Ссылки с главной ведут на #rooms-2 и должны сразу открывать нужный отбор */
+    var fromHash = function () {
+      var m = /^#rooms-(\d)$/.exec(location.hash);
+      if (m && buttons.some(function (b) { return b.dataset.filter === m[1]; })) {
+        applyFilter(m[1], false);
+      }
+    };
+    fromHash();
+    addEventListener('hashchange', fromHash);
   }
 
   /* ══════════════ просмотр планов и мастер-плана ══════════════

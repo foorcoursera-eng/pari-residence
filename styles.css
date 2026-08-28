@@ -360,6 +360,18 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
 .fly--far {--peak:.3; width:28px;left:0;top:0}
 .fly--visit{--peak:.66;width:46px;left:0;top:0}
 
+/* На телефоне первый экран узкий: бабочка в 58 px занимает шестую часть ширины
+   и читается белой кляксой поверх арки, а не деталью. Уменьшаем и делаем
+   прозрачнее — на 375 px это те же доли кадра, что 58 px на ноутбуке. */
+@media (max-width:700px){
+  .fly--near{--peak:.5;  width:30px}
+  .fly--mid {--peak:.4;  width:22px}
+  .fly--far {--peak:.26; width:15px}
+  .fly--visit{--peak:.56;width:26px}
+  .fly .vein{stroke-width:.8}
+  .fly .feeler{stroke-width:1.1}
+}
+
 /* ══════════════ 2 · КОНЦЕПЦИЯ — барельефная композиция (5.3, 8.1) ══════════════
    Барельеф здесь единственный акцент: ни паттерна, ни рамки (9.2). */
 .concept{background:var(--paper);padding:clamp(84px,13vh,150px) 0 clamp(70px,11vh,120px)}
@@ -664,13 +676,17 @@ main:focus{outline:none}
   width:var(--measure);margin:clamp(30px,5vh,50px) auto 0;
   display:grid;grid-template-columns:minmax(0,1fr);gap:1px;background:var(--hair);
 }
-.plan{margin:0;background:var(--paper);display:flex;flex-direction:column;scroll-margin-top:96px}
+/* Планировок много: карточка живёт своей высотой, чертёж не мельчится */
+.plan[hidden]{display:none}
+.plan{margin:0;background:#fff;display:flex;flex-direction:column;scroll-margin-top:96px}
+/* Чертежи приходят с белым фоном рабочего листа — карточка тоже белая,
+   иначе план читается как наклеенная заплатка. */
 .plan__view{
   position:relative;display:block;width:100%;padding:clamp(18px,2.4vw,30px);
-  border:0;background:var(--paper);cursor:zoom-in;
+  border:0;background:#fff;cursor:zoom-in;
 }
 .plan__view img{
-  width:100%;height:clamp(240px,32vh,320px);object-fit:contain;
+  width:100%;height:clamp(300px,38vh,400px);object-fit:contain;
   transition:transform .5s cubic-bezier(.22,.61,.36,1);
 }
 .plan__view:hover img{transform:scale(1.03)}
@@ -689,11 +705,56 @@ main:focus{outline:none}
 .plan__area{margin:0;font-family:var(--display);font-size:clamp(24px,2.6vw,32px);line-height:1;color:var(--ink)}
 .plan__area span{font-size:.5em;letter-spacing:.04em}
 .plan__rooms{margin:0;font-size:13px;color:var(--ink-2)}
+.plan__blocks{margin:0;font-size:12px;color:var(--ink-3)}
 .plan__meta .link-call{margin-top:8px;font-size:14px}
 .plans__note{margin:clamp(26px,4vh,38px) 0 0;font-size:13px;color:var(--ink-3);max-width:60ch}
 
-/* ровно четыре карточки: две колонки заполняются без пустых ячеек, план виден крупно */
-@media (min-width:760px){ .plans{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (min-width:640px){ .plans{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (min-width:1040px){ .plans{grid-template-columns:repeat(3,minmax(0,1fr))} }
+
+/* ══════════════ отбор планировок по комнатности ══════════════ */
+.picks{display:flex;flex-wrap:wrap;gap:8px;margin:clamp(22px,3.4vh,32px) 0 0}
+.pick{
+  padding:11px 18px;border:1px solid var(--hair);background:none;cursor:pointer;
+  font:inherit;font-size:14px;color:var(--ink-2);
+  transition:background .3s ease,color .3s ease,border-color .3s ease;
+}
+.pick:hover{border-color:var(--gold);color:var(--ink)}
+.pick.is-on{background:var(--gold);border-color:var(--gold);color:var(--paper)}
+
+/* ══════════════ «О проекте»: цифры, списки, широкий кадр ══════════════ */
+.figures{
+  list-style:none;margin:clamp(30px,5vh,52px) 0 0;padding:0;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,3vw,40px);
+}
+.figures b{
+  display:block;font-family:var(--display);font-weight:400;line-height:1;color:var(--ink);
+  font-size:clamp(28px,3.4vw,44px);
+}
+.figures span{
+  display:block;margin-top:10px;font-size:11px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+@media (min-width:760px){ .figures{grid-template-columns:repeat(4,minmax(0,1fr))} }
+
+.marks{
+  list-style:none;margin:clamp(24px,3.6vh,34px) 0 0;padding:0;
+  display:grid;gap:12px clamp(20px,3vw,44px);
+}
+.marks li{position:relative;padding-left:24px;color:var(--ink-2);font-size:clamp(14px,1.4vw,16px)}
+.marks li::before{
+  content:"";position:absolute;left:0;top:.5em;width:8px;height:8px;
+  border:1px solid var(--gold);transform:rotate(45deg);
+}
+@media (min-width:760px){ .marks{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+.wide-shot{margin:clamp(34px,5vh,58px) 0 0}
+.wide-shot img{width:100%;height:clamp(220px,42vw,620px);object-fit:cover;display:block}
+
+.page__h2 .num{
+  font-style:normal;margin-right:.5em;color:var(--gold);
+  font-size:.78em;letter-spacing:.04em;
+}
 
 /* ══════════════ просмотр плана и мастер-плана ══════════════
    Увеличение колесом и щипком, перетаскивание — мышью или пальцем. */
@@ -720,14 +781,18 @@ main:focus{outline:none}
 .viewer__close::after{transform:translate(-50%,-50%) rotate(-45deg)}
 .viewer__close:hover{background:var(--gold);border-color:var(--gold)}
 
+/* Сетка задаётся явно как minmax(0,1fr): у ячейки по умолчанию высота
+   auto, и тогда max-height:100% у картинки считается от её собственной
+   высоты — вертикальный план вылезал за экран и был виден кусками. */
 .viewer__stage{
-  overflow:hidden;display:grid;place-items:center;touch-action:none;cursor:grab;
+  overflow:hidden;display:grid;grid-template:minmax(0,1fr) / minmax(0,1fr);
+  place-items:center;touch-action:none;cursor:grab;
   background:#fff;border:1px solid var(--hair);
 }
 .viewer__stage.is-dragging{cursor:grabbing}
 .viewer__stage img{
-  max-width:100%;max-height:100%;transform-origin:center;
-  transition:transform .18s ease-out;will-change:transform;
+  max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;
+  transform-origin:center;transition:transform .18s ease-out;will-change:transform;
 }
 .viewer__hint{margin:0;text-align:center;font-size:12px;color:var(--ink-3)}
 body.is-locked .viewer{overflow:visible}
@@ -799,6 +864,9 @@ body.is-locked .viewer{overflow:visible}
 
 /* ══════════════ внутренние страницы ══════════════ */
 .page{background:var(--paper);padding:clamp(112px,16vh,170px) 0 clamp(60px,9vh,110px)}
+/* Первый экран отбивается от шапки, дальше разделы идут подряд — иначе
+   между ними образуется провал в два отступа. */
+.page + .page{padding-top:clamp(30px,5vh,60px)}
 .page__inner{width:var(--measure);margin-inline:auto}
 
 .crumbs{
@@ -908,19 +976,35 @@ body.is-splash{overflow:hidden}
 }
 .select select:focus-visible{border-color:var(--gold);outline:none}
 
-/* мастер-план района: кликом открывается крупно */
-.master{
-  display:block;width:100%;margin:clamp(18px,3vh,28px) 0 0;padding:0;
-  border:1px solid var(--hair);background:none;cursor:zoom-in;position:relative;
+/* мастер-план района: кликом открывается крупно.
+   Легенда набрана текстом, а не взята с картинки, — она нужна и по-узбекски. */
+.master{margin:clamp(18px,3vh,28px) 0 0}
+.master__view{
+  display:block;width:100%;padding:0;position:relative;
+  border:1px solid var(--hair);background:none;cursor:zoom-in;
 }
-.master img{width:100%;height:auto;display:block}
+.master__view img{width:100%;height:auto;display:block}
 .master__zoom{
   position:absolute;right:14px;bottom:14px;
   padding:9px 16px;background:rgba(250,250,250,.92);border:1px solid var(--hair);
   font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
   transition:background .35s ease,color .35s ease;
 }
-.master:hover .master__zoom{background:var(--gold);color:var(--black);border-color:var(--gold)}
+.master__view:hover .master__zoom{background:var(--gold);color:var(--black);border-color:var(--gold)}
+.master__legend{margin-top:16px}
+.master__legend b{
+  display:block;font-weight:500;font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.master__legend ul{
+  list-style:none;margin:10px 0 0;padding:0;
+  display:flex;flex-wrap:wrap;gap:8px clamp(16px,3vw,34px);
+}
+.master__legend li{position:relative;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.master__legend li::before{
+  content:"";position:absolute;left:0;top:.45em;width:7px;height:7px;
+  background:var(--gold);transform:rotate(45deg);
+}
 
 /* ══════════════ липкая панель звонка (узкие экраны) ══════════════
    На телефоне между первым экраном и формой внизу не было ни одной точки
@@ -1139,3 +1223,49 @@ html.has-smooth.lenis-stopped{overflow:hidden}
   transition:color .3s ease,border-color .3s ease;
 }
 .final__social a:hover{color:var(--gold)}
+
+/* ══════════════ АРХИТЕКТУРНЫЕ РЕШЕНИЯ (главная) ══════════════
+   Фасады и входные группы вблизи: заказчик просил показать их крупно —
+   в премиальных проектах именно детали продают. */
+.arch{background:var(--milk);padding:clamp(72px,11vh,132px) 0 clamp(64px,10vh,110px)}
+.arch__head{width:var(--measure);margin-inline:auto}
+.arch__text{margin:clamp(20px,3vh,30px) 0 0;max-width:56ch;color:var(--ink-2)}
+.arch .gallery__grid{margin-top:clamp(30px,5vh,52px)}
+.arch .shot{margin:0;display:flex;flex-direction:column;gap:10px}
+.arch .shot img{
+  width:100%;height:clamp(220px,34vw,340px);object-fit:cover;display:block;
+  transition:transform .8s cubic-bezier(.22,.61,.36,1);
+}
+.arch .shot--big img{height:clamp(260px,44vw,520px)}
+.arch .shot figcaption{font-size:12px;letter-spacing:.06em;color:var(--ink-3)}
+.arch .link-call{margin-top:clamp(22px,3vh,32px)}
+@media (min-width:900px){
+  .arch .gallery__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .arch .shot--big,.arch .shot--wide{grid-column:1 / -1}
+  .arch .shot--wide img{height:clamp(200px,24vw,300px)}
+}
+@media (hover:hover){ .arch .shot:hover img{transform:scale(1.02)} }
+
+/* Те же правила нужны кадрам на странице «О проекте» */
+.page .gallery__grid .shot{margin:0;display:flex;flex-direction:column;gap:10px}
+.page .gallery__grid .shot img{
+  width:100%;height:clamp(220px,34vw,340px);object-fit:cover;display:block;
+}
+.page .gallery__grid .shot--big img{height:clamp(260px,44vw,520px)}
+.page .gallery__grid .shot figcaption{font-size:12px;letter-spacing:.06em;color:var(--ink-3)}
+@media (min-width:900px){
+  .page .gallery__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page .gallery__grid .shot--big,.page .gallery__grid .shot--wide{grid-column:1 / -1}
+  .page .gallery__grid .shot--wide img{height:clamp(200px,24vw,300px)}
+}
+
+/* ══════════════ МАСТЕР-ПЛАН РАЙОНА (главная) ══════════════ */
+.district{background:var(--paper);padding:clamp(64px,10vh,120px) 0}
+.district__inner{width:var(--measure);margin-inline:auto}
+.district__text{margin:clamp(20px,3vh,30px) 0 0;max-width:60ch;color:var(--ink-2)}
+.district .link-call{margin-top:clamp(20px,3vh,30px)}
+
+/* Входные группы: кадр справа, чтобы разворот не повторял двор-парк */
+@media (min-width:900px){
+  .split--flip .split__media{order:2}
+}
