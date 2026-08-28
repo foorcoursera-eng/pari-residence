@@ -434,7 +434,7 @@ body.is-locked .btn--call{opacity:0;pointer-events:none;transition:opacity .3s e
   display:flex;gap:10px;
 }
 .cine__dot{
-  flex:1 1 0;height:22px;padding:0;border:0;background:none;cursor:pointer;
+  flex:1 1 0;height:44px;padding:0;border:0;background:none;cursor:pointer;
   display:flex;align-items:flex-end;
 }
 .cine__dot i{display:block;width:100%;height:1px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}
@@ -1420,13 +1420,21 @@ html.has-smooth.lenis-stopped{overflow:hidden}
 .picker__rooms{display:flex;flex-wrap:wrap;gap:8px}
 .picker__area{display:grid;gap:9px;min-width:0}
 .picker__area-label{font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+/* Высоту задаём самому полю, а не полоске: раньше элемент был ростом 2px,
+   и попасть по нему пальцем было нельзя. Линию рисует дорожка. */
 .picker__area input[type=range]{
-  -webkit-appearance:none;appearance:none;width:100%;height:2px;margin:8px 0;
-  background:var(--hair);outline:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;width:100%;height:36px;margin:0;
+  background:transparent;outline:none;cursor:pointer;
+}
+.picker__area input[type=range]::-webkit-slider-runnable-track{
+  height:2px;background:var(--hair);border:0;
+}
+.picker__area input[type=range]::-moz-range-track{
+  height:2px;background:var(--hair);border:0;
 }
 .picker__area input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;appearance:none;width:18px;height:18px;border:0;border-radius:50%;
-  background:var(--gold);cursor:pointer;
+  background:var(--gold);cursor:pointer;margin-top:-8px;
 }
 .picker__area input[type=range]::-moz-range-thumb{
   width:18px;height:18px;border:0;border-radius:50%;background:var(--gold);cursor:pointer;
@@ -1641,4 +1649,15 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .frame__text{
   font-family:var(--text);font-weight:300;color:rgba(255,255,255,.86);
   font-size:clamp(14px,1.35vw,17px);line-height:1.66;
+}
+
+
+/* ── правки после проверки на телефоне (29.08.2026) ── */
+@media (max-width:700px){
+  /* 10px в капсе с разрядкой на телефоне читается тяжело */
+  .opening__eyebrow,.plan__zoom,.master__zoom,.callbar__form{font-size:11px}
+  /* переключатель языка был высотой 23px — мимо него легко промахнуться */
+  .lang__item{padding:11px 13px}
+  /* полоски киноленты не должны цеплять кнопку звонка снизу */
+  .cine__dots{bottom:clamp(14px,2.4vh,24px)}
 }
