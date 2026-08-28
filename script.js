@@ -5,6 +5,7 @@
 
   var bar = document.getElementById('bar');
   var hero = document.querySelector('.hero');
+  var firstScreen = document.querySelector('.hero, .opening');
   var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
@@ -492,15 +493,29 @@
   /* Шапка с телефоном и липкая панель включаются в одной точке — когда обложка ушла
      вверх. Переключение классов не читает раскладку, поэтому идёт прямо в обработчике
      прокрутки: так оно срабатывает даже там, где кадры анимации придерживаются. */
+  var lastY = 0;
   var callbar = document.querySelector('.callbar');
-  if ((bar && hero) || callbar) {
+  if ((bar && firstScreen) || callbar) {
     var past = null;
     var sticky = function () {
-      var limit = hero ? innerHeight * 0.7 : 200;
+      var limit = firstScreen ? firstScreen.offsetHeight * 0.5 : 200;
       var now = (window.scrollY || window.pageYOffset) > limit;
       if (now === past) { return; }
       past = now;
       if (bar && hero) { bar.classList.toggle('is-solid', now); }
+      /* шапка уходит при движении вниз и возвращается при движении вверх:
+         так на длинной странице она не закрывает кадры */
+      if (bar) {
+        var y = pageYOffset;
+        var down = y > lastY + 6;
+        var up = y < lastY - 6;
+        if (down && y > innerHeight * 0.9 && !document.body.classList.contains('is-locked')) {
+          bar.classList.add('is-away');
+        } else if (up || y < 60) {
+          bar.classList.remove('is-away');
+        }
+        lastY = y;
+      }
       if (callbar) { document.body.classList.toggle('has-callbar', now); }
     };
     addEventListener('scroll', sticky, { passive: true });

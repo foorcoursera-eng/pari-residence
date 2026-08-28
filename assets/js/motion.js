@@ -83,6 +83,32 @@
         });
     }
 
+    /* Одна шкала прокрутки ведёт весь первый экран: рамка раскрывается,
+       чертёж уходит, снимок проявляется и добирает цвет. Считаем всё в одном
+       обработчике — так этапы гарантированно совпадают по фазе. */
+    var plan = frame && frame.querySelector('.opening__plan');
+    var shot = frame && frame.querySelector('.opening__shot');
+    if (plan || shot) {
+      var seg = function (p, a, b) {
+        var v = (p - a) / (b - a);
+        return v < 0 ? 0 : v > 1 ? 1 : v;
+      };
+      ScrollTrigger.create({
+        trigger: lead, start: 'top top', end: 'bottom bottom',
+        scrub: 0.5, invalidateOnRefresh: true,
+        onUpdate: function (self) {
+          var p = self.progress;
+          if (plan) { plan.style.opacity = (1 - seg(p, 0.22, 0.52)).toFixed(3); }
+          if (shot) {
+            shot.style.opacity = seg(p, 0.28, 0.60).toFixed(3);
+            var g = 1 - seg(p, 0.42, 0.94);
+            shot.style.filter = g < 0.005 ? 'none' : 'grayscale(' + g.toFixed(2) + ')';
+          }
+          frame.classList.toggle('is-photo', p > 0.40);
+        },
+      });
+    }
+
     if (head) {
       gsap.to(head, {
         opacity: 0, y: -34, ease: 'none',
@@ -282,9 +308,12 @@
   /* ── 10 · первый экран собирается по порядку ──
      Надстрочник, затем письмо логотипа (его ведёт script.js), затем фраза и кнопка. */
   if (lead) {
-    var order = [lead.querySelector('.opening__eyebrow'), lead.querySelector('.opening__sub'),
-                 lead.querySelector('.opening__foot')].filter(Boolean);
-    gsap.from(order, { opacity: 0, y: 18, duration: 1.2, ease: EASE, stagger: 0.45, delay: 0.3 });
+    /* Кнопку звонка сюда не берём: её прозрачностью управляет класс на body
+       (пока человек на первом экране — она в рамке, дальше её роль берёт пара
+       кнопок в углу). Инлайновое значение от GSAP этот класс перебило бы. */
+    var order = [lead.querySelector('.opening__eyebrow'), lead.querySelector('.opening__sub')].filter(Boolean);
+    gsap.fromTo(order, { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 1.2, ease: EASE, stagger: 0.45, delay: 0.3 });
   }
 
   /* ── 11 · кнопка звонка тянется к курсору ──
@@ -327,5 +356,20 @@
   addEventListener('pageshow', function (e) { if (e.persisted) { gsap.set(veil, { autoAlpha: 0 }); } });
 
   /* пересчёт после подгрузки картинок: иначе длина ленты берётся до их появления */
+
+  /* ── навигация по разделам: подсвечиваем тот, что сейчас на экране ── */
+  var rail = document.querySelector('[data-rail]');
+  if (rail) {
+    var links = [].slice.call(rail.querySelectorAll('a'));
+    links.forEach(function (a) {
+      var target = document.querySelector(a.getAttribute('href'));
+      if (!target) { a.hidden = true; return; }
+      ScrollTrigger.create({
+        trigger: target, start: 'top 60%', end: 'bottom 40%',
+        onToggle: function (self) { a.classList.toggle('is-on', self.isActive); },
+      });
+    });
+  }
+
   addEventListener('load', function () { ScrollTrigger.refresh(); });
 })();

@@ -376,6 +376,39 @@ ${chips}
     </div>`;
 }
 
+const PHONE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>';
+
+/* ── постоянная пара кнопок в правом нижнем углу ──
+   На широком экране телефон и подбор всегда под рукой: до формы внизу
+   страницы доходят не все. На узком эту роль играет нижняя панель. */
+function dock(t, page) {
+  const home = page.key === 'home';
+  const p = t.lang === 'ru' ? '' : '/uz';
+  const pick = home ? '#homes' : `${p}/apartments/`;
+  return `<div class="dock" data-dock>
+  <a class="dock__tel" href="tel:${site.phone.tel}" data-track="phone_click"
+     aria-label="${esc(t.ui.call)} ${site.phone.intl}">${PHONE_ICON}</a>
+  <a class="dock__pick" href="${pick}" data-track="pick_click">${esc(t.ui.pick)}</a>
+</div>`;
+}
+
+/* ── навигация по разделам главной ──
+   Точки справа: где человек сейчас и сколько ещё впереди. */
+function rail(t) {
+  const h = t.home;
+  const items = [
+    ['#about', h.aboutEyebrow],
+    ['#architecture', h.archEyebrow],
+    ['#yard', h.yardEyebrow],
+    ['#homes', h.homesEyebrow],
+    ['#place', h.placeEyebrow],
+    ['#call', h.finalEyebrow],
+  ];
+  return `<nav class="rail" data-rail aria-label="${esc(t.ui.sections)}">
+${items.map(([href, label]) => `  <a href="${href}"><i aria-hidden="true"></i><span>${esc(label)}</span></a>`).join('\n')}
+</nav>`;
+}
+
 /* ══════════════ каркас страницы ══════════════ */
 function shell(t, page) {
   const canonical = url(page.path);
@@ -425,6 +458,8 @@ ${page.body}
 
 <!-- телефон под рукой на всей длине страницы: на узких экранах панель
      показывается, как только первый экран уходит вверх (класс на body ставит скрипт) -->
+${dock(t, page)}
+
 <div class="callbar" aria-label="${esc(t.ui.call)}">
   <a class="callbar__tel" href="tel:${site.phone.tel}" data-track="phone_click">
     <span>${esc(t.ui.call)}</span><b>${site.phone.display}</b>
@@ -475,6 +510,13 @@ function home(t, page) {
   /* Планировки стоят на главной целиком: подбор без выбора смысла не имеет. */
   const plans = t.plans.items.map((x) => planCard(t, x)).join('\n');
 
+  /* Диапазон площадей берём из самих планировок: числа в тексте и в карточках
+     разойтись не могут. */
+  const byArea = t.plans.items.slice().sort((a, b) =>
+    parseFloat(a.area.replace(',', '.')) - parseFloat(b.area.replace(',', '.')));
+  const areaFrom = byArea[0].area;
+  const areaTo = byArea[byArea.length - 1].area;
+
   const p = t.lang === 'ru' ? '' : '/uz';
   const apartmentsHref = `${p}/apartments/`;
   const locationHref = `${p}/location/`;
@@ -497,10 +539,17 @@ function home(t, page) {
     <figure class="opening__frame" data-open-frame>
       <picture>
         <source media="(max-width:700px)" srcset="/assets/img/hero-aerial-portrait-1080.webp">
-        <img src="/assets/img/hero-aerial-1920.webp"
+        <img class="opening__shot" src="/assets/img/hero-aerial-1920.webp"
              srcset="/assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w, /assets/img/hero-aerial-2560.webp 2560w"
              sizes="100vw" alt="${esc(h.leadFrameAlt)}" fetchpriority="high" width="2560" height="1440">
       </picture>
+
+      <!-- линия фасадов, снятая с рендера: с неё начинается первый экран,
+           при листании чертёж уступает место самому рендеру -->
+      <img class="opening__plan" src="/assets/img/wireframe-1600.webp"
+           srcset="/assets/img/wireframe-1600.webp 1600w, /assets/img/wireframe-2400.webp 2400w"
+           sizes="100vw" alt="${esc(h.leadPlanAlt)}" width="1600" height="893"
+           fetchpriority="high" decoding="async">
 
       <div class="opening__foot" data-open-foot>
         <a class="opening__scroll" href="#about">
@@ -520,17 +569,37 @@ function home(t, page) {
      Одна мысль на экран и крупные показатели: цифры досчитываются,
      когда раздел выходит на экран. -->
 <section class="about" id="about">
+  <span class="side-tag" aria-hidden="true">${esc(h.aboutEyebrow)}</span>
   <div class="about__inner">
     <p class="eyebrow reveal"><span class="num">${h.aboutNum}</span> ${esc(h.aboutEyebrow)}</p>
     <h2 class="display display--wide" data-lines>${h.aboutTitle}</h2>
-    <div class="about__cols">
-      <p class="about__text reveal">${esc(h.aboutText)}</p>
-      <p class="about__text reveal">${esc(h.aboutText2)}</p>
-    </div>
-    <ul class="figures">
+
+    <div class="about__grid">
+      <!-- два кадра внахлёст: арка отсылает к аркадам первых этажей -->
+      <div class="about__art reveal">
+        <figure class="art art--arch">
+          <img src="/assets/img/arch-entrance-1280.webp"
+               srcset="/assets/img/arch-entrance-1280.webp 1280w, /assets/img/arch-entrance-1920.webp 1920w"
+               sizes="(min-width:900px) 26vw, 58vw" alt="${esc(h.aboutArchAlt)}"
+               width="1280" height="714" loading="lazy" decoding="async">
+        </figure>
+        <figure class="art art--shot">
+          <img src="/assets/img/yard-1080.webp"
+               srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
+               sizes="(min-width:900px) 34vw, 74vw" alt="${esc(h.aboutShotAlt)}"
+               width="1920" height="1071" loading="lazy" decoding="async">
+        </figure>
+      </div>
+
+      <div class="about__side">
+        <p class="about__text reveal">${esc(h.aboutText)}</p>
+        <p class="about__text reveal">${esc(h.aboutText2)}</p>
+        <ul class="figures">
 ${stats}
-    </ul>
-    <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
+        </ul>
+        <a class="pill reveal" href="${projectHref}">${esc(h.archLink)}</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -624,6 +693,12 @@ ${h.gallery.map((g) => {
     <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
     <h2 class="display" data-lines>${h.homesTitle}</h2>
     <p class="homes__lead reveal">${esc(h.pickerNote)}</p>
+
+    <ul class="figures figures--pair">
+      <li class="figures__item"><b>${areaFrom} – ${areaTo} <span>${t.ui.sqm}</span></b><span>${esc(t.ui.areaWord)}</span></li>
+      <li class="figures__item"><b data-count="${t.plans.items.length}">${t.plans.items.length}</b><span>${esc(t.ui.plansWord)}</span></li>
+    </ul>
+
     ${picker(t, {})}
   </div>
 
@@ -676,7 +751,9 @@ ${plans}
   </div>
 </section>
 
-${leadSection(t, {})}`;
+${leadSection(t, {})}
+
+${rail(t)}`;
   return page;
 }
 

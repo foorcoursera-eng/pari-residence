@@ -130,6 +130,10 @@ const ru = {
     openMenu: 'Открыть меню',
     closeMenu: 'Закрыть меню',
     call: 'Позвонить',
+    pick: 'Подобрать квартиру',
+    sections: 'Разделы страницы',
+    areaWord: 'Площади',
+    plansWord: 'Планировок',
     write: 'Написать в Telegram',
     scrollNext: 'Листать далее',
     breadcrumbs: 'Вы здесь',
@@ -233,15 +237,18 @@ const ru = {
        Разделы пересобраны по сценарию, который заказчик показал как образец. */
     leadScroll: 'Листайте',
     leadFrameAlt: 'PARI Residence — квартал с высоты птичьего полёта',
+    leadPlanAlt: 'PARI Residence — линия фасадов квартала, архитектурный чертёж',
 
     aboutNum: '01',
     aboutEyebrow: 'О проекте',
-    aboutTitle: 'Премиальный квартал<br>на тринадцать блоков',
+    aboutTitle: 'Премиальный <em>квартал</em><br>на тринадцать блоков',
     aboutText: 'PARI Residence — жилой квартал премиум-класса в Самарканде: тринадцать блоков '
       + 'высотой от 13 до 16 этажей, 1202 квартиры площадью от 27 до 95 м² и закрытый двор-парк '
       + 'площадью один гектар.',
     aboutText2: 'Проект разработан архитектурным бюро SAFRONOVA PROJECT, застройщик — FD MARAKANDA. '
       + 'Квартиры сдаются в формате white-box.',
+    aboutArchAlt: 'Входная группа PARI Residence с лепниной',
+    aboutShotAlt: 'Двор-парк PARI Residence',
 
     filmEyebrow: 'Фильм о проекте',
     filmTitle: 'Каким будет квартал',
@@ -576,6 +583,10 @@ const uz = {
     openMenu: 'Menyuni ochish',
     closeMenu: 'Menyuni yopish',
     call: 'Qoʻngʻiroq qilish',
+    pick: 'Xonadon tanlash',
+    sections: 'Sahifa boʻlimlari',
+    areaWord: 'Maydonlar',
+    plansWord: 'Rejalar',
     write: 'Telegramga yozish',
     scrollNext: 'Pastga oʻtish',
     breadcrumbs: 'Siz shu yerdasiz',
@@ -672,15 +683,18 @@ const uz = {
     /* ── v3 (28.08.2026): birinchi ekran yorugʻ boʻldi, boʻlimlar qayta yigʻildi ── */
     leadScroll: 'Varaqlang',
     leadFrameAlt: 'PARI Residence — kvartalning qushuchar nigohidan koʻrinishi',
+    leadPlanAlt: 'PARI Residence — kvartal fasadlari chizmasi',
 
     aboutNum: '01',
     aboutEyebrow: 'Loyiha haqida',
-    aboutTitle: 'Oʻn uch blokdan iborat<br>premium kvartal',
+    aboutTitle: 'Oʻn uch blokdan iborat<br><em>premium</em> kvartal',
     aboutText: 'PARI Residence — Samarqanddagi premium toifadagi turar-joy kvartali: 13 dan 16 '
       + 'qavatgacha boʻlgan oʻn uch blok, 27 dan 95 m² gacha 1202 xonadon va bir gektarlik '
       + 'yopiq hovli-bogʻ.',
     aboutText2: 'Loyiha SAFRONOVA PROJECT arxitektura byurosi tomonidan ishlab chiqilgan, '
       + 'quruvchi — FD MARAKANDA. Xonadonlar white-box koʻrinishida topshiriladi.',
+    aboutArchAlt: 'PARI Residence kirish guruhi',
+    aboutShotAlt: 'PARI Residence hovli-bogʻi',
 
     filmEyebrow: 'Loyiha haqida film',
     filmTitle: 'Kvartal qanday boʻladi',
