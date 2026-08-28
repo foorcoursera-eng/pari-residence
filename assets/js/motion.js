@@ -56,23 +56,41 @@
     });
   }
 
-  /* ── 1 · первый экран уходит вверх ──
-     Фотография отстаёт от текста — экран расслаивается по глубине. */
-  var hero = document.querySelector('.hero');
-  if (hero) {
-    var media = hero.querySelectorAll('.hero__media');   /* кадр-постер и петля вместе */
-    var inner = hero.querySelector('.hero__inner');
+  /* ── 1 · первый экран: кадр квартала раскрывается ──
+     Раздел вдвое выше окна, сцена внутри липкая: пока идёт прокрутка, рамка
+     со снимком растёт до полного экрана, а логотип со слоганом растворяется.
+     Без GSAP кадр просто остаётся в рамке — первый экран не ломается. */
+  var lead = document.querySelector('.opening');
+  if (lead) {
+    var frame = lead.querySelector('[data-open-frame]');
+    var head = lead.querySelector('[data-open-head]');
+    var narrow = function () { return innerWidth <= 700; };
 
-    if (media.length) {
-      gsap.to(media, {
-        yPercent: 12, scale: 1.08, ease: 'none',
-        scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
-      });
+    if (frame) {
+      gsap.fromTo(frame,
+        {
+          width: function () { return narrow() ? '88%' : '66%'; },
+          height: function () { return Math.round(innerHeight * (narrow() ? 0.38 : 0.42)); },
+        },
+        {
+          width: '100%',
+          height: function () { return innerHeight; },
+          ease: 'none',
+          scrollTrigger: {
+            trigger: lead, start: 'top top', end: 'bottom bottom',
+            scrub: 0.5, invalidateOnRefresh: true,
+          },
+        });
     }
-    if (inner) {
-      gsap.to(inner, {
-        yPercent: -6, opacity: 0.15, ease: 'none',
-        scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
+
+    if (head) {
+      gsap.to(head, {
+        opacity: 0, y: -34, ease: 'none',
+        scrollTrigger: {
+          trigger: lead, start: 'top top',
+          end: function () { return '+=' + innerHeight * 0.55; },
+          scrub: 0.5, invalidateOnRefresh: true,
+        },
       });
     }
   }
@@ -263,10 +281,10 @@
 
   /* ── 10 · первый экран собирается по порядку ──
      Надстрочник, затем письмо логотипа (его ведёт script.js), затем фраза и кнопка. */
-  if (hero) {
-    var order = [hero.querySelector('.eyebrow'), hero.querySelector('.hero__sub'),
-                 hero.querySelector('.cta-wrap')].filter(Boolean);
-    gsap.from(order, { opacity: 0, y: 18, duration: 1.2, ease: EASE, stagger: 0.5, delay: 0.2 });
+  if (lead) {
+    var order = [lead.querySelector('.opening__eyebrow'), lead.querySelector('.opening__sub'),
+                 lead.querySelector('.opening__foot')].filter(Boolean);
+    gsap.from(order, { opacity: 0, y: 18, duration: 1.2, ease: EASE, stagger: 0.45, delay: 0.3 });
   }
 
   /* ── 11 · кнопка звонка тянется к курсору ──

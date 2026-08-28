@@ -14,11 +14,12 @@
      Не грузим её при включённой экономии трафика, на медленной сети
      и когда человек попросил убрать анимации. */
   var v = document.getElementById('heroVideo');
+  var film = v ? v.closest('.film') : null;
   var net = navigator.connection || {};
   var thrifty = net.saveData === true;
   var slow = typeof net.effectiveType === 'string' && /2g$/.test(net.effectiveType);
 
-  if (v && hero && !calm && !thrifty && !slow) {
+  if (v && !calm && !thrifty && !slow) {
     var portrait = innerWidth <= 700;
     var pick = function (kind) {
       if (portrait) { return v.dataset[kind + 'Portrait']; }
@@ -32,18 +33,29 @@
     });
     v.addEventListener('playing', function () {
       v.classList.add('is-playing');
-      if (hero) { hero.classList.add('has-video'); }
+      if (film) { film.classList.add('has-video'); }
     }, { once: true });
-    /* на телефоне ждём, пока страница дорисуется: петля не должна мешать
-       первой отрисовке и конкурировать за канал со шрифтами и кадром-постером */
     var start = function () {
       v.load();
       var go = v.play();
       if (go && go.catch) { go.catch(function () {}); }
     };
-    if (!portrait) { start(); }
-    else if (document.readyState === 'complete') { setTimeout(start, 400); }
-    else { addEventListener('load', function () { setTimeout(start, 400); }); }
+    /* Ролик стоит в середине страницы, поэтому грузим его не сразу, а когда
+       раздел подходит к экрану: первый экран не делит канал с видео. */
+    if (film && 'IntersectionObserver' in window) {
+      var filmIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) { return; }
+          filmIO.disconnect();
+          start();
+        });
+      }, { rootMargin: '400px 0px' });
+      filmIO.observe(film);
+    } else if (document.readyState === 'complete') {
+      setTimeout(start, 400);
+    } else {
+      addEventListener('load', function () { setTimeout(start, 400); });
+    }
   }
 
   /* ══════════════ заставка первого захода ══════════════
@@ -663,33 +675,73 @@
   /* ══════════════ отбор планировок по комнатности ══════════════
      Планировок много, поэтому без отбора страница читается как свалка.
      Без скрипта кнопки просто не появляются: разметка отдаёт все планировки. */
-  var picks = document.querySelector('[data-plan-filter]');
-  var planGrid = document.querySelector('[data-plan-grid]');
-  if (picks && planGrid) {
-    var buttons = [].slice.call(picks.querySelectorAll('[data-filter]'));
-    var applyFilter = function (value, push) {
+  /* ══════════════ подбор квартиры ══════════════
+     Отбор по комнатности и площади. Без скрипта видны все планировки —
+     он только сужает выдачу и считает, сколько осталось. */
+  var picker = document.querySelector('[data-picker]');
+  var planGrid = document.querySelector('[data-picker-grid]');
+  if (picker && planGrid) {
+    var buttons = [].slice.call(picker.querySelectorAll('[data-filter]'));
+    var range = picker.querySelector('[data-picker-area]');
+    var areaLabel = picker.querySelector('[data-picker-area-label]');
+    var countEl = picker.querySelector('[data-picker-count]');
+    var emptyEl = document.querySelector('[data-picker-empty]');
+    var cards = [].slice.call(planGrid.children);
+    var areaTpl = picker.getAttribute('data-area-tpl') || '{n}';
+    var rooms = '';
+
+    var applyPicker = function () {
+      var max = range ? parseFloat(range.value) : Infinity;
+      var shown = 0;
+      cards.forEach(function (card) {
+        var fits = (!rooms || card.dataset.rooms === rooms)
+          && (parseFloat(card.dataset.area) <= max + 0.001);
+        card.hidden = !fits;
+        if (fits) { shown += 1; }
+      });
+      if (countEl) { countEl.textContent = shown; }
+      if (emptyEl) { emptyEl.hidden = shown !== 0; }
+      if (areaLabel && range) {
+        areaLabel.textContent = areaTpl.replace('{n}', range.value);
+      }
+      return shown;
+    };
+
+    var setRooms = function (value, push) {
+      rooms = value;
       buttons.forEach(function (b) {
         var on = b.dataset.filter === value;
         b.classList.toggle('is-on', on);
         b.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
-      [].forEach.call(planGrid.children, function (card) {
-        card.hidden = !!value && card.dataset.rooms !== value;
-      });
+      var shown = applyPicker();
       if (push) {
         history.replaceState(null, '', value ? '#rooms-' + value : location.pathname);
-        track('plans_filter', { rooms: value || 'all' });
+        track('plans_filter', { rooms: value || 'all', found: shown });
       }
     };
-    picks.addEventListener('click', function (e) {
+
+    picker.addEventListener('click', function (e) {
       var b = e.target.closest('[data-filter]');
-      if (b) { applyFilter(b.dataset.filter, true); }
+      if (b) { setRooms(b.dataset.filter, true); }
     });
-    /* Ссылки с главной ведут на #rooms-2 и должны сразу открывать нужный отбор */
+
+    if (range) {
+      var areaTimer = null;
+      range.addEventListener('input', function () {
+        var shown = applyPicker();
+        clearTimeout(areaTimer);
+        areaTimer = setTimeout(function () {
+          track('plans_area', { max: range.value, found: shown });
+        }, 700);
+      });
+    }
+
+    /* Ссылки с плиток ведут на #rooms-2 и должны сразу открывать нужный отбор */
     var fromHash = function () {
       var m = /^#rooms-(\d)$/.exec(location.hash);
       if (m && buttons.some(function (b) { return b.dataset.filter === m[1]; })) {
-        applyFilter(m[1], false);
+        setRooms(m[1], false);
       }
     };
     fromHash();

@@ -46,7 +46,7 @@ const site = {
   telegram: 'https://t.me/pari_residence',
   // Заставка при первом заходе (медальон, уезжающий вверх). Выключается одной строкой:
   // splash: false — и разметка со скриптом на страницу не попадут.
-  splash: true,
+  splash: false,
   /* Площади уточнены по финальному буклету (27,21 м² — самая маленькая
      однокомнатная, 95,13 м² — самая большая трёхкомнатная). До 27.08.2026 на
      сайте стояло «26–89 м²» — цифры из более раннего рабочего файла. */
@@ -227,6 +227,39 @@ const ru = {
     heroSub: 'Parijona Joziba. Samarqand ruhi.',
     heroAlt: 'PARI Residence — Самарканд на рассвете',
 
+    /* ── v3 (28.08.2026) ──
+       Первый экран стал светлым: страница открывается на белом, логотип
+       прорисовывается штрихом, кадр квартала раскрывается при прокрутке.
+       Разделы пересобраны по сценарию, который заказчик показал как образец. */
+    leadScroll: 'Листайте',
+    leadFrameAlt: 'PARI Residence — квартал с высоты птичьего полёта',
+
+    aboutNum: '01',
+    aboutEyebrow: 'О проекте',
+    aboutTitle: 'Премиальный квартал<br>на тринадцать блоков',
+    aboutText: 'PARI Residence — жилой квартал премиум-класса в Самарканде: тринадцать блоков '
+      + 'высотой от 13 до 16 этажей, 1202 квартиры площадью от 27 до 95 м² и закрытый двор-парк '
+      + 'площадью один гектар.',
+    aboutText2: 'Проект разработан архитектурным бюро SAFRONOVA PROJECT, застройщик — FD MARAKANDA. '
+      + 'Квартиры сдаются в формате white-box.',
+
+    filmEyebrow: 'Фильм о проекте',
+    filmTitle: 'Каким будет квартал',
+    filmNote: 'Кадры имиджевого ролика PARI Residence.',
+
+    pickerTitle: 'Подберите квартиру',
+    pickerNote: 'Отберите по комнатности и площади — покажем подходящие планировки.',
+    pickerArea: 'Площадь до {n} м²',
+    pickerFound: 'планировок подходит',
+    pickerEmpty: 'По этим условиям планировок нет — сдвиньте ползунок или выберите другую комнатность.',
+
+    makerEyebrow: 'Кто строит',
+    makerTitle: 'Застройщик<br>и архитекторы',
+    makerText: 'FD MARAKANDA возводит квартал в две очереди. Архитектура — бюро SAFRONOVA PROJECT: '
+      + 'более пятидесяти проектов за пятнадцать лет работы.',
+    makerDev: 'Застройщик',
+    makerArch: 'Архитектура',
+
     // Раздел «Концепция» снят с сайта по просьбе заказчика. Тексты оставлены
     // на случай, если он вернётся в другом оформлении.
     conceptNum: '01',
@@ -267,9 +300,10 @@ const ru = {
       + 'плодовые и хвойные деревья. Крытые беседки и гостиные под открытым небом.',
     yardAlt: 'Двор-парк PARI Residence: цветение и прогулочные дорожки',
     stats: [
-      { value: 13, label: 'блока' },
+      { value: 13, label: 'блоков' },
       { value: 1202, label: 'квартиры' },
       { value: 30, suffix: '%', label: 'озеленения' },
+      { value: 1, label: 'гектар двора' },
     ],
 
     placeNum: '04',
@@ -635,6 +669,36 @@ const uz = {
     heroSub: 'Парижское очарование. Самаркандская душа.',
     heroAlt: 'PARI Residence — tong otishida Samarqand',
 
+    /* ── v3 (28.08.2026): birinchi ekran yorugʻ boʻldi, boʻlimlar qayta yigʻildi ── */
+    leadScroll: 'Varaqlang',
+    leadFrameAlt: 'PARI Residence — kvartalning qushuchar nigohidan koʻrinishi',
+
+    aboutNum: '01',
+    aboutEyebrow: 'Loyiha haqida',
+    aboutTitle: 'Oʻn uch blokdan iborat<br>premium kvartal',
+    aboutText: 'PARI Residence — Samarqanddagi premium toifadagi turar-joy kvartali: 13 dan 16 '
+      + 'qavatgacha boʻlgan oʻn uch blok, 27 dan 95 m² gacha 1202 xonadon va bir gektarlik '
+      + 'yopiq hovli-bogʻ.',
+    aboutText2: 'Loyiha SAFRONOVA PROJECT arxitektura byurosi tomonidan ishlab chiqilgan, '
+      + 'quruvchi — FD MARAKANDA. Xonadonlar white-box koʻrinishida topshiriladi.',
+
+    filmEyebrow: 'Loyiha haqida film',
+    filmTitle: 'Kvartal qanday boʻladi',
+    filmNote: 'PARI Residence imij rolikidan kadrlar.',
+
+    pickerTitle: 'Xonadon tanlang',
+    pickerNote: 'Xonalar soni va maydon boʻyicha saralang — mos rejalarni koʻrsatamiz.',
+    pickerArea: '{n} m² gacha',
+    pickerFound: 'ta reja mos keladi',
+    pickerEmpty: 'Bu shartlarga mos reja yoʻq — slayderni suring yoki boshqa xonalar sonini tanlang.',
+
+    makerEyebrow: 'Kim quradi',
+    makerTitle: 'Quruvchi<br>va arxitektorlar',
+    makerText: 'FD MARAKANDA kvartalni ikki navbatda quradi. Arxitektura — SAFRONOVA PROJECT '
+      + 'byurosi: oʻn besh yil ichida ellikdan ortiq loyiha.',
+    makerDev: 'Quruvchi',
+    makerArch: 'Arxitektura',
+
     // Раздел «Концепция» снят с сайта по просьбе заказчика. Тексты оставлены
     // на случай, если он вернётся в другом оформлении.
     conceptNum: '01',
@@ -676,6 +740,7 @@ const uz = {
       { value: 13, label: 'blok' },
       { value: 1202, label: 'xonadon' },
       { value: 30, suffix: '%', label: 'koʻkalamzorlik' },
+      { value: 1, label: 'gektar hovli' },
     ],
 
     placeNum: '04',

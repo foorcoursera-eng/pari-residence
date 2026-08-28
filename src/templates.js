@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { site } = require('./content');
+const LOGO = require('./logo-parts.json');
 
 /* ── размеры картинки прямо из файла ──
    Планировки разной высоты, и проставлять width/height вручную — верный способ
@@ -265,7 +266,7 @@ function planCard(t, x) {
   const rooms = p.roomWord[x.rooms];
   const blocks = `${p.blockWord[x.blocks.length > 1 ? 2 : 1]} ${x.blocks.join(', ')}`;
   const label = `${rooms} · ${x.area} ${t.ui.sqm} · ${blocks}`;
-  return `      <article class="plan reveal" data-rooms="${x.rooms}">
+  return `      <article class="plan reveal" data-rooms="${x.rooms}" data-area="${x.area.replace(',', '.')}">
         <button class="plan__view" type="button"
                 data-zoom="/assets/img/plans/${x.id}-1400.webp"
                 data-zoom-label="${esc(label)}"
@@ -325,6 +326,56 @@ ${t.distances.map(([a, b]) => `      <li class="reveal"><span>${esc(a)}</span><b
       </ul>
       <p class="place__note reveal">${esc(t.distancesNote)}</p>`;
 
+
+/* ── логотип, который прорисовывается штрихом ──
+   Контуры лежат в src/logo-parts.json (сняты с фирменного вектора). Каждому пути
+   проставляем pathLength="1" и порядковый номер: дальше вся отрисовка — это две
+   строки CSS, без вычисления длин в браузере. */
+function inkPaths(svg, from) {
+  let i = from;
+  return svg.replace(/<path /g, () => `<path pathLength="1" style="--i:${i++}" `);
+}
+
+function logoDraw(extra) {
+  const script = inkPaths(LOGO.script, 0);
+  const caption = inkPaths(LOGO.caption, 5);
+  return `<svg class="mark${extra ? ' ' + extra : ''}" viewBox="${LOGO.viewBox}" role="img" aria-label="${site.brand}">
+      <title>${site.brand}</title>
+      <g class="mark__word">${script}</g>
+      <g class="mark__cap">${caption}</g>
+    </svg>`;
+}
+
+/* ── подбор квартиры: комнатность и площадь ──
+   Без JavaScript видны все планировки — отбор только сужает выдачу. */
+function picker(t, opts) {
+  const o = opts || {};
+  const p = t.plans;
+  const h = t.home;
+  const areas = p.items.map((x) => parseFloat(x.area.replace(',', '.')));
+  const min = Math.floor(Math.min.apply(null, areas));
+  const max = Math.ceil(Math.max.apply(null, areas));
+  const roomsOn = [1, 2, 3, 4].filter((n) => p.items.some((x) => x.rooms === n));
+  const chips = [['', p.filterAll]].concat(roomsOn.map((n) => [String(n), p.filterRooms[n]]))
+    .map(([val, label], i) => `        <button class="pick${i === 0 ? ' is-on' : ''}" type="button"
+                data-filter="${val}"${val && o.anchors ? ` id="rooms-${val}"` : ''} aria-pressed="${i === 0}">${esc(label)}</button>`).join('\n');
+
+  return `<div class="picker" data-picker data-area-tpl="${esc(h.pickerArea)}">
+      <div class="picker__rooms" role="group" aria-label="${esc(p.filterLabel)}">
+${chips}
+      </div>
+
+      <label class="picker__area">
+        <span class="picker__area-label" data-picker-area-label>${esc(h.pickerArea.replace('{n}', max))}</span>
+        <input type="range" min="${min}" max="${max}" value="${max}" step="1"
+               data-picker-area aria-label="${esc(h.pickerArea.replace('{n}', max))}">
+        <span class="picker__scale"><i>${min} ${t.ui.sqm}</i><i>${max} ${t.ui.sqm}</i></span>
+      </label>
+
+      <p class="picker__found"><b data-picker-count>${p.items.length}</b> <span>${esc(h.pickerFound)}</span></p>
+    </div>`;
+}
+
 /* ══════════════ каркас страницы ══════════════ */
 function shell(t, page) {
   const canonical = url(page.path);
@@ -350,7 +401,7 @@ function shell(t, page) {
 <meta property="og:url" content="${canonical}">
 <meta property="og:title" content="${esc(page.title)}">
 <meta property="og:description" content="${esc(page.description)}">
-<meta property="og:image" content="${url('/assets/img/hero-poster-1600.webp')}">
+<meta property="og:image" content="${url('/assets/img/hero-aerial-1920.webp')}">
 <meta property="og:locale" content="${t.locale}">
 <meta property="og:locale:alternate" content="${t.altLocale}">
 <meta name="twitter:card" content="summary_large_image">
@@ -405,115 +456,132 @@ ${page.body}
    Порядок разделов: титул → квартиры → кинолента → двор-парк → локация → заявка. */
 function home(t, page) {
   const h = t.home;
-  const cine = h.cine.map((c, i) => {
+  const cine = h.cine.map((c) => {
     const max = c.w[c.w.length - 1];
     const set = c.w.map((w) => `/assets/img/${c.img}-${w}.webp ${w}w`).join(', ');
     return `      <figure class="frame">
         <img src="/assets/img/${c.img}-${c.w[0]}.webp" srcset="${set}"
              sizes="100vw" alt="${esc(c.cap)}" width="${max}" height="${Math.round(max / 2)}"
-             loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">
+             loading="lazy" decoding="async">
         <figcaption class="frame__cap">${esc(c.cap)}</figcaption>
       </figure>`;
   }).join('\n');
 
-  const stats = h.stats.map((s) => `      <li><b data-count="${s.value}"${s.suffix ? ` data-suffix="${s.suffix}"` : ''}>${s.value}${s.suffix || ''}</b><span>${esc(s.label)}</span></li>`).join('\n');
-  const tiles = h.homesTiles.map((x) => `      <li class="reveal"><a href="${x.href}"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></a></li>`).join('\n');
-  const preview = h.homesPreview
-    .map((id) => t.plans.items.find((x) => x.id === id))
-    .filter(Boolean)
-    .map((x) => planCard(t, x)).join('\n');
+  const stats = h.stats.map((x) => `      <li class="figures__item">
+        <b data-count="${x.value}"${x.suffix ? ` data-suffix="${x.suffix}"` : ''}>${x.value}${x.suffix || ''}</b>
+        <span>${esc(x.label)}</span>
+      </li>`).join('\n');
+
+  /* Планировки стоят на главной целиком: подбор без выбора смысла не имеет. */
+  const plans = t.plans.items.map((x) => planCard(t, x)).join('\n');
+
   const p = t.lang === 'ru' ? '' : '/uz';
   const apartmentsHref = `${p}/apartments/`;
   const locationHref = `${p}/location/`;
   const projectHref = `${p}/project/`;
 
-  page.body = `<!-- ══════════════ 1 · ТИТУЛ ══════════════ -->
-<section class="hero" aria-label="${site.brand}">
+  page.body = `<!-- ══════════════ 1 · ТИТУЛ ══════════════
+     Страница открывается на белом: логотип прорисовывается штрихом, кадр
+     квартала лежит в рамке и раскрывается во весь экран по мере прокрутки.
+     Логотип стоит на чистом фоне, а не поверх снимка — гайдбук §2.6. -->
+<section class="opening" aria-label="${site.brand}">
+  <div class="opening__stage">
 
-  <picture>
-    <source media="(max-width:700px)" srcset="/assets/img/hero-mobile-1080.webp">
-    <img class="hero__media hero__media--still" src="/assets/img/hero-poster-1600.webp"
-         srcset="/assets/img/hero-poster-1024.webp 1024w, /assets/img/hero-poster-1600.webp 1600w"
-         sizes="100vw" alt="${esc(h.heroAlt)}" fetchpriority="high" width="1920" height="960">
-  </picture>
-
-  <!-- петля из имиджевого ролика: источник подставляет скрипт -->
-  <video class="hero__media hero__media--video" id="heroVideo" muted loop playsinline
-         preload="none" aria-hidden="true" tabindex="-1"
-         poster="/assets/img/hero-poster-1600.webp"
-         data-webm="/assets/video/hero-loop-{w}.webm"
-         data-mp4="/assets/video/hero-loop-{w}.mp4"
-         data-webm-portrait="/assets/video/hero-portrait.webm"
-         data-mp4-portrait="/assets/video/hero-portrait.mp4"></video>
-
-  <div class="hero__veil" aria-hidden="true"></div>
-
-  ${langSwitch(t, page.path, 'hero__lang')}
-
-  ${fly('near')}
-  ${fly('mid')}
-  ${fly('far')}
-  ${fly('visit', 'flyVisit')}
-
-  <div class="hero__inner">
-    <div class="hero__top">
-      <p class="eyebrow eyebrow--light" lang="uz">${h.heroEyebrow}</p>
-      <img class="hero__logo" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="360" height="120">
-      <h1 class="hero__slogan script" data-write="heroSlogan">${h.heroSlogan}</h1>
+    <div class="opening__head" data-open-head>
+      <p class="opening__eyebrow" lang="uz">${h.heroEyebrow}</p>
+      ${logoDraw('opening__mark')}
+      <h1 class="opening__slogan script" data-write="heroSlogan">${h.heroSlogan}</h1>
+      <p class="opening__sub" lang="${t.lang === 'ru' ? 'uz' : 'ru'}">${esc(h.heroSub)}</p>
     </div>
 
-    <div class="hero__bottom">
-      <p class="hero__sub" lang="${t.lang === 'ru' ? 'uz' : 'ru'}">${esc(h.heroSub)}</p>
-      <div class="cta-wrap">
-        <a class="cta" href="tel:${site.phone.tel}" data-track="phone_click">
-          <span class="cta__label">${esc(t.ui.call)}</span>
-          <span class="cta__num">${site.phone.display}</span>
+    <figure class="opening__frame" data-open-frame>
+      <picture>
+        <source media="(max-width:700px)" srcset="/assets/img/hero-aerial-portrait-1080.webp">
+        <img src="/assets/img/hero-aerial-1920.webp"
+             srcset="/assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w, /assets/img/hero-aerial-2560.webp 2560w"
+             sizes="100vw" alt="${esc(h.leadFrameAlt)}" fetchpriority="high" width="2560" height="1440">
+      </picture>
+
+      <div class="opening__foot" data-open-foot>
+        <a class="opening__scroll" href="#about">
+          <span aria-hidden="true"></span>${esc(h.leadScroll)}
+        </a>
+        <a class="opening__call" href="tel:${site.phone.tel}" data-track="phone_click">
+          <span class="opening__call-label">${esc(t.ui.call)}</span>
+          <span class="opening__call-num">${site.phone.display}</span>
         </a>
       </div>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ══════════════ 2 · О ПРОЕКТЕ ══════════════
+     Одна мысль на экран и крупные показатели: цифры досчитываются,
+     когда раздел выходит на экран. -->
+<section class="about" id="about">
+  <div class="about__inner">
+    <p class="eyebrow reveal"><span class="num">${h.aboutNum}</span> ${esc(h.aboutEyebrow)}</p>
+    <h2 class="display display--wide" data-lines>${h.aboutTitle}</h2>
+    <div class="about__cols">
+      <p class="about__text reveal">${esc(h.aboutText)}</p>
+      <p class="about__text reveal">${esc(h.aboutText2)}</p>
     </div>
-  </div>
-
-  <a class="scroll-hint" href="#homes" aria-label="${esc(t.ui.scrollNext)}"><span aria-hidden="true"></span></a>
-</section>
-
-<!-- ══════════════ 2 · КВАРТИРЫ ══════════════
-     Планировки стоят прямо в ленте главной: в меню за ними заходят не все. -->
-<section class="homes" id="homes">
-  <div class="homes__inner">
-    <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
-    <h2 class="display" data-lines>${h.homesTitle}</h2>
-    <ul class="homes__tiles">
-${tiles}
+    <ul class="figures">
+${stats}
     </ul>
-  </div>
-
-  <div class="plans">
-${preview}
-  </div>
-
-  <div class="homes__inner">
-    <p class="homes__note reveal">${esc(h.homesNote)}</p>
-    <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
+    <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
   </div>
 </section>
 
-<!-- ══════════════ АРХИТЕКТУРНЫЕ РЕШЕНИЯ ══════════════
-     Фасады и входные группы вблизи — заказчик просил показать их крупно. -->
+<!-- ══════════════ 3 · АРХИТЕКТУРА ══════════════ -->
 <section class="arch" id="architecture">
   <div class="arch__head">
     <p class="eyebrow reveal"><span class="num">${h.archNum}</span> ${esc(h.archEyebrow)}</p>
     <h2 class="display" data-lines>${h.archTitle}</h2>
     <p class="arch__text reveal">${esc(h.archText)}</p>
-    <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
   </div>
   <div class="gallery__grid">
 ${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
   </div>
 </section>
 
-<!-- ══════════════ 3 · КИНОЛЕНТА ══════════════
-     Кадры едут вбок при обычном вертикальном скролле. -->
-<section class="cine" id="film" data-cine aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
+<!-- ══════════════ 4 · ФИЛЬМ ══════════════
+     Единственная тёмная полоса на странице: имиджевый ролик идёт петлёй
+     без звука. Не грузится при экономии трафика и на медленной сети. -->
+<section class="film" id="film">
+  <video class="film__video" id="heroVideo" muted loop playsinline
+         preload="none" aria-hidden="true" tabindex="-1"
+         poster="/assets/img/hero-poster-1600.webp"
+         data-webm="/assets/video/hero-loop-{w}.webm"
+         data-mp4="/assets/video/hero-loop-{w}.mp4"
+         data-webm-portrait="/assets/video/hero-portrait.webm"
+         data-mp4-portrait="/assets/video/hero-portrait.mp4"></video>
+  <div class="film__veil" aria-hidden="true"></div>
+  <div class="film__inner">
+    <p class="eyebrow eyebrow--light reveal">${esc(h.filmEyebrow)}</p>
+    <h2 class="display display--light" data-lines>${h.filmTitle}</h2>
+    <p class="film__note reveal">${esc(h.filmNote)}</p>
+  </div>
+</section>
+
+<!-- ══════════════ 5 · ДВОР-ПАРК ══════════════ -->
+<section class="split" id="yard">
+  <div class="split__media figure-mask">
+    <img src="/assets/img/yard-1920.webp"
+         srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
+         sizes="(min-width:900px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
+         width="1920" height="1071" loading="lazy" decoding="async">
+  </div>
+  <div class="split__panel">
+    <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
+    <h2 class="display" data-lines>${h.yardTitle}</h2>
+    <p class="split__text reveal">${esc(h.yardText)}</p>
+  </div>
+</section>
+
+<!-- ══════════════ КИНОЛЕНТА ══════════════ -->
+<section class="cine" data-cine aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
   <div class="cine__stage">
     <div class="cine__track">
 ${cine}
@@ -528,26 +596,7 @@ ${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}
   </div>
 </section>
 
-<!-- ══════════════ 4 · ДВОР-ПАРК ══════════════ -->
-<section class="split" id="yard">
-  <div class="split__media figure-mask">
-    <img src="/assets/img/yard-1920.webp"
-         srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
-         sizes="(min-width:900px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
-         width="1920" height="1071" loading="lazy" decoding="async">
-  </div>
-  <div class="split__panel">
-    <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
-    <h2 class="display" data-lines>${h.yardTitle}</h2>
-    <p class="split__text reveal">${esc(h.yardText)}</p>
-    <ul class="stats reveal">
-${stats}
-    </ul>
-  </div>
-</section>
-
-<!-- ══════════════ ГАЛЕРЕЯ ══════════════
-     Разворот без номера: это дополнительный материал, а не шаг рассказа. -->
+<!-- ══════════════ ГАЛЕРЕЯ ══════════════ -->
 <section class="gallery" id="gallery">
   <div class="gallery__head">
     <p class="eyebrow reveal">${esc(h.galleryEyebrow)}</p>
@@ -567,7 +616,29 @@ ${h.gallery.map((g) => {
   </div>
 </section>
 
-<!-- ══════════════ 5 · ЛОКАЦИЯ ══════════════ -->
+<!-- ══════════════ 6 · КВАРТИРЫ И ПОДБОР ══════════════
+     Отбор по комнатности и площади стоит прямо на главной: до отдельной
+     страницы доходят не все, а выбрать квартиру человек хочет сразу. -->
+<section class="homes" id="homes">
+  <div class="homes__inner">
+    <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
+    <h2 class="display" data-lines>${h.homesTitle}</h2>
+    <p class="homes__lead reveal">${esc(h.pickerNote)}</p>
+    ${picker(t, {})}
+  </div>
+
+  <div class="plans" data-picker-grid>
+${plans}
+  </div>
+
+  <div class="homes__inner">
+    <p class="picker__empty" data-picker-empty hidden>${esc(h.pickerEmpty)}</p>
+    <p class="homes__note reveal">${esc(h.homesNote)}</p>
+    <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
+  </div>
+</section>
+
+<!-- ══════════════ 7 · ЛОКАЦИЯ ══════════════ -->
 <section class="place" id="place">
   <div class="place__inner">
     <div>
@@ -581,9 +652,7 @@ ${h.gallery.map((g) => {
   </div>
 </section>
 
-<!-- ══════════════ МАСТЕР-ПЛАН РАЙОНА ══════════════
-     Каким «Залиния» станет через несколько лет: до этой страницы доходили не все,
-     поэтому план стоит и в общей ленте. -->
+<!-- ══════════════ МАСТЕР-ПЛАН РАЙОНА ══════════════ -->
 <section class="district" id="district">
   <div class="district__inner">
     <p class="eyebrow reveal">${esc(h.masterEyebrow)}</p>
@@ -591,6 +660,19 @@ ${h.gallery.map((g) => {
     <p class="district__text reveal">${esc(h.masterText)}</p>
     ${masterplan(t)}
     <a class="link-call reveal" href="${locationHref}">${esc(h.masterLink)}</a>
+  </div>
+</section>
+
+<!-- ══════════════ 8 · КТО СТРОИТ ══════════════ -->
+<section class="maker" id="maker">
+  <div class="maker__inner">
+    <p class="eyebrow reveal">${esc(h.makerEyebrow)}</p>
+    <h2 class="display" data-lines>${h.makerTitle}</h2>
+    <p class="maker__text reveal">${esc(h.makerText)}</p>
+    <dl class="maker__list">
+      <div class="maker__row reveal"><dt>${esc(h.makerDev)}</dt><dd>${esc(site.developer.name)}</dd></div>
+      <div class="maker__row reveal"><dt>${esc(h.makerArch)}</dt><dd>${esc(site.architect.name)}</dd></div>
+    </dl>
   </div>
 </section>
 
@@ -605,13 +687,6 @@ function apartments(t, page) {
 
   const cards = p.items.map((x) => planCard(t, x)).join('\n');
 
-  /* Фильтр по комнатности: без него 33 планировки читаются как свалка.
-     Работает и без JavaScript — тогда просто видны все планировки. */
-  const roomsOn = [1, 2, 3, 4].filter((n) => p.items.some((x) => x.rooms === n));
-  const chips = [['', p.filterAll]].concat(roomsOn.map((n) => [String(n), p.filterRooms[n]]))
-    .map(([val, label], i) => `      <button class="pick${i === 0 ? ' is-on' : ''}" type="button"
-              data-filter="${val}"${val ? ` id="rooms-${val}"` : ''} aria-pressed="${i === 0}">${esc(label)}</button>`).join('\n');
-
   page.body = `<section class="page">
   <div class="page__inner">
     ${breadcrumbs(t, [[page.path, t.nav.apartments]])}
@@ -623,16 +698,15 @@ function apartments(t, page) {
   <div class="page__inner">
     <h2 class="page__h2" id="plans">${esc(p.title)}</h2>
     <p class="page__text">${esc(p.lead)}</p>
-    <div class="picks" role="group" aria-label="${esc(p.filterLabel)}" data-plan-filter>
-${chips}
-    </div>
+    ${picker(t, { anchors: true })}
   </div>
 
-  <div class="plans" data-plan-grid>
+  <div class="plans" data-picker-grid>
 ${cards}
   </div>
 
   <div class="page__inner">
+    <p class="picker__empty" data-picker-empty hidden>${esc(t.home.pickerEmpty)}</p>
     <p class="plans__note">${esc(p.note)}</p>
 
     <h2 class="page__h2">${esc(a.termsTitle)}</h2>

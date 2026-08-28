@@ -62,7 +62,7 @@ const complexLd = (t) => ({
   '@type': 'ApartmentComplex',
   name: site.brand,
   url: T.url(t.lang === 'ru' ? '/' : '/uz/'),
-  image: T.url('/assets/img/hero-poster-1600.webp'),
+  image: T.url('/assets/img/hero-aerial-1920.webp'),
   description: t.meta.home.description,
   numberOfAccommodationUnits: site.facts.apartments,
   telephone: site.phone.intl,
@@ -102,9 +102,9 @@ const crumbsLd = (t, items) => ({
 function pagesFor(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   const home = `${p}/` || '/';
-  const preloadHome = '<link rel="preload" as="image" href="/assets/img/hero-poster-1600.webp"'
-    + ' imagesrcset="/assets/img/hero-poster-1024.webp 1024w, /assets/img/hero-poster-1600.webp 1600w"'
-    + ' fetchpriority="high">\n';
+  const preloadHome = '<link rel="preload" as="image" href="/assets/img/hero-aerial-1920.webp"'
+    + ' imagesrcset="/assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w,'
+    + ' /assets/img/hero-aerial-2560.webp 2560w" imagesizes="100vw" fetchpriority="high">\n';
 
   return [
     {
