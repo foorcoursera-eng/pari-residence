@@ -619,7 +619,7 @@
 
   /* ── кинолента: кадры меняются сами, скролл страницы не перехватывается ── */
   var cine = document.querySelector('[data-cine]');
-  if (cine && !motion) {                 /* с GSAP лента листается прокруткой */
+  if (cine) {                            /* карусель работает всегда: прокрутку не трогаем */
     var cineTrack = cine.querySelector('.cine__track');
     var shots = [].slice.call(cine.querySelectorAll('.frame'));
     var dots = [].slice.call(cine.querySelectorAll('[data-cine-go]'));
@@ -952,6 +952,45 @@
       });
     });
   });
+
+  /* ══════════════ навигация по разделам ══════════════
+     Считаем положение разделов в момент прокрутки, а не заранее: страница
+     растёт по мере загрузки планировок, и заранее посчитанные границы
+     разъезжаются — подсветка начинает показывать не тот раздел.
+     Активным считается раздел, пересекающий линию на 42% высоты экрана. */
+  var rail = document.querySelector('[data-rail]');
+  if (rail) {
+    var railItems = [].slice.call(rail.querySelectorAll('a'))
+      .map(function (a) { return { a: a, el: document.querySelector(a.getAttribute('href')) }; })
+      .filter(function (x) { return x.el; });
+
+    var markSection = function () {
+      var line = innerHeight * 0.42;
+      var hit = null;
+      var above = null;
+      railItems.forEach(function (x) {
+        var r = x.el.getBoundingClientRect();
+        if (r.top <= line && r.bottom > line) { hit = x; }
+        if (r.top <= line) { above = x; }
+      });
+      var on = hit || above;
+      railItems.forEach(function (x) {
+        x.a.classList.toggle('is-on', x === on);
+        if (x === on) { x.a.setAttribute('aria-current', 'true'); }
+        else { x.a.removeAttribute('aria-current'); }
+      });
+    };
+
+    var railWaiting = false;
+    var railTick = function () {
+      if (railWaiting) { return; }
+      railWaiting = true;
+      requestAnimationFrame(function () { railWaiting = false; markSection(); });
+    };
+    addEventListener('scroll', railTick, { passive: true });
+    addEventListener('resize', railTick);
+    markSection();
+  }
 
   var items = document.querySelectorAll('.reveal');
   if (motion) { return; }                /* появления блоков ведёт motion.js */

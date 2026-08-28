@@ -174,46 +174,12 @@
   /* ── 6 · кинолента листается горизонтально ──
      Секция задерживается на экране, кадры едут вбок ровно на длину ленты.
      На узких экранах остаётся обычная вертикальная лента — там пин мешает. */
-  var cine = document.querySelector('[data-cine]');
-  if (cine && wide) {
-    var track = cine.querySelector('.cine__track');
-    var frames = cine.querySelectorAll('.frame');
-    if (track && frames.length > 1) {
-      cine.classList.add('is-rail');
-      var distance = function () { return track.scrollWidth - window.innerWidth; };
-
-      gsap.to(track, {
-        x: function () { return -distance(); },
-        ease: 'none',
-        scrollTrigger: {
-          trigger: cine,
-          start: 'top top',
-          end: function () { return '+=' + distance(); },
-          pin: true,
-          scrub: 0.7,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: function (self) {
-            var i = Math.round(self.progress * (frames.length - 1));
-            cine.querySelectorAll('[data-cine-go]').forEach(function (dot, k) {
-              dot.classList.toggle('is-on', k === i);
-              dot.setAttribute('aria-selected', k === i ? 'true' : 'false');
-            });
-          },
-        },
-      });
-
-      /* подпись кадра приподнимается, когда кадр в центре экрана */
-      frames.forEach(function (frame) {
-        var cap = frame.querySelector('.frame__cap');
-        if (!cap) { return; }
-        gsap.from(cap, {
-          y: 24, opacity: 0, duration: 0.8, ease: EASE,
-          scrollTrigger: { trigger: frame, containerAnimation: null, start: 'top 90%', once: true },
-        });
-      });
-    }
-  }
+  /* ── 6 · раздел «состав квартала» ──
+     Раздел НЕ закрепляется и не перехватывает прокрутку: человек должен
+     проходить его насквозь одним движением, а кадры листаются сами и
+     стрелками. Закреплённый рельс заставлял пролистать все слайды, прежде
+     чем страница поедет дальше, — заказчик справедливо на это жаловался.
+     Саму карусель ведёт script.js. */
 
   /* ── 6б · ленты, которые листаются пальцем ──
      Полоски под лентой показывают, где мы находимся, и переносят к нужному кадру. */
@@ -376,20 +342,6 @@
           onToggle: function (self) { if (self.isActive) { swim.play(); } else { swim.pause(); } },
         });
       },
-    });
-  }
-
-  /* ── навигация по разделам: подсвечиваем тот, что сейчас на экране ── */
-  var rail = document.querySelector('[data-rail]');
-  if (rail) {
-    var links = [].slice.call(rail.querySelectorAll('a'));
-    links.forEach(function (a) {
-      var target = document.querySelector(a.getAttribute('href'));
-      if (!target) { a.hidden = true; return; }
-      ScrollTrigger.create({
-        trigger: target, start: 'top 60%', end: 'bottom 40%',
-        onToggle: function (self) { a.classList.toggle('is-on', self.isActive); },
-      });
     });
   }
 
