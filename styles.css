@@ -1455,12 +1455,8 @@ html.has-smooth.lenis-stopped{overflow:hidden}
 .maker__row dd{margin:0;font-family:var(--display);font-size:clamp(18px,2.4vw,30px);color:var(--ink)}
 
 
-/* ── кадр первого экрана набирает цвет ──
-   Пока рамка небольшая, снимок чёрно-белый; по мере раскрытия цвет
-   возвращается и на полном экране кадр цветной целиком. Значение ведёт
-   motion.js, здесь только начальное состояние — без скрипта кадр цветной. */
-.has-motion .opening__frame img{filter:grayscale(1)}
-@media (prefers-reduced-motion:reduce){ .has-motion .opening__frame img{filter:none} }
+/* Обесцвечивание кадра убрано: роль «до» теперь играет сам чертёж,
+   а рендер под ним обязан быть цветным с первой секунды. */
 
 /* ── постоянная пара кнопок в углу ── */
 .dock{
