@@ -237,7 +237,7 @@ const ru = {
        Разделы пересобраны по сценарию, который заказчик показал как образец. */
     leadScroll: 'Листайте',
     leadFrameAlt: 'PARI Residence — квартал с высоты птичьего полёта',
-    leadPlanAlt: 'PARI Residence — линия фасадов квартала, архитектурный чертёж',
+    leadPlanAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
 
     aboutNum: '01',
     aboutEyebrow: 'О проекте',
@@ -683,7 +683,7 @@ const uz = {
     /* ── v3 (28.08.2026): birinchi ekran yorugʻ boʻldi, boʻlimlar qayta yigʻildi ── */
     leadScroll: 'Varaqlang',
     leadFrameAlt: 'PARI Residence — kvartalning qushuchar nigohidan koʻrinishi',
-    leadPlanAlt: 'PARI Residence — kvartal fasadlari chizmasi',
+    leadPlanAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan fasadlar',
 
     aboutNum: '01',
     aboutEyebrow: 'Loyiha haqida',

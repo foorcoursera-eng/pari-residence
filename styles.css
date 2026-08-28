@@ -1535,8 +1535,7 @@ body.has-callbar .dock{transform:none;opacity:1;pointer-events:auto}
 .opening__frame picture{display:block;width:100%;height:100%}
 .opening__plan{
   position:absolute;inset:0;z-index:1;
-  width:100%;height:100%;object-fit:contain;
-  padding:clamp(10px,3.5%,46px);opacity:0;
+  width:100%;height:100%;object-fit:cover;opacity:0;
 }
 .has-motion .opening__plan{opacity:1}
 .has-motion .opening__shot{opacity:0}
@@ -1570,17 +1569,17 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .art{margin:0;overflow:hidden;background:var(--milk)}
 .art img{width:100%;height:100%;object-fit:cover}
 .art--arch{
-  position:absolute;left:0;bottom:0;z-index:2;width:56%;height:76%;
+  position:absolute;left:-5%;bottom:0;z-index:2;width:48%;height:74%;
   border-radius:50% 50% 0 0 / 42% 42% 0 0;
   will-change:transform;
 }
-.art--shot{position:absolute;right:0;top:0;z-index:1;width:72%;height:84%}
+.art--shot{position:absolute;right:0;top:0;z-index:1;width:74%;height:84%}
 
 @media (max-width:899px){
   .about__art{min-height:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
     align-items:end;gap:0}
   .art{position:static;width:auto;height:auto;aspect-ratio:3/4}
-  .art--arch{margin-right:-14%;z-index:2}
+  .art--arch{margin-right:-9%;z-index:2}
   .art--shot{margin-top:12%;z-index:1;aspect-ratio:4/5}
 }
 

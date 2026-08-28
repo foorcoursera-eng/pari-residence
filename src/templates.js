@@ -544,11 +544,11 @@ function home(t, page) {
              sizes="100vw" alt="${esc(h.leadFrameAlt)}" fetchpriority="high" width="2560" height="1440">
       </picture>
 
-      <!-- линия фасадов, снятая с рендера: с неё начинается первый экран,
-           при листании чертёж уступает место самому рендеру -->
-      <img class="opening__plan" src="/assets/img/wireframe-1600.webp"
-           srcset="/assets/img/wireframe-1600.webp 1600w, /assets/img/wireframe-2400.webp 2400w"
-           sizes="100vw" alt="${esc(h.leadPlanAlt)}" width="1600" height="893"
+      <!-- первый кадр: фасады с улицы. При листании он уходит, и на его
+           место встаёт общий план квартала — два разных ракурса одного места -->
+      <img class="opening__plan" src="/assets/img/opening-facade-1920.webp"
+           srcset="/assets/img/opening-facade-1280.webp 1280w, /assets/img/opening-facade-1920.webp 1920w, /assets/img/opening-facade-2560.webp 2560w"
+           sizes="100vw" alt="${esc(h.leadPlanAlt)}" width="2560" height="1440"
            fetchpriority="high" decoding="async">
 
       <div class="opening__foot" data-open-foot>

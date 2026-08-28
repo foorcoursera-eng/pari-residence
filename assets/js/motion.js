@@ -98,13 +98,16 @@
         scrub: 0.5, invalidateOnRefresh: true,
         onUpdate: function (self) {
           var p = self.progress;
-          if (plan) { plan.style.opacity = (1 - seg(p, 0.22, 0.52)).toFixed(3); }
+          /* Окна не пересекаются: первый кадр уходит полностью, и только
+             потом приходит второй. При наложении двух разных ракурсов
+             получается каша из полупрозрачных зданий. */
+          if (plan) { plan.style.opacity = (1 - seg(p, 0.26, 0.46)).toFixed(3); }
           if (shot) {
-            shot.style.opacity = seg(p, 0.28, 0.60).toFixed(3);
-            var g = 1 - seg(p, 0.42, 0.94);
+            shot.style.opacity = seg(p, 0.42, 0.62).toFixed(3);
+            var g = 1 - seg(p, 0.52, 0.96);
             shot.style.filter = g < 0.005 ? 'none' : 'grayscale(' + g.toFixed(2) + ')';
           }
-          frame.classList.toggle('is-photo', p > 0.40);
+          frame.classList.toggle('is-photo', p < 0.30 || p > 0.52);
         },
       });
     }
