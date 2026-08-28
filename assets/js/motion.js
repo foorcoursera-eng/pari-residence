@@ -98,16 +98,13 @@
         scrub: 0.5, invalidateOnRefresh: true,
         onUpdate: function (self) {
           var p = self.progress;
-          /* Окна не пересекаются: первый кадр уходит полностью, и только
-             потом приходит второй. При наложении двух разных ракурсов
-             получается каша из полупрозрачных зданий. */
-          if (plan) { plan.style.opacity = (1 - seg(p, 0.26, 0.46)).toFixed(3); }
-          if (shot) {
-            shot.style.opacity = seg(p, 0.42, 0.62).toFixed(3);
-            var g = 1 - seg(p, 0.52, 0.96);
-            shot.style.filter = g < 0.005 ? 'none' : 'grayscale(' + g.toFixed(2) + ')';
-          }
-          frame.classList.toggle('is-photo', p < 0.30 || p > 0.52);
+          /* Слои показывают один и тот же кадр, поэтому меняются они в одном
+             окне и внахлёст: линия тает, краска проступает — рисунок
+             раскрашивается на месте, без подмены ракурса. */
+          var mix = seg(p, 0.24, 0.62);
+          if (plan) { plan.style.opacity = (1 - mix).toFixed(3); }
+          if (shot) { shot.style.opacity = mix.toFixed(3); }
+          frame.classList.toggle('is-photo', mix > 0.55);
         },
       });
     }
@@ -396,5 +393,10 @@
     });
   }
 
+  /* Пересчёт после загрузки и после подмены шрифтов: пока висит подстановочный
+     шрифт, высоты блоков другие, и границы разделов уезжают. */
   addEventListener('load', function () { ScrollTrigger.refresh(); });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
+  }
 })();

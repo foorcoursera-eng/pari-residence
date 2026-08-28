@@ -236,7 +236,7 @@ const ru = {
        прорисовывается штрихом, кадр квартала раскрывается при прокрутке.
        Разделы пересобраны по сценарию, который заказчик показал как образец. */
     leadScroll: 'Листайте',
-    leadFrameAlt: 'PARI Residence — квартал с высоты птичьего полёта',
+    leadFrameAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
     leadPlanAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
 
     aboutNum: '01',
@@ -682,7 +682,7 @@ const uz = {
 
     /* ── v3 (28.08.2026): birinchi ekran yorugʻ boʻldi, boʻlimlar qayta yigʻildi ── */
     leadScroll: 'Varaqlang',
-    leadFrameAlt: 'PARI Residence — kvartalning qushuchar nigohidan koʻrinishi',
+    leadFrameAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan kvartal fasadlari',
     leadPlanAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan fasadlar',
 
     aboutNum: '01',

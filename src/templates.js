@@ -537,18 +537,17 @@ function home(t, page) {
     </div>
 
     <figure class="opening__frame" data-open-frame>
-      <picture>
-        <source media="(max-width:700px)" srcset="/assets/img/hero-aerial-portrait-1080.webp">
-        <img class="opening__shot" src="/assets/img/hero-aerial-1920.webp"
-             srcset="/assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w, /assets/img/hero-aerial-2560.webp 2560w"
-             sizes="100vw" alt="${esc(h.leadFrameAlt)}" fetchpriority="high" width="2560" height="1440">
-      </picture>
+      <!-- Один кадр в двух состояниях: сверху лежит чертёж, под ним тот же
+           самый рендер в красках. Оба сделаны из одного исходника без обрезки,
+           поэтому при листании рисунок буквально раскрашивается. -->
+      <img class="opening__shot" src="/assets/img/opening-shot-1920.webp"
+           srcset="/assets/img/opening-shot-1280.webp 1280w, /assets/img/opening-shot-1920.webp 1920w, /assets/img/opening-shot-2560.webp 2560w"
+           sizes="100vw" alt="${esc(h.leadFrameAlt)}" width="2560" height="1429"
+           fetchpriority="high" decoding="async">
 
-      <!-- первый кадр: фасады с улицы. При листании он уходит, и на его
-           место встаёт общий план квартала — два разных ракурса одного места -->
-      <img class="opening__plan" src="/assets/img/opening-facade-1920.webp"
-           srcset="/assets/img/opening-facade-1280.webp 1280w, /assets/img/opening-facade-1920.webp 1920w, /assets/img/opening-facade-2560.webp 2560w"
-           sizes="100vw" alt="${esc(h.leadPlanAlt)}" width="2560" height="1440"
+      <img class="opening__plan" src="/assets/img/opening-line-1600.webp"
+           srcset="/assets/img/opening-line-1600.webp 1600w, /assets/img/opening-line-2400.webp 2400w"
+           sizes="100vw" alt="" aria-hidden="true" width="1600" height="893"
            fetchpriority="high" decoding="async">
 
       <div class="opening__foot" data-open-foot>

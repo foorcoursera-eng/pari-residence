@@ -1532,7 +1532,7 @@ body.has-callbar .dock{transform:none;opacity:1;pointer-events:auto}
    motion.js — здесь только исходные состояния. Без скрипта виден рендер:
    страница не должна остаться с одним чертежом. */
 .opening__frame{background:var(--paper)}
-.opening__frame picture{display:block;width:100%;height:100%}
+.opening__shot{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover}
 .opening__plan{
   position:absolute;inset:0;z-index:1;
   width:100%;height:100%;object-fit:cover;opacity:0;
