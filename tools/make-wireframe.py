@@ -26,10 +26,12 @@ INK = (33, 26, 18)     # цвет линии: фирменный чёрный с
 
 LO, HI = 0.06, 0.34    # порог силы ребра: ниже — фон, выше — линия в полную силу
 GAMMA = 0.85           # мягкость набора плотности
-LEAF_DROP = 0.94       # насколько глушим листву
+LEAF_DROP = 0.97       # насколько глушим листву
 SKY_DROP = 0.95        # насколько глушим небо
-GROUND = 0.30          # доля кадра снизу, которая уходит в ничто: газон и кусты
+GROUND = 0.34          # доля кадра снизу, которая уходит в ничто: газон и кусты
                        # в чертеже читаются как грязь
+SIDES = 0.07           # и столько же тает по бокам — чертёж не должен
+                       # обрываться по линейке
 STUD_STEP = 44         # шаг выносных вертикалей над корпусами
 STUD_LEN = (120, 250)  # их длина
 
@@ -45,18 +47,42 @@ def sobel(a):
                 if w:
                     out += w * np.roll(np.roll(src, dy, 0), dx, 1)
         return out
-    return np.hypot(conv(a, kx), conv(a, ky))
+    mag = np.hypot(conv(a, kx), conv(a, ky))
+    # np.roll заворачивает картинку, поэтому на стыке краёв возникает ложное
+    # ребро — та самая рамка по периметру. Срезаем её.
+    mag[:2, :] = 0
+    mag[-2:, :] = 0
+    mag[:, :2] = 0
+    mag[:, -2:] = 0
+    return mag
 
 
 def add_studs(alpha):
+    """Тонкие вертикали над кровлями.
+
+    Ставим их только там, где под линией действительно стоит корпус: у куста
+    или у края кадра тоже находится «верхняя точка», и вертикаль над ней висит
+    в пустом небе. Признаков два — под точкой должно быть много графики,
+    а сама линия кровли должна быть ровной на несколько шагов вокруг.
+    """
     h, w = alpha.shape
-    # линия кровли: первая сверху строка, где ребро уже уверенное
     strong = alpha > 0.30
     roof = np.where(strong.any(0), strong.argmax(0), -1)
     lens = (STUD_LEN[0], STUD_LEN[1], (STUD_LEN[0] + STUD_LEN[1]) // 2)
-    for i, x in enumerate(range(0, w, STUD_STEP)):
+    edge = int(w * 0.05)                       # у самых краёв не ставим вовсе
+
+    for i, x in enumerate(range(edge, w - edge, STUD_STEP)):
         y = roof[x]
-        if y < 30 or y > h * 0.75:
+        if y < 30 or y > h * 0.62:
+            continue
+        # под кровлей должен быть корпус, а не крона: считаем плотность графики
+        body = alpha[y:min(h, y + 260), x]
+        if body.mean() < 0.10:
+            continue
+        # и кровля должна быть ровной: у куста соседние точки скачут
+        near = roof[max(0, x - 60):min(w, x + 60)]
+        near = near[near >= 0]
+        if near.size < 40 or abs(float(np.median(near)) - y) > 26:
             continue
         top = max(0, y - lens[i % 3])
         col = np.linspace(0, 0.42, y - top, dtype=np.float32)   # кверху тает
@@ -102,6 +128,14 @@ def main():
     start = int(hgt * (1 - GROUND))
     fade[start:] = np.linspace(1, 0, hgt - start) ** 1.6
     alpha *= fade[:, None]
+
+    wid = alpha.shape[1]
+    side = np.ones(wid, dtype=np.float32)
+    edge = int(wid * SIDES)
+    ramp = np.linspace(0, 1, edge, dtype=np.float32) ** 1.4
+    side[:edge] = ramp
+    side[-edge:] = ramp[::-1]
+    alpha *= side[None, :]
 
     # выносные вертикали над кровлями — то, что делает картинку чертежом,
     # а не обведённой фотографией

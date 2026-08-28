@@ -357,6 +357,28 @@
 
   /* пересчёт после подгрузки картинок: иначе длина ленты берётся до их появления */
 
+
+  /* ── арка над рендером ──
+     Кадр в арке выходит вперёд и потом едва заметно качается: движение
+     медленное и без отскока, иначе получится баннер, а не квартал.
+     Пока раздел вне экрана, качание стоит — незачем крутить кадры впустую. */
+  var arch = document.querySelector('.art--arch');
+  if (arch) {
+    gsap.fromTo(arch, { opacity: 0, yPercent: 8, scale: 0.965 }, {
+      opacity: 1, yPercent: 0, scale: 1, duration: 1.5, ease: EASE,
+      scrollTrigger: { trigger: arch, start: 'top 88%', once: true },
+      onComplete: function () {
+        var swim = gsap.to(arch, {
+          yPercent: -3.2, duration: 6.5, ease: 'sine.inOut', yoyo: true, repeat: -1,
+        });
+        ScrollTrigger.create({
+          trigger: arch, start: 'top bottom', end: 'bottom top',
+          onToggle: function (self) { if (self.isActive) { swim.play(); } else { swim.pause(); } },
+        });
+      },
+    });
+  }
+
   /* ── навигация по разделам: подсвечиваем тот, что сейчас на экране ── */
   var rail = document.querySelector('[data-rail]');
   if (rail) {
