@@ -491,14 +491,18 @@ ${dock(t, page)}
    Порядок разделов: титул → квартиры → кинолента → двор-парк → локация → заявка. */
 function home(t, page) {
   const h = t.home;
+  /* Слайд раздела: кадр во весь экран, заголовок и абзац поверх него. */
   const cine = h.cine.map((c) => {
     const max = c.w[c.w.length - 1];
     const set = c.w.map((w) => `/assets/img/${c.img}-${w}.webp ${w}w`).join(', ');
     return `      <figure class="frame">
         <img src="/assets/img/${c.img}-${c.w[0]}.webp" srcset="${set}"
-             sizes="100vw" alt="${esc(c.cap)}" width="${max}" height="${Math.round(max / 2)}"
+             sizes="100vw" alt="${esc(c.title)}" width="${max}" height="${Math.round(max / 2)}"
              loading="lazy" decoding="async">
-        <figcaption class="frame__cap">${esc(c.cap)}</figcaption>
+        <figcaption class="frame__cap">
+          <b class="frame__name">${esc(c.title)}</b>
+          <span class="frame__text">${esc(c.text)}</span>
+        </figcaption>
       </figure>`;
   }).join('\n');
 
@@ -650,6 +654,11 @@ ${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
 
 <!-- ══════════════ КИНОЛЕНТА ══════════════ -->
 <section class="cine" data-cine aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
+  <div class="cine__head">
+    <p class="eyebrow eyebrow--light reveal">${esc(h.cineEyebrow)}</p>
+    <h2 class="display display--light" data-lines>${h.cineTitle}</h2>
+  </div>
+
   <div class="cine__stage">
     <div class="cine__track">
 ${cine}
@@ -659,28 +668,8 @@ ${cine}
     <button class="cine__arrow cine__arrow--next" type="button" data-cine-next aria-label="${esc(h.cineNext)}"></button>
 
     <div class="cine__dots" role="tablist" aria-label="${esc(h.cineLabel)}">
-${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}" type="button" role="tab" data-cine-go="${i}" aria-label="${esc(c.cap)}"${i === 0 ? ' aria-selected="true"' : ''}><i></i></button>`).join('\n')}
+${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}" type="button" role="tab" data-cine-go="${i}" aria-label="${esc(c.title)}"${i === 0 ? ' aria-selected="true"' : ''}><i></i></button>`).join('\n')}
     </div>
-  </div>
-</section>
-
-<!-- ══════════════ ГАЛЕРЕЯ ══════════════ -->
-<section class="gallery" id="gallery">
-  <div class="gallery__head">
-    <p class="eyebrow reveal">${esc(h.galleryEyebrow)}</p>
-    <h2 class="display reveal" data-lines>${h.galleryTitle}</h2>
-  </div>
-  <div class="gallery__grid">
-${h.gallery.map((g) => {
-    const max = g.w[g.w.length - 1];
-    const set = g.w.map((w) => `/assets/img/${g.img}-${w}.webp ${w}w`).join(', ');
-    return `    <figure class="shot${g.big ? ' shot--big' : ''}${g.wide ? ' shot--wide' : ''} reveal">
-      <img src="/assets/img/${g.img}-${g.w[0]}.webp" srcset="${set}"
-           sizes="(min-width:900px) ${g.big || g.wide ? '58vw' : '29vw'}, 100vw" alt="${esc(g.cap)}"
-           width="${max}" height="${g.h || Math.round(max / 1.6)}" loading="lazy" decoding="async">
-      <figcaption>${esc(g.cap)}</figcaption>
-    </figure>`;
-  }).join('\n')}
   </div>
 </section>
 

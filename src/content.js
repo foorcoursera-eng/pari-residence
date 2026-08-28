@@ -279,14 +279,48 @@ const ru = {
     conceptReliefAlt: 'Барельеф: Регистан и Париж в едином орнаменте',
     conceptWhisper: 'В восточной традиции PARI — фея, образ лёгкости и почти волшебного очарования.',
 
-    cineLabel: 'Кадры проекта',
-    cinePrev: 'Предыдущий кадр',
-    cineNext: 'Следующий кадр',
+    cineLabel: 'Состав квартала',
+    cinePrev: 'Предыдущий раздел',
+    cineNext: 'Следующий раздел',
+    cineEyebrow: 'Состав квартала',
+    cineTitle: 'Всё нужное —<br>внутри квартала',
+    /* Каждый слайд — раздел, а не просто кадр: заголовок и короткий абзац
+       поверх фотографии. Раньше здесь была лента подписанных кадров, и она
+       читалась как случайный набор картинок. */
     cine: [
-      { img: 'cine-yard', w: [1280, 1920, 2560], cap: 'Двор с зонами отдыха' },
-      { img: 'cine-aerial', w: [1280, 1672], cap: 'Двор-парк площадью 1 гектар' },
-      { img: 'cine-pergola', w: [1440, 2048], cap: 'Беседки и места для встреч' },
-      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Двор закрыт для машин' },
+      {
+        img: 'cine-yard', w: [1280, 1920, 2560],
+        title: 'Двор-парк',
+        text: 'Закрытый двор площадью один гектар: геопластика, водные объекты, многолетние '
+          + 'кустарники, плодовые и хвойные деревья. Крытые беседки и гостиные под открытым '
+          + 'небом. Машин во дворе нет.',
+      },
+      {
+        img: 'cine-arcade', w: [1280, 1920, 2560],
+        title: 'Торговая галерея',
+        /* Перечень категорий — с рекламного макета застройщика; ждём
+           подтверждения владельца перед публикацией. */
+        text: 'Кафе и рестораны, бутики и парфюмерные магазины, салоны красоты, цветочные '
+          + 'лавки — вдоль первых этажей, под аркадами.',
+      },
+      {
+        img: 'cine-lobby', w: [1280, 1672],
+        title: 'Входные группы',
+        text: 'Лобби с латунью, натуральным камнем и лепниной. Дизайнерские входные группы '
+          + 'разработаны бюро SAFRONOVA PROJECT.',
+      },
+      {
+        img: 'cine-balcony', w: [1280, 1920, 2560],
+        title: 'Вид с высоты',
+        text: 'С верхних этажей открывается панорама Самарканда — города, ради которого '
+          + 'сюда и приезжают.',
+      },
+      {
+        img: 'cine-parking', w: [1280, 1535],
+        title: 'Паркинг',
+        text: 'Подземный и наземный паркинг. Открытая парковка на 148 машино-мест — '
+          + 'по генеральному плану.',
+      },
     ],
 
     /* Эти кадры раньше стояли последними в ленте и при обычной прокрутке
@@ -725,14 +759,43 @@ const uz = {
     conceptReliefAlt: 'Barelyef: Registon va Parij yagona naqshda',
     conceptWhisper: 'Sharq anʼanasida PARI — pari, yengillik va sehrli joziba timsoli.',
 
-    cineLabel: 'Loyiha kadrlari',
-    cinePrev: 'Oldingi kadr',
-    cineNext: 'Keyingi kadr',
+    cineLabel: 'Kvartal tarkibi',
+    cinePrev: 'Oldingi boʻlim',
+    cineNext: 'Keyingi boʻlim',
+    cineEyebrow: 'Kvartal tarkibi',
+    cineTitle: 'Kerakli hamma narsa —<br>kvartal ichida',
     cine: [
-      { img: 'cine-yard', w: [1280, 1920, 2560], cap: 'Dam olish zonalari boʻlgan hovli' },
-      { img: 'cine-aerial', w: [1280, 1672], cap: '1 gektarlik hovli-bogʻ' },
-      { img: 'cine-pergola', w: [1440, 2048], cap: 'Soʻrilar va uchrashuv joylari' },
-      { img: 'cine-arch', w: [1280, 1920, 2560], cap: 'Hovli mashinalarsiz' },
+      {
+        img: 'cine-yard', w: [1280, 1920, 2560],
+        title: 'Hovli-bogʻ',
+        text: 'Bir gektarlik yopiq hovli: geoplastika, suv obyektlari, koʻp yillik butalar, '
+          + 'mevali va ignabargli daraxtlar. Yopiq soyabonlar va ochiq havodagi mehmonxonalar. '
+          + 'Hovlida avtomobillar yoʻq.',
+      },
+      {
+        img: 'cine-arcade', w: [1280, 1920, 2560],
+        title: 'Savdo galereyasi',
+        text: 'Kafe va restoranlar, butiklar va parfyumeriya doʻkonlari, goʻzallik salonlari, '
+          + 'gul doʻkonlari — birinchi qavatlar boʻylab, arkadalar ostida.',
+      },
+      {
+        img: 'cine-lobby', w: [1280, 1672],
+        title: 'Kirish guruhlari',
+        text: 'Latun, tabiiy tosh va gansimon bezaklar bilan lobbi. Kirish guruhlari '
+          + 'SAFRONOVA PROJECT byurosi loyihasi.',
+      },
+      {
+        img: 'cine-balcony', w: [1280, 1920, 2560],
+        title: 'Balandlikdan manzara',
+        text: 'Yuqori qavatlardan Samarqand panoramasi ochiladi — odamlar shu shahar uchun '
+          + 'bu yerga keladi.',
+      },
+      {
+        img: 'cine-parking', w: [1280, 1535],
+        title: 'Avtoturargoh',
+        text: 'Yer osti va yer usti avtoturargohi. Bosh reja boʻyicha 148 mashina-oʻrinli '
+          + 'ochiq parkovka.',
+      },
     ],
 
     galleryEyebrow: 'Loyiha tafsilotlari',
