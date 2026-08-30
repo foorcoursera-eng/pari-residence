@@ -102,9 +102,13 @@ const crumbsLd = (t, items) => ({
 function pagesFor(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   const home = `${p}/` || '/';
-  const preloadHome = '<link rel="preload" as="image" href="/assets/img/hero-aerial-1920.webp"'
-    + ' imagesrcset="/assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w,'
-    + ' /assets/img/hero-aerial-2560.webp 2560w" imagesizes="100vw" fetchpriority="high">\n';
+  /* Предзагружаем ровно тот кадр, который человек видит первым, — чертёж
+     первого экрана. Раньше здесь стоял аэро-рендер: его убрали с экрана,
+     а предзагрузка осталась, и браузер тянул с высоким приоритетом картинку,
+     которую никто не показывает. */
+  const preloadHome = '<link rel="preload" as="image" href="/assets/img/opening-line-1600.webp"'
+    + ' imagesrcset="/assets/img/opening-line-1600.webp 1600w, /assets/img/opening-line-2400.webp 2400w"'
+    + ' imagesizes="100vw" fetchpriority="high">';
 
   return [
     {

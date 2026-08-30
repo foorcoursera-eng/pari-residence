@@ -48,6 +48,7 @@
         entries.forEach(function (e) {
           if (!e.isIntersecting) { return; }
           filmIO.disconnect();
+          film.style.backgroundImage = "url('/assets/img/hero-poster-1600.webp')";
           start();
         });
       }, { rootMargin: '400px 0px' });
