@@ -28,7 +28,11 @@ if (!fs.existsSync(dist)) {
 }
 
 const files = walk(dist);
-const pages = files.filter((f) => f.endsWith('.html'));
+/* Файл подтверждения прав Яндекса — не страница сайта: его содержимое
+   продиктовано Яндексом, и требовать от него h1, canonical и микроразметку
+   бессмысленно. Из проверки страниц он исключён, но битые ссылки на него
+   по-прежнему нашлись бы. */
+const pages = files.filter((f) => f.endsWith('.html') && !/^yandex_[0-9a-f]+\.html$/.test(path.basename(f)));
 const exists = (rel) => fs.existsSync(path.join(dist, rel.replace(/^\//, '').split('?')[0]));
 
 const rel = (f) => f.slice(dist.length).replace(/\\/g, '/');

@@ -190,6 +190,18 @@ ${urls.map((u) => `  <url>
 `;
   write('sitemap.xml', sitemap);
 
+  /* Файл подтверждения прав для Яндекс Вебмастера: должен лежать ровно в корне
+     и отдаваться как HTML. Имя и содержимое задаёт Яндекс, менять их нельзя. */
+  if (site.verify && site.verify.yandex) {
+    write(`yandex_${site.verify.yandex}.html`, `<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>Verification: ${site.verify.yandex}</body>
+</html>
+`);
+  }
+
   write('robots.txt', `User-agent: *
 Allow: /
 Disallow: /api/
