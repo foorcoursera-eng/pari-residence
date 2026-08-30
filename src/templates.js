@@ -92,6 +92,7 @@ function navItems(t) {
     [`${p}/project/`, t.nav.project],
     [`${p}/apartments/`, t.nav.apartments],
     [`${p}/genplan/`, t.nav.genplan],
+    [`${p}/select/`, t.nav.select],
     [`${p}/location/`, t.nav.location],
     [`${p}/contacts/`, t.nav.contacts],
   ];
@@ -794,6 +795,79 @@ ${rail(t)}`;
 }
 
 
+
+/* ══════════════ выбор квартиры ══════════════
+   Подъезд → этаж → план этажа с обведёнными квартирами. Контуры и список
+   этажей лежат в assets/floors/p<N>.json — по файлу на подъезд, чтобы
+   страница тянула только то, что открыли. Данные из архива застройщика:
+   номер квартиры взят из его же схемы, ничего не досочинено. */
+function floorsIndex() {
+  const dir = path.join(__dirname, '..', 'assets', 'floors');
+  const out = [];
+  fs.readdirSync(dir).filter((f) => /^p\d+\.json$/.test(f)).forEach((f) => {
+    const j = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    const floors = Object.keys(j.floors).map(Number).sort((a, b) => a - b);
+    out.push({ podil: j.podil, floors, flats: Object.values(j.floors).reduce((n, v) => n + v.flats.length, 0) });
+  });
+  return out.sort((a, b) => a.podil - b.podil);
+}
+
+function select(t, page) {
+  const s = t.select;
+  const list = floorsIndex();
+  const total = list.reduce((n, x) => n + x.flats, 0);
+
+  const tabs = list.map((x, i) => `        <button class="pick${i === 0 ? ' is-on' : ''}" type="button"
+                data-entrance="${x.podil}" data-floors="${x.floors.join(',')}"
+                aria-pressed="${i === 0}">${x.podil}</button>`).join('\n');
+
+  page.body = `<section class="page">
+  <div class="page__inner">
+    ${breadcrumbs(t, [[page.path, s.h1]])}
+    <h1 class="display" data-lines>${esc(s.h1)}</h1>
+    <p class="page__lead">${esc(s.lead)}</p>
+  </div>
+
+  <div class="page__inner">
+    <div class="chooser" data-chooser data-total="${total}"
+         data-entrance-word="${esc(s.entrance)}" data-floor-word="${esc(s.floorShort)}"
+         data-flat-word="${esc(s.flat)}" data-counted-word="${esc(s.counted)}">
+      <div class="chooser__row">
+        <p class="chooser__label">${esc(s.entrance)}</p>
+        <div class="chooser__set" role="group" aria-label="${esc(s.pickEntrance)}">
+${tabs}
+        </div>
+      </div>
+
+      <div class="chooser__row">
+        <p class="chooser__label">${esc(s.floor)}</p>
+        <div class="chooser__set" data-floor-set role="group" aria-label="${esc(s.pickFloor)}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page__inner">
+    <figure class="floor" data-floor-stage>
+      <img class="floor__plan" alt="" data-tpl="${esc(s.planAlt)}" width="885" height="561" decoding="async">
+      <svg class="floor__flats" viewBox="0 0 885 561" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <figcaption class="floor__cap" data-floor-cap>${esc(s.pickFlat)}</figcaption>
+    </figure>
+
+    <aside class="floor__card" data-floor-card hidden aria-live="polite">
+      <p class="eyebrow">${esc(s.flat)} <b data-flat-num></b></p>
+      <p class="floor__where"><span data-flat-where></span></p>
+      <p class="floor__note">${esc(s.note)}</p>
+      <a class="pill" href="tel:${site.phone.tel}" data-track="phone_click">${esc(s.ask)}</a>
+    </aside>
+
+    <p class="plans__note">${esc(s.source)}</p>
+  </div>
+</section>
+
+${leadSection(t, { formId: 'select', title: t.cta.primary, text: t.contacts.visitText, eyebrow: t.nav.contacts })}`;
+  return page;
+}
+
 /* ══════════════ генеральный план ══════════════
    Выбор корпуса прямо на чертеже: наведение подсвечивает пятно застройки,
    нажатие открывает карточку. Без JavaScript видны все зоны и карточка
@@ -1118,4 +1192,4 @@ if (location.pathname.indexOf('/uz/') === 0) {
   return page;
 }
 
-module.exports = { shell, home, project, apartments, genplan, location, contacts, notFound, swap, url, esc };
+module.exports = { shell, home, project, apartments, genplan, select, location, contacts, notFound, swap, url, esc };

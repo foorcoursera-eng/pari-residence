@@ -1728,3 +1728,53 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .gp__scheme{margin:2px 0 0}
 .gp__note{margin:12px 0 4px;color:var(--ink-2);font-size:clamp(13px,1.3vw,15px)}
 .gp__card .pill{margin-top:8px}
+
+
+/* ══════════════ выбор квартиры ══════════════
+   Подъезд и этаж — рядами кнопок, ниже план этажа с обведёнными квартирами.
+   Контуры лежат отдельным слоем поверх картинки: SVG растянут ровно по ней,
+   поэтому координаты из схемы застройщика совпадают с планом в любом размере. */
+.chooser{
+  display:grid;gap:clamp(16px,2.4vh,24px);margin-top:clamp(20px,3vh,32px);
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+  padding:clamp(18px,3vh,26px) 0;
+}
+.chooser__row{display:grid;gap:10px}
+@media (min-width:820px){ .chooser__row{grid-template-columns:110px minmax(0,1fr);align-items:center;gap:18px} }
+.chooser__label{
+  margin:0;font-size:11px;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.chooser__set{display:flex;flex-wrap:wrap;gap:8px}
+.chooser__set .pick{min-width:46px;justify-content:center}
+
+.floor{
+  position:relative;margin:clamp(20px,3vh,32px) 0 0;
+  background:var(--paper);border:1px solid var(--hair);
+}
+.floor__plan{display:block;width:100%;height:auto}
+.floor__flats{position:absolute;left:0;top:0;width:100%;height:100%}
+.floor__flats path{
+  fill:rgba(179,131,43,0);stroke:transparent;stroke-width:1.4;
+  vector-effect:non-scaling-stroke;cursor:pointer;
+  transition:fill .25s ease,stroke .25s ease;
+}
+.floor__flats path:hover{fill:rgba(179,131,43,.24);stroke:var(--gold)}
+.floor__flats path.is-on{fill:rgba(179,131,43,.34);stroke:var(--gold)}
+.floor__cap{
+  padding:12px 16px;border-top:1px solid var(--hair);
+  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+}
+
+.floor__card{
+  margin-top:clamp(16px,2.4vh,24px);border:1px solid var(--hair);
+  padding:clamp(18px,3vw,28px);display:grid;gap:8px;align-content:start;
+}
+.floor__card .eyebrow b{
+  font-family:var(--display);font-weight:400;font-size:clamp(24px,3vw,36px);
+  color:var(--gold);margin-left:.4em;vertical-align:-.08em;
+}
+.floor__where{margin:0;font-size:clamp(14px,1.4vw,16px);color:var(--ink-2)}
+.floor__note{margin:8px 0 4px;font-size:13px;color:var(--ink-3);max-width:52ch}
+/* Без этого карточка видна всегда: display:grid перебивает атрибут hidden. */
+.floor__card[hidden]{display:none}

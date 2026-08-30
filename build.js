@@ -132,6 +132,12 @@ function pagesFor(t) {
       sitemap: { priority: '0.9', changefreq: 'monthly' },
     },
     {
+      key: 'select', path: `${p}/select/`, render: T.select,
+      title: t.meta.select.title, description: t.meta.select.description,
+      jsonld: [crumbsLd(t, [{ name: t.nav.select, path: `${p}/select/` }])],
+      sitemap: { priority: '0.9', changefreq: 'monthly' },
+    },
+    {
       key: 'genplan', path: `${p}/genplan/`, render: T.genplan,
       title: t.meta.genplan.title, description: t.meta.genplan.description,
       jsonld: [crumbsLd(t, [{ name: t.nav.genplan, path: `${p}/genplan/` }])],

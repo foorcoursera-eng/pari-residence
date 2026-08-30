@@ -954,6 +954,103 @@
     });
   });
 
+  /* ══════════════ выбор квартиры ══════════════
+     Подъезд → этаж → план этажа. Контуры квартир приходят по одному файлу
+     на подъезд, поэтому страница не тянет схемы всех 156 этажей сразу. */
+  var chooser = document.querySelector('[data-chooser]');
+  var stage = document.querySelector('[data-floor-stage]');
+  if (chooser && stage) {
+    var planImg = stage.querySelector('.floor__plan');
+    var flatsSvg = stage.querySelector('.floor__flats');
+    var floorCap = stage.querySelector('[data-floor-cap]');
+    var floorSet = chooser.querySelector('[data-floor-set]');
+    var flatCard = document.querySelector('[data-floor-card]');
+    var flatNum = document.querySelector('[data-flat-num]');
+    var flatWhere = document.querySelector('[data-flat-where]');
+    var capText = floorCap ? floorCap.textContent : '';
+    var cache = {};
+    var current = { podil: null, floor: null };
+
+    var say = function (podil, floor, num) {
+      if (!flatCard) { return; }
+      flatCard.hidden = false;
+      if (flatNum) { flatNum.textContent = num; }
+      if (flatWhere) {
+        flatWhere.textContent = chooser.dataset.entranceWord + ' ' + podil
+          + ' · ' + floor + ' ' + chooser.dataset.floorWord;
+      }
+      track('flat_pick', { podil: podil, floor: floor, num: num });
+    };
+
+    var drawFloor = function (data, floor) {
+      var f = data.floors[String(floor)];
+      if (!f) { return; }
+      planImg.src = '/assets/img/floors/p' + data.podil + '-f' + floor + '.webp';
+      planImg.width = f.w; planImg.height = f.h;
+      planImg.alt = (planImg.dataset.tpl || '').replace('{p}', data.podil).replace('{f}', floor);
+      flatsSvg.setAttribute('viewBox', f.box);
+      flatsSvg.innerHTML = f.flats.map(function (x) {
+        return '<path d="' + x.d + '" data-num="' + x.num + '"><title>'
+          + chooser.dataset.flatWord + ' ' + x.num + '</title></path>';
+      }).join('');
+      if (floorCap) { floorCap.textContent = f.flats.length + ' ' + chooser.dataset.countedWord; }
+      if (flatCard) { flatCard.hidden = true; }
+      current = { podil: data.podil, floor: floor };
+    };
+
+    var pickFloor = function (floor) {
+      [].forEach.call(floorSet.children, function (b) {
+        var on = +b.dataset.floor === +floor;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      drawFloor(cache[current.podil], floor);
+    };
+
+    var loadEntrance = function (podil, floors) {
+      var show = function (data) {
+        cache[podil] = data;
+        current.podil = podil;
+        floorSet.innerHTML = floors.map(function (f, i) {
+          return '<button class="pick' + (i === 0 ? ' is-on' : '') + '" type="button" data-floor="'
+            + f + '" aria-pressed="' + (i === 0) + '">' + f + '</button>';
+        }).join('');
+        drawFloor(data, floors[0]);
+      };
+      if (cache[podil]) { show(cache[podil]); return; }
+      fetch('/assets/floors/p' + podil + '.json')
+        .then(function (r) { return r.json(); })
+        .then(show)
+        .catch(function () { if (floorCap) { floorCap.textContent = capText; } });
+    };
+
+    chooser.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-entrance]');
+      if (b) {
+        [].forEach.call(b.parentNode.children, function (o) {
+          var on = o === b;
+          o.classList.toggle('is-on', on);
+          o.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        loadEntrance(+b.dataset.entrance, b.dataset.floors.split(',').map(Number));
+        track('entrance_pick', { podil: +b.dataset.entrance });
+        return;
+      }
+      var f = e.target.closest('[data-floor]');
+      if (f) { pickFloor(+f.dataset.floor); }
+    });
+
+    flatsSvg.addEventListener('click', function (e) {
+      var p = e.target.closest('path[data-num]');
+      if (!p) { return; }
+      [].forEach.call(flatsSvg.children, function (o) { o.classList.toggle('is-on', o === p); });
+      say(current.podil, current.floor, p.dataset.num);
+    });
+
+    var first = chooser.querySelector('[data-entrance]');
+    if (first) { loadEntrance(+first.dataset.entrance, first.dataset.floors.split(',').map(Number)); }
+  }
+
   /* ══════════════ генеральный план ══════════════
      Наведение и нажатие выбирают корпус, карточка рядом обновляется.
      Событие в аналитику шлём только по нажатию: на наведении их были бы сотни. */

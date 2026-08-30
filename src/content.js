@@ -198,6 +198,7 @@ const ru = {
     project: 'О проекте',
     apartments: 'Квартиры',
     genplan: 'Генплан',
+    select: 'Выбор квартиры',
     location: 'Локация',
     contacts: 'Контакты',
   },
@@ -246,6 +247,11 @@ const ru = {
       description: 'Жилой квартал PARI Residence в Самарканде: архитектура SAFRONOVA PROJECT, '
         + 'фасады из натурального камня, дизайнерские входные группы, двор-парк 1 Га '
         + 'без машин и подземный паркинг.',
+    },
+    select: {
+      title: 'Выбор квартиры в PARI Residence — планы этажей',
+      description: 'Планы всех этажей PARI Residence: тринадцать подъездов, этажи с третьего '
+        + 'по шестнадцатый, расположение каждой квартиры на этаже.',
     },
     genplan: {
       title: 'Генеральный план PARI Residence — 13 корпусов в Самарканде',
@@ -488,6 +494,25 @@ const ru = {
     ],
     source: 'План приведён по листу «Генеральный план М1:500» из альбома проекта.',
   },
+
+  select: {
+    h1: 'Выбор квартиры',
+    lead: 'Тринадцать подъездов, этажи с третьего по шестнадцатый. Выберите подъезд и этаж — '
+      + 'покажем план с расположением квартир.',
+    entrance: 'Подъезд',
+    floor: 'Этаж',
+    floorShort: 'эт.',
+    flat: 'Квартира',
+    pickEntrance: 'Выберите подъезд',
+    pickFloor: 'Выберите этаж',
+    pickFlat: 'Наведите на квартиру на плане',
+    planAlt: 'План этажа {f}, подъезд {p}',
+    ask: 'Узнать площадь и цену',
+    note: 'Площадь, комнатность и наличие конкретной квартиры уточняйте в отделе продаж: '
+      + 'наличие меняется каждый день.',
+    source: 'Планы этажей предоставлены застройщиком.',
+    counted: 'квартир на этаже',
+  },
   plans: {
     title: 'Планировки',
     lead: 'Выберите комнатность и нажмите на план: он откроется целиком — с размерами, '
@@ -715,6 +740,7 @@ const uz = {
     project: 'Loyiha haqida',
     apartments: 'Xonadonlar',
     genplan: 'Bosh reja',
+    select: 'Xonadon tanlash',
     location: 'Joylashuv',
     contacts: 'Aloqa',
   },
@@ -760,6 +786,11 @@ const uz = {
       description: 'Samarqanddagi PARI Residence turar-joy kvartali: SAFRONOVA PROJECT arxitekturasi, '
         + 'tabiiy toshli fasadlar, dizayner kirish guruhlari, 1 gektarlik mashinasiz hovli-bogʻ '
         + 'va yer osti avtoturargohi.',
+    },
+    select: {
+      title: 'PARI Residence xonadon tanlash — qavat rejalari',
+      description: 'PARI Residence barcha qavatlari rejalari: oʻn uch podyezd, uchinchidan '
+        + 'oʻn oltinchi qavatgacha, har bir xonadonning qavatdagi joylashuvi.',
     },
     genplan: {
       title: 'PARI Residence bosh rejasi — Samarqandda 13 blok',
@@ -976,6 +1007,25 @@ const uz = {
       ['1', 'gektar hovli'],
     ],
     source: 'Reja loyiha albomidagi «Bosh reja M1:500» varagʻi boʻyicha keltirilgan.',
+  },
+
+  select: {
+    h1: 'Xonadon tanlash',
+    lead: 'Oʻn uch podyezd, uchinchidan oʻn oltinchi qavatgacha. Podyezd va qavatni tanlang — '
+      + 'xonadonlar joylashuvi bilan reja koʻrsatamiz.',
+    entrance: 'Podyezd',
+    floor: 'Qavat',
+    floorShort: 'qavat',
+    flat: 'Xonadon',
+    pickEntrance: 'Podyezdni tanlang',
+    pickFloor: 'Qavatni tanlang',
+    pickFlat: 'Rejadagi xonadon ustiga olib boring',
+    planAlt: '{p}-podyezd, {f}-qavat rejasi',
+    ask: 'Maydon va narxni bilish',
+    note: 'Aniq xonadonning maydoni, xonalar soni va mavjudligini savdo boʻlimida aniqlang: '
+      + 'mavjudlik har kuni oʻzgaradi.',
+    source: 'Qavat rejalari quruvchi tomonidan taqdim etilgan.',
+    counted: 'ta xonadon qavatda',
   },
   plans: {
     title: 'Xonadon tarhlari',
