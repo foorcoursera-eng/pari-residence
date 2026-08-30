@@ -99,7 +99,13 @@ function navItems(t) {
 
 function header(t, path) {
   const items = navItems(t).map(([href, label]) => `      <a href="${href}">${esc(label)}</a>`).join('\n');
-  return `<header class="bar" id="bar">
+  /* Плотное состояние проставляем прямо в разметке всюду, кроме главной:
+     там шапка выезжает после первого экрана, а на внутренних страницах она
+     нужна с первого кадра. Раньше её показывал только скрипт — при
+     неотработавшем JavaScript страница оставалась без логотипа, меню и
+     телефона. */
+  const inner = path !== '/' && path !== '/uz/';
+  return `<header class="bar${inner ? ' is-solid' : ''}" id="bar">
   <span class="bar__progress" aria-hidden="true"></span>
   <a class="bar__logo" href="${t.lang === 'ru' ? '/' : '/uz/'}" aria-label="${site.brand}">
     <img src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="96" height="32">
