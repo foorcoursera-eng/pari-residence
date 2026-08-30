@@ -28,6 +28,7 @@ NAME = 'opening-line'
 
 WORK_W = 2600          # в этом разрешении ищем рёбра
 INK = (33, 26, 18)     # цвет линии: фирменный чёрный с тёплым уклоном
+PAPER = (250, 250, 250)  # 3.1 — светлый фон, тот же, что у страницы
 
 LO, HI = 0.06, 0.34    # порог силы ребра: ниже — фон, выше — линия в полную силу
 GAMMA = 0.85           # мягкость набора плотности
@@ -146,14 +147,17 @@ def main():
     # а не обведённой фотографией
     alpha = add_studs(alpha)
 
+    # Кладём линию на светлый фон и сохраняем без альфы. Прозрачность здесь
+    # ничего не даёт — чертёж всё равно лежит на сплошном --paper, — а весит
+    # дорого: полупрозрачные волоски линий раздували файл вдвое.
     a_img = Image.fromarray((alpha * 255).astype(np.uint8), 'L')
     for w in (1600, 2400):
         hh = round(a_img.height * w / a_img.width)
         a = a_img.resize((w, hh), Image.LANCZOS)
-        out = Image.new('RGBA', (w, hh), INK + (0,))
-        out.putalpha(a)
+        out = Image.new('RGB', (w, hh), PAPER)
+        out.paste(Image.new('RGB', (w, hh), INK), (0, 0), a)
         f = os.path.join(OUT, '%s-%d.webp' % (NAME, w))
-        out.save(f, 'WEBP', quality=88, method=6)
+        out.save(f, 'WEBP', quality=82, method=6)
         print('  %s-%d.webp  %dx%d  %d КБ' % (NAME, w, w, hh, os.path.getsize(f) / 1024))
 
 
