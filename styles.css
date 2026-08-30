@@ -1661,3 +1661,59 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
   /* полоски киноленты не должны цеплять кнопку звонка снизу */
   .cine__dots{bottom:clamp(14px,2.4vh,24px)}
 }
+
+
+/* ══════════════ генеральный план ══════════════
+   Зоны корпусов лежат отдельным слоем поверх чертежа: SVG растянут ровно по
+   картинке (preserveAspectRatio="none"), поэтому координаты в процентах листа
+   совпадают с пятнами застройки в любом размере. Обводку ведём
+   non-scaling-stroke — иначе при неравномерном растяжении она станет овальной. */
+.gp{
+  width:var(--measure);margin:clamp(26px,4.5vh,52px) auto 0;
+  display:grid;gap:clamp(20px,3vw,40px);
+}
+@media (min-width:1100px){
+  .gp{grid-template-columns:minmax(0,1.62fr) minmax(0,.88fr);align-items:start}
+}
+.gp__map{margin:0;background:var(--paper);border:1px solid var(--hair)}
+.gp__frame{position:relative}
+.gp__map img{display:block;width:100%;height:auto}
+.gp__zones{position:absolute;inset:0;width:100%;height:100%}
+.gp__swipe{display:none}
+
+@media (max-width:899px){
+  /* чертёж крупнее экрана и ездит вбок: зоны корпусов становятся пригодны
+     для пальца, а страница вбок по-прежнему не двигается */
+  .gp__map{overflow-x:auto;overscroll-behavior-x:contain}
+  .gp__frame{min-width:760px}
+  .gp__swipe{
+    display:block;margin:0;padding:8px 12px;
+    font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-3);text-align:center;border-top:1px solid var(--hair);
+  }
+}
+.gp__zone rect{
+  fill:rgba(179,131,43,0);stroke:transparent;stroke-width:1.4;
+  vector-effect:non-scaling-stroke;cursor:pointer;
+  transition:fill .3s ease,stroke .3s ease;
+}
+.gp__zone:hover rect{fill:rgba(179,131,43,.2);stroke:var(--gold)}
+.gp__zone.is-on rect{fill:rgba(179,131,43,.32);stroke:var(--gold)}
+.gp__zone:focus{outline:none}
+.gp__zone:focus-visible rect{fill:rgba(179,131,43,.32);stroke:var(--ink);stroke-width:2}
+
+.gp__card{
+  border:1px solid var(--hair);padding:clamp(20px,3vw,32px);
+  display:grid;gap:8px;align-content:start;
+}
+@media (min-width:1100px){ .gp__card{position:sticky;top:96px} }
+.gp__type{margin:6px 0 0;display:flex;align-items:baseline;gap:.5em}
+.gp__type b{font-family:var(--display);font-weight:400;font-size:clamp(30px,3.6vw,46px);color:var(--gold)}
+.gp__floors{margin:0;display:flex;align-items:baseline;gap:.5em}
+.gp__floors b{font-family:var(--display);font-weight:400;font-size:clamp(22px,2.6vw,32px);color:var(--ink)}
+.gp__type span,.gp__floors span,.gp__scheme{
+  font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);
+}
+.gp__scheme{margin:2px 0 0}
+.gp__note{margin:12px 0 4px;color:var(--ink-2);font-size:clamp(13px,1.3vw,15px)}
+.gp__card .pill{margin-top:8px}

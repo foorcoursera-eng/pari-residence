@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { site } = require('./content');
+const { site, blocks } = require('./content');
 const LOGO = require('./logo-parts.json');
 
 /* ── размеры картинки прямо из файла ──
@@ -91,6 +91,7 @@ function navItems(t) {
   return [
     [`${p}/project/`, t.nav.project],
     [`${p}/apartments/`, t.nav.apartments],
+    [`${p}/genplan/`, t.nav.genplan],
     [`${p}/location/`, t.nav.location],
     [`${p}/contacts/`, t.nav.contacts],
   ];
@@ -745,6 +746,73 @@ ${rail(t)}`;
   return page;
 }
 
+
+/* ══════════════ генеральный план ══════════════
+   Выбор корпуса прямо на чертеже: наведение подсвечивает пятно застройки,
+   нажатие открывает карточку. Без JavaScript видны все зоны и карточка
+   первого корпуса — страница остаётся читаемой. */
+function genplan(t, page) {
+  const g = t.genplan;
+  const p = t.lang === 'ru' ? '' : '/uz';
+  const size = imgSize('assets/img/genplan-line-2400.webp') || { w: 2400, h: 1297 };
+
+  const zones = blocks.map((b, i) => `        <g class="gp__zone${i === 0 ? ' is-on' : ''}" data-block="${b.id}"
+           role="button" tabindex="0" aria-pressed="${i === 0}"
+           data-type="${esc(b.type)}" data-floors="${b.floors}" data-scheme="${esc(b.scheme)}">
+          <title>${esc(g.typeWord)} ${esc(b.type)} — ${b.floors} ${esc(g.floorsWord)}</title>
+          <rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="0.4"/>
+        </g>`).join('\n');
+
+  const first = blocks[0];
+
+  page.body = `<section class="page">
+  <div class="page__inner">
+    ${breadcrumbs(t, [[page.path, g.h1]])}
+    <h1 class="display" data-lines>${esc(g.h1)}</h1>
+    <p class="page__lead">${esc(g.lead)}</p>
+  </div>
+
+  <div class="gp">
+    <figure class="gp__map" data-genplan>
+      <!-- На телефоне чертёж шире экрана и прокручивается вбок: иначе корпуса
+           выходят по 30 px, и попасть по ним пальцем невозможно. -->
+      <div class="gp__frame">
+      <img src="/assets/img/genplan-line-2400.webp"
+           srcset="/assets/img/genplan-line-1600.webp 1600w, /assets/img/genplan-line-2400.webp 2400w"
+           sizes="(min-width:1100px) 62vw, 100vw" alt="${esc(g.planAlt)}"
+           width="${size.w}" height="${size.h}" decoding="async">
+
+      <svg class="gp__zones" viewBox="0 0 100 100" preserveAspectRatio="none"
+           role="group" aria-label="${esc(g.hint)}">
+${zones}
+      </svg>
+      </div>
+      <p class="gp__swipe" aria-hidden="true">${esc(g.swipe)}</p>
+    </figure>
+
+    <aside class="gp__card" data-genplan-card aria-live="polite">
+      <p class="eyebrow">${esc(g.blockWord)}</p>
+      <p class="gp__type"><span>${esc(g.typeWord)}</span> <b data-gp-type>${esc(first.type)}</b></p>
+      <p class="gp__floors"><b data-gp-floors>${first.floors}</b> <span>${esc(g.floorsWord)}</span></p>
+      <p class="gp__scheme"><span data-gp-scheme>${esc(first.scheme)}</span> — ${esc(g.schemeWord)}</p>
+      <p class="gp__note">${esc(g.note)}</p>
+      <a class="pill" href="${p}/apartments/">${esc(g.toPlans)}</a>
+    </aside>
+  </div>
+
+  <div class="page__inner">
+    <h2 class="page__h2">${esc(g.legendTitle)}</h2>
+    <ul class="figures">
+${g.legend.map(([v, l]) => `      <li class="figures__item"><b>${esc(v)}</b><span>${esc(l)}</span></li>`).join('\n')}
+    </ul>
+    <p class="plans__note">${esc(g.source)}</p>
+  </div>
+</section>
+
+${leadSection(t, { formId: 'genplan', title: t.cta.primary, text: t.contacts.visitText, eyebrow: t.nav.contacts })}`;
+  return page;
+}
+
 /* ══════════════ квартиры ══════════════ */
 function apartments(t, page) {
   const a = t.apartments;
@@ -1003,4 +1071,4 @@ if (location.pathname.indexOf('/uz/') === 0) {
   return page;
 }
 
-module.exports = { shell, home, project, apartments, location, contacts, notFound, swap, url, esc };
+module.exports = { shell, home, project, apartments, genplan, location, contacts, notFound, swap, url, esc };

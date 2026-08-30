@@ -116,6 +116,35 @@ const planItems = [
   { id: 'f4-8911', area: '89,11', rooms: 4, blocks: ['2/2.1', '2.2'] },
 ];
 
+
+/* Корпуса: тип, этажность и место на генеральном плане.
+   Всё снято с листа «Генеральный план М1:500» (альбом проекта, стр. 3) —
+   и подписи в поле листа, и положение пятен застройки. Координаты заданы
+   долями ширины и высоты картинки генплана, поэтому разметка не зависит
+   от того, в каком размере он показан.
+
+   Номера блоков из рабочих листов застройщика (1, 1.1, 2, 2.1, 2.2, 3, 3.1)
+   и типы корпусов с генплана (Тип 1, 2, 2/1, 3, 4…) — две разные нумерации.
+   Сопоставление владельцем не подтверждено, поэтому планировки к конкретному
+   корпусу здесь не привязываем: кнопка ведёт в общий каталог планировок. */
+const blocks = [
+  { id: 'n1', type: '3',   floors: 14, scheme: '1+13', x: 11.0, y: 16.5, w: 8.6,  h: 16.5 },
+  { id: 'n2', type: '2',   floors: 14, scheme: '1+13', x: 24.5, y: 16.5, w: 12.0, h: 16.5 },
+  { id: 'n3', type: '2',   floors: 14, scheme: '1+13', x: 36.5, y: 16.5, w: 12.0, h: 16.5 },
+  { id: 'n4', type: '2',   floors: 14, scheme: '1+13', x: 49.5, y: 16.5, w: 12.0, h: 16.5 },
+  { id: 'n5', type: '2',   floors: 14, scheme: '1+13', x: 61.5, y: 16.5, w: 12.0, h: 16.5 },
+  { id: 'n6', type: '3/1', floors: 14, scheme: '1+13', x: 80.5, y: 16.5, w: 8.6,  h: 16.5 },
+
+  { id: 'w1', type: '2/1', floors: 14, scheme: '1+13', x: 11.0, y: 39.8, w: 8.6,  h: 22.0 },
+  { id: 'e1', type: '2/1', floors: 14, scheme: '1+13', x: 80.5, y: 39.8, w: 8.6,  h: 22.0 },
+
+  { id: 's1', type: '4',   floors: 16, scheme: '2+14', x: 9.0,  y: 67.5, w: 19.5, h: 27.8 },
+  { id: 's2', type: '1',   floors: 13, scheme: '1+12', x: 29.5, y: 78.6, w: 12.0, h: 18.4 },
+  { id: 's3', type: '1/1', floors: 14, scheme: '1+13', x: 43.5, y: 78.6, w: 12.0, h: 18.4 },
+  { id: 's4', type: '1',   floors: 13, scheme: '1+12', x: 57.5, y: 78.6, w: 12.0, h: 18.4 },
+  { id: 's5', type: '4/1', floors: 16, scheme: '2+14', x: 71.5, y: 67.5, w: 19.5, h: 27.8 },
+];
+
 const ru = {
   lang: 'ru',
   dir: '',
@@ -153,6 +182,7 @@ const ru = {
   nav: {
     project: 'О проекте',
     apartments: 'Квартиры',
+    genplan: 'Генплан',
     location: 'Локация',
     contacts: 'Контакты',
   },
@@ -201,6 +231,11 @@ const ru = {
       description: 'Жилой квартал PARI Residence в Самарканде: архитектура SAFRONOVA PROJECT, '
         + 'фасады из натурального камня, дизайнерские входные группы, двор-парк 1 Га '
         + 'без машин и подземный паркинг.',
+    },
+    genplan: {
+      title: 'Генеральный план PARI Residence — 13 корпусов в Самарканде',
+      description: 'Генплан жилого квартала PARI Residence: тринадцать корпусов высотой '
+        + 'от 13 до 16 этажей вокруг закрытого двора-парка площадью один гектар.',
     },
     apartments: {
       title: 'Квартиры в Самарканде — PARI Residence',
@@ -414,6 +449,30 @@ const ru = {
      в одну карточку и перечисляем блоки. Картинки готовит tools/make-plans.py:
      в карточке — чертёж, в увеличении — страница буклета целиком, вместе с
      розой инсоляции, расположением на этаже и расположением в комплексе. */
+
+  genplan: {
+    h1: 'Генеральный план',
+    lead: 'Тринадцать корпусов вокруг закрытого двора-парка. Наведите на корпус, '
+      + 'чтобы увидеть его тип и этажность.',
+    planAlt: 'Генеральный план PARI Residence в масштабе 1:500',
+    hint: 'Выберите корпус на плане',
+    swipe: 'Проведите по плану вбок',
+    blockWord: 'Корпус',
+    typeWord: 'Тип',
+    floorsWord: 'этажей',
+    schemeWord: 'из них первый — нежилой',
+    note: 'Свободные квартиры и этажи в выбранном корпусе покажем в отделе продаж: '
+      + 'наличие меняется каждый день.',
+    toPlans: 'Смотреть планировки',
+    legendTitle: 'Что на плане',
+    legend: [
+      ['13', 'корпусов'],
+      ['13–16', 'этажей'],
+      ['1202', 'квартиры'],
+      ['1', 'гектар двора'],
+    ],
+    source: 'План приведён по листу «Генеральный план М1:500» из альбома проекта.',
+  },
   plans: {
     title: 'Планировки',
     lead: 'Выберите комнатность и нажмите на план: он откроется целиком — с размерами, '
@@ -640,6 +699,7 @@ const uz = {
   nav: {
     project: 'Loyiha haqida',
     apartments: 'Xonadonlar',
+    genplan: 'Bosh reja',
     location: 'Joylashuv',
     contacts: 'Aloqa',
   },
@@ -685,6 +745,11 @@ const uz = {
       description: 'Samarqanddagi PARI Residence turar-joy kvartali: SAFRONOVA PROJECT arxitekturasi, '
         + 'tabiiy toshli fasadlar, dizayner kirish guruhlari, 1 gektarlik mashinasiz hovli-bogʻ '
         + 'va yer osti avtoturargohi.',
+    },
+    genplan: {
+      title: 'PARI Residence bosh rejasi — Samarqandda 13 blok',
+      description: 'PARI Residence turar-joy kvartalining bosh rejasi: bir gektarlik yopiq '
+        + 'hovli-bogʻ atrofida 13 dan 16 qavatgacha boʻlgan oʻn uch blok.',
     },
     apartments: {
       title: 'Samarqandda xonadonlar — PARI Residence',
@@ -873,6 +938,30 @@ const uz = {
     ['Xalqaro aeroport', '15 daqiqa'],
   ],
 
+
+  genplan: {
+    h1: 'Bosh reja',
+    lead: 'Yopiq hovli-bogʻ atrofida oʻn uch blok. Blokning turi va qavatlar sonini '
+      + 'koʻrish uchun uning ustiga olib boring.',
+    planAlt: 'PARI Residence bosh rejasi, masshtab 1:500',
+    hint: 'Rejadan blokni tanlang',
+    swipe: 'Rejani yon tomonga suring',
+    blockWord: 'Blok',
+    typeWord: 'Tur',
+    floorsWord: 'qavat',
+    schemeWord: 'birinchisi turar-joy emas',
+    note: 'Tanlangan blokdagi boʻsh xonadonlar va qavatlarni savdo boʻlimida koʻrsatamiz: '
+      + 'mavjudlik har kuni oʻzgaradi.',
+    toPlans: 'Rejalarni koʻrish',
+    legendTitle: 'Rejada nima bor',
+    legend: [
+      ['13', 'blok'],
+      ['13–16', 'qavat'],
+      ['1202', 'xonadon'],
+      ['1', 'gektar hovli'],
+    ],
+    source: 'Reja loyiha albomidagi «Bosh reja M1:500» varagʻi boʻyicha keltirilgan.',
+  },
   plans: {
     title: 'Xonadon tarhlari',
     lead: 'Xonalar sonini tanlang va tarhni bosing: u toʻliq ochiladi — oʻlchamlari, xona '
@@ -1056,4 +1145,4 @@ const uz = {
   },
 };
 
-module.exports = { site, routes, ru, uz };
+module.exports = { site, blocks, routes, ru, uz };

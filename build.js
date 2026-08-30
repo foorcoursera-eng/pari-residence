@@ -128,6 +128,12 @@ function pagesFor(t) {
       sitemap: { priority: '0.9', changefreq: 'monthly' },
     },
     {
+      key: 'genplan', path: `${p}/genplan/`, render: T.genplan,
+      title: t.meta.genplan.title, description: t.meta.genplan.description,
+      jsonld: [crumbsLd(t, [{ name: t.nav.genplan, path: `${p}/genplan/` }])],
+      sitemap: { priority: '0.8', changefreq: 'monthly' },
+    },
+    {
       key: 'location', path: `${p}/location/`, render: T.location,
       title: t.meta.location.title, description: t.meta.location.description,
       jsonld: [crumbsLd(t, [{ name: t.nav.location, path: `${p}/location/` }])],

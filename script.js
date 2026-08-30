@@ -953,6 +953,39 @@
     });
   });
 
+  /* ══════════════ генеральный план ══════════════
+     Наведение и нажатие выбирают корпус, карточка рядом обновляется.
+     Событие в аналитику шлём только по нажатию: на наведении их были бы сотни. */
+  var gp = document.querySelector('[data-genplan]');
+  var gpCard = document.querySelector('[data-genplan-card]');
+  if (gp && gpCard) {
+    var gpZones = [].slice.call(gp.querySelectorAll('.gp__zone'));
+    var gpType = gpCard.querySelector('[data-gp-type]');
+    var gpFloors = gpCard.querySelector('[data-gp-floors]');
+    var gpScheme = gpCard.querySelector('[data-gp-scheme]');
+
+    var gpPick = function (z, push) {
+      gpZones.forEach(function (o) {
+        var on = o === z;
+        o.classList.toggle('is-on', on);
+        o.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      if (gpType) { gpType.textContent = z.dataset.type; }
+      if (gpFloors) { gpFloors.textContent = z.dataset.floors; }
+      if (gpScheme) { gpScheme.textContent = z.dataset.scheme; }
+      if (push) { track('genplan_block', { type: z.dataset.type, floors: z.dataset.floors }); }
+    };
+
+    gpZones.forEach(function (z) {
+      z.addEventListener('click', function () { gpPick(z, true); });
+      z.addEventListener('mouseenter', function () { gpPick(z, false); });
+      z.addEventListener('focus', function () { gpPick(z, false); });
+      z.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); gpPick(z, true); }
+      });
+    });
+  }
+
   /* ══════════════ навигация по разделам ══════════════
      Считаем положение разделов в момент прокрутки, а не заранее: страница
      растёт по мере загрузки планировок, и заранее посчитанные границы
