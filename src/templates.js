@@ -557,7 +557,14 @@ function home(t, page) {
       </li>`).join('\n');
 
   /* Планировки стоят на главной целиком: подбор без выбора смысла не имеет. */
-  const plans = t.plans.items.map((x) => planCard(t, x)).join('\n');
+  /* На главной показываем шесть планировок, а не весь каталог: тридцать три
+     чертежа превращали страницу в свалку картинок, и заказчик справедливо на
+     это пожаловался. Отбор по комнатности и площади живёт на странице квартир —
+     ровно так же устроен образец, на который он ссылается. */
+  const plans = h.homesPreview
+    .map((id) => t.plans.items.find((x) => x.id === id))
+    .filter(Boolean)
+    .map((x) => planCard(t, x)).join('\n');
 
   /* Диапазон площадей берём из самих планировок: числа в тексте и в карточках
      разойтись не могут. */
@@ -725,24 +732,20 @@ ${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}
   <div class="homes__inner">
     <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
     <h2 class="display" data-lines>${h.homesTitle}</h2>
-    <p class="homes__lead reveal">${esc(h.pickerNote)}</p>
+    <p class="homes__lead reveal">${esc(h.homesNote)}</p>
 
     <ul class="figures figures--pair">
-      <li class="figures__item"><b>${areaFrom} – ${areaTo} <span>${t.ui.sqm}</span></b><span>${esc(t.ui.areaWord)}</span></li>
+      <li class="figures__item"><b>${areaFrom} – ${areaTo} <span>${t.ui.sqm}</span></b><span>${esc(t.ui.areaWord)}</span></li>
       <li class="figures__item"><b data-count="${t.plans.items.length}">${t.plans.items.length}</b><span>${esc(t.ui.plansWord)}</span></li>
     </ul>
-
-    ${picker(t, {})}
   </div>
 
-  <div class="plans" data-picker-grid>
+  <div class="plans">
 ${plans}
   </div>
 
   <div class="homes__inner">
-    <p class="picker__empty" data-picker-empty hidden>${esc(h.pickerEmpty)}</p>
-    <p class="homes__note reveal">${esc(h.homesNote)}</p>
-    <a class="link-call reveal" href="${apartmentsHref}">${esc(h.homesLink)}</a>
+    <a class="pill reveal" href="${apartmentsHref}">${esc(t.ui.pick)}</a>
   </div>
 </section>
 
