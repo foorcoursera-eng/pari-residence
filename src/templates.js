@@ -424,15 +424,34 @@ ${items.map(([href, label]) => `  <a href="${href}"><i aria-hidden="true"></i><s
 function analytics() {
   const a = site.analytics || {};
   if (!a.ga4 && !a.metrika) { return ''; }
-  const cfg = `<script>window.PARI_ANALYTICS=${JSON.stringify({ metrika: a.metrika || null })};</script>
+  let out = `<script>window.PARI_ANALYTICS=${JSON.stringify({ metrika: a.metrika || null })};</script>
 `;
-  if (!a.ga4) { return cfg; }
-  return cfg + `<script async src="https://www.googletagmanager.com/gtag/js?id=${a.ga4}"></script>
+
+  if (a.ga4) {
+    out += `<script async src="https://www.googletagmanager.com/gtag/js?id=${a.ga4}"></script>
 <script>
 window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 gtag('js',new Date());gtag('config','${a.ga4}');
 </script>
 `;
+  }
+
+  /* Метрика: код в том виде, в каком его отдаёт сама Метрика. Проверка
+     document.scripts нужна, чтобы счётчик не встал дважды. */
+  if (a.metrika) {
+    out += `<script>
+(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+m[i].l=1*new Date();
+for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=${a.metrika}','ym');
+ym(${a.metrika},'init',{ssr:true,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/${a.metrika}" style="position:absolute;left:-9999px" alt=""></div></noscript>
+`;
+  }
+
+  return out;
 }
 
 /* ══════════════ каркас страницы ══════════════ */
