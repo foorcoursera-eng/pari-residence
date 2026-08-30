@@ -416,6 +416,25 @@ ${items.map(([href, label]) => `  <a href="${href}"><i aria-hidden="true"></i><s
 </nav>`;
 }
 
+
+/* ── счётчики ──
+   Тег Google ставится в head, как требует Google. Если идентификатора нет,
+   на страницу не попадает ничего: пустой сайт не должен тянуть чужой скрипт.
+   Номера счётчиков лежат в site.analytics, дальше события шлёт script.js. */
+function analytics() {
+  const a = site.analytics || {};
+  if (!a.ga4 && !a.metrika) { return ''; }
+  const cfg = `<script>window.PARI_ANALYTICS=${JSON.stringify({ metrika: a.metrika || null })};</script>
+`;
+  if (!a.ga4) { return cfg; }
+  return cfg + `<script async src="https://www.googletagmanager.com/gtag/js?id=${a.ga4}"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());gtag('config','${a.ga4}');
+</script>
+`;
+}
+
 /* ══════════════ каркас страницы ══════════════ */
 function shell(t, page) {
   const canonical = url(page.path);
@@ -448,7 +467,7 @@ function shell(t, page) {
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23B3832B'/%3E%3Cpath d='M9 24V13a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4h-6' fill='none' stroke='%23FAFAFA' stroke-width='1.8'/%3E%3C/svg%3E">
 ${page.preload || ''}<link rel="stylesheet" href="/styles.css?v=${page.v}">
 ${ld}
-</head>
+${analytics()}</head>
 <body${page.bodyClass ? ` class="${page.bodyClass}"` : ''}>
 <a class="skip-link" href="#main">${esc(t.ui.skip)}</a>
 ${page.splash ? splash() : ''}
