@@ -163,7 +163,12 @@ function build() {
   rmrf(dist);
   fs.mkdirSync(dist, { recursive: true });
 
-  const v = hash(path.join(root, 'styles.css')) + '-' + hash(path.join(root, 'script.js'));
+  /* Версия ассетов. Считаем её по всем нашим файлам, включая motion.js:
+     раньше он в подсчёт не входил, а Vercel отдаёт /assets/* с кэшем на год —
+     правка анимаций просто не доезжала до вернувшегося посетителя. */
+  const v = [
+    'styles.css', 'script.js', path.join('assets', 'js', 'motion.js'),
+  ].map((f) => hash(path.join(root, f))).join('-');
   const written = [];
   const urls = [];
 
