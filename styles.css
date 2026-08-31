@@ -2059,3 +2059,11 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 #care-1:focus-visible ~ .care__tabs .care__tab:nth-of-type(2),
 #care-2:focus-visible ~ .care__tabs .care__tab:nth-of-type(3),
 #care-3:focus-visible ~ .care__tabs .care__tab:nth-of-type(4){outline:2px solid var(--gold);outline-offset:4px}
+
+/* ── слайд раздела = кадр 16:10 целиком ──
+   Коробка слайда была 1,84 и обрезала кадр по бокам, хотя сам файл уже
+   16:10. Теперь высоту задаёт пропорция кадра: на экране 1440×900 слайд
+   занимает его ровно, как у образца, и ничего не режется. */
+.frame{height:auto;aspect-ratio:16 / 10}
+.cine.is-live .cine__stage{height:auto;aspect-ratio:16 / 10;max-height:100svh}
+.cine.is-live .frame{height:100%}
