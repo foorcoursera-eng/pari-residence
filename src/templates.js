@@ -303,6 +303,21 @@ function shotGrid(items, sizes) {
     </figure>`).join('\n');
 }
 
+/* ── галерея архитектуры в формате образца ──
+   У stellarresidence.uz все кадры галереи одной пропорции 0,93 и одного
+   размера — именно это заказчик и назвал «не тот формат». Наши кадры резались
+   каждый по-своему, вплоть до панорамы 3,93. Файлы -sq- готовит
+   tools/make-formats.py настоящим кадрированием из исходных рендеров. */
+function squareGrid(items) {
+  return items.map((g) => `      <figure class="tile reveal">
+        <img src="/assets/img/${g.img}-sq-700.webp"
+             srcset="/assets/img/${g.img}-sq-700.webp 700w, /assets/img/${g.img}-sq-1100.webp 1100w, /assets/img/${g.img}-sq-1400.webp 1400w"
+             sizes="(min-width:900px) 34vw, 76vw" alt="${esc(g.cap)}"
+             width="1400" height="1501" loading="lazy" decoding="async">
+        <figcaption>${esc(g.cap)}</figcaption>
+      </figure>`).join('\n');
+}
+
 /* ── мастер-план района с легендой ──
    Легенда набирается разметкой, а не берётся с картинки: так она читается на
    узбекском и не расплывается при увеличении. */
@@ -602,10 +617,10 @@ function home(t, page) {
   const cineItems = h.cine.filter((c) => c.img !== 'cine-parking');
   const cine = cineItems.map((c) => {
     const max = c.w[c.w.length - 1];
-    const set = c.w.map((w) => `/assets/img/${c.img}-${w}.webp ${w}w`).join(', ');
+    const set = c.w.map((w) => `/assets/img/${c.img}-w16-${w}.webp ${w}w`).join(', ');
     return `      <figure class="frame">
-        <img src="/assets/img/${c.img}-${c.w[0]}.webp" srcset="${set}"
-             sizes="100vw" alt="${esc(c.title)}" width="${max}" height="${Math.round(max / 2)}"
+        <img src="/assets/img/${c.img}-w16-${c.w[0]}.webp" srcset="${set}"
+             sizes="100vw" alt="${esc(c.title)}" width="${max}" height="${Math.round(max / 1.6)}"
              loading="lazy" decoding="async">
         <figcaption class="frame__cap">
           <b class="frame__name">${esc(c.title)}</b>
@@ -697,16 +712,16 @@ function home(t, page) {
       <!-- два кадра внахлёст: арка отсылает к аркадам первых этажей -->
       <div class="about__art reveal">
         <figure class="art art--arch">
-          <img src="/assets/img/arch-entrance-1280.webp"
-               srcset="/assets/img/arch-entrance-1280.webp 1280w, /assets/img/arch-entrance-1920.webp 1920w"
+          <img src="/assets/img/arch-entrance-p45-800.webp"
+               srcset="/assets/img/arch-entrance-p45-800.webp 800w, /assets/img/arch-entrance-p45-1200.webp 1200w"
                sizes="(min-width:900px) 26vw, 58vw" alt="${esc(h.aboutArchAlt)}"
-               width="1280" height="714" loading="lazy" decoding="async">
+               width="1200" height="1500" loading="lazy" decoding="async">
         </figure>
         <figure class="art art--shot">
-          <img src="/assets/img/yard-1080.webp"
-               srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
+          <img src="/assets/img/arch-yard-p45-800.webp"
+               srcset="/assets/img/arch-yard-p45-800.webp 800w, /assets/img/arch-yard-p45-1200.webp 1200w"
                sizes="(min-width:900px) 34vw, 74vw" alt="${esc(h.aboutShotAlt)}"
-               width="1920" height="1071" loading="lazy" decoding="async">
+               width="1200" height="1500" loading="lazy" decoding="async">
         </figure>
       </div>
 
@@ -781,14 +796,15 @@ ${cineItems.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : 
 </section>
 
 <!-- ══════════════ 04 · АРХИТЕКТУРА ══════════════ -->
-<section class="arch" id="architecture">
+<section class="arch arch--split" id="architecture">
   <div class="arch__head">
     <p class="eyebrow reveal"><span class="num">${h.archNum}</span> ${esc(h.archEyebrow)}</p>
     <h2 class="display" data-lines>${h.archTitle}</h2>
     <p class="arch__text reveal">${esc(h.archText)}</p>
+    <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
   </div>
-  <div class="gallery__grid">
-${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
+  <div class="tiles" data-rail>
+${squareGrid(h.arch)}
   </div>
 </section>
 
@@ -830,10 +846,10 @@ ${plans}
 <!-- ══════════════ 06 · ДВОР-ПАРК ══════════════ -->
 <section class="split" id="yard">
   <div class="split__media figure-mask">
-    <img src="/assets/img/yard-1920.webp"
-         srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
-         sizes="(min-width:900px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
-         width="1920" height="1071" loading="lazy" decoding="async">
+    <img src="/assets/img/yard-p45-800.webp"
+         srcset="/assets/img/yard-p45-800.webp 800w"
+         sizes="(min-width:900px) 42vw, 100vw" alt="${esc(h.yardAlt)}"
+         width="800" height="1000" loading="lazy" decoding="async">
   </div>
   <div class="split__panel">
     <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
@@ -865,10 +881,10 @@ ${plans}
      Отдельный раздел, как в образце: кадр с одной стороны, цифра с другой. -->
 <section class="parking" id="parking">
   <figure class="parking__media figure-mask">
-    <img src="/assets/img/cine-parking-1280.webp"
-         srcset="/assets/img/cine-parking-1280.webp 1280w, /assets/img/cine-parking-1535.webp 1535w"
-         sizes="(min-width:900px) 48vw, 100vw" alt="${esc(h.parkAlt)}"
-         width="1535" height="1024" loading="lazy" decoding="async">
+    <img src="/assets/img/cine-parking-p23-700.webp"
+         srcset="/assets/img/cine-parking-p23-700.webp 700w"
+         sizes="(min-width:900px) 40vw, 100vw" alt="${esc(h.parkAlt)}"
+         width="700" height="1049" loading="lazy" decoding="async">
   </figure>
   <div class="parking__panel">
     <p class="eyebrow reveal"><span class="num">${h.parkNum}</span> ${esc(h.parkEyebrow)}</p>

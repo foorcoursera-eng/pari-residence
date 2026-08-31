@@ -1902,3 +1902,100 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
    Два соседних раздела на молочном сливались в одно поле; чередование
    светлых фонов восстановлено. */
 .maker{background:var(--paper)}
+
+/* ══════════════ форматы кадров по образцу (31.08.2026) ══════════════
+   Заказчик указал, что «не тот формат фоток, слайдов, рендеров». Замер на
+   stellarresidence.uz (ширина 1440) дал жёсткую систему пропорций:
+     слайды разделов   1,59 — кадр ровно во весь экран, ничего не обрезано;
+     галерея           0,93 — все кадры одинаковые, почти квадрат;
+     врезки в тексте   0,80 — портрет 4:5;
+     паркинг           0,66 — портрет 2:3;
+     генплан           1,99 — лист 2:1.
+   У нас было 1,84 / 2,27 / 1,70 / 3,93 / 1,02 — каждый кадр свой. Ниже эта
+   система закреплена в вёрстке, а сами файлы пережаты tools/make-formats.py.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── галерея архитектуры: лента одинаковых квадратов справа от текста ── */
+.arch--split{padding:clamp(72px,11vh,132px) 0}
+.arch--split .arch__head{width:var(--measure);margin-inline:auto}
+.tiles{
+  display:flex;gap:clamp(12px,1.6vw,24px);margin-top:clamp(30px,5vh,52px);
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding-inline:max(var(--gutter),calc((100vw - var(--measure)) / 2));
+}
+.tiles::-webkit-scrollbar{display:none}
+.tile{
+  margin:0;flex:0 0 clamp(240px,34vw,553px);scroll-snap-align:start;
+  display:flex;flex-direction:column;gap:12px;
+}
+.tile img{
+  width:100%;height:auto;aspect-ratio:1400 / 1501;object-fit:cover;display:block;
+  transition:transform .8s cubic-bezier(.22,.61,.36,1);
+}
+@media (hover:hover){ .tile:hover img{transform:scale(1.02)} }
+.tile figcaption{
+  font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+
+@media (min-width:1100px){
+  /* текст слева, лента квадратов справа — композиция образца */
+  .arch--split{
+    display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);
+    align-items:center;column-gap:clamp(32px,4vw,64px);
+    padding-left:max(var(--gutter),calc((100vw - var(--measure)) / 2));
+  }
+  .arch--split .arch__head{width:auto;margin:0;max-width:34ch}
+  /* в узкой колонке крупный кегель не помещался и обрезался по букве */
+  .arch--split .arch__head .display{font-size:clamp(28px,3.1vw,44px)}
+  .arch--split .tiles{
+    margin-top:0;padding-inline:0;padding-right:var(--gutter);
+  }
+  .arch--split .tile{flex:0 0 clamp(320px,26vw,420px)}
+}
+
+/* ── врезки «о проекте»: два портрета 4:5 внахлёст ──
+   Раньше кадры стояли абсолютом внутри коробки фиксированной высоты; с
+   портретами такая коробка перестала их вмещать, и кадры вылезали на соседний
+   раздел. Теперь оба лежат в одной ячейке сетки — высоту задаёт сам кадр. */
+.art img{aspect-ratio:4 / 5}
+@media (min-width:900px){
+  .about__art{
+    display:grid;grid-template-columns:repeat(12,minmax(0,1fr));
+    align-items:end;min-height:0;
+  }
+  .art{position:static;width:auto;height:auto;grid-row:1}
+  .art--shot{grid-column:4 / 13;z-index:1}
+  .art--arch{grid-column:1 / 7;z-index:2;margin-bottom:-7%}
+}
+
+/* ── двор-парк: портрет рядом с панелью, как пентхаусы у образца ── */
+.split__media{min-height:0}
+.split__media img{height:auto;aspect-ratio:4 / 5}
+@media (min-width:900px){
+  .split{
+    grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center;
+    padding:clamp(60px,9vh,120px) var(--gutter);
+  }
+  .split__media{justify-self:end;width:min(100%,460px)}
+  .split__panel{padding:0 0 0 clamp(24px,4vw,64px)}
+}
+
+/* ── паркинг: портрет 2:3 ── */
+.parking{align-items:center;padding:clamp(60px,9vh,120px) 0}
+.parking__media{
+  height:auto;justify-self:center;width:min(100% - var(--gutter) * 2,420px);
+}
+.parking__media img{height:auto;min-height:0;aspect-ratio:2 / 3;object-fit:cover}
+@media (min-width:900px){
+  .parking{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+  .parking__media{justify-self:end;margin-right:clamp(0px,2vw,32px)}
+  .parking__panel{padding:0 var(--gutter) 0 clamp(24px,4vw,64px)}
+}
+
+/* ── генплан: лист в поле 2:1, как у образца; чертёж не режем ── */
+.plan-teaser__art img{aspect-ratio:2 / 1;object-fit:contain;background:var(--paper)}
+@media (max-width:719px){
+  .plan-teaser__art img{aspect-ratio:4 / 5;object-fit:cover}
+}

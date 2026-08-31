@@ -346,14 +346,14 @@ const ru = {
        читалась как случайный набор картинок. */
     cine: [
       {
-        img: 'cine-yard', w: [1280, 1920, 2560],
+        img: 'cine-yard', w: [1280, 2048],
         title: 'Двор-парк',
         text: 'Закрытый двор площадью один гектар: геопластика, водные объекты, многолетние '
           + 'кустарники, плодовые и хвойные деревья. Крытые беседки и гостиные под открытым '
           + 'небом. Машин во дворе нет.',
       },
       {
-        img: 'cine-arcade', w: [1280, 1920, 2560],
+        img: 'cine-arcade', w: [1280, 2048],
         title: 'Торговая галерея',
         /* Перечень категорий — с рекламного макета застройщика; ждём
            подтверждения владельца перед публикацией. */
@@ -361,13 +361,13 @@ const ru = {
           + 'лавки — вдоль первых этажей, под аркадами.',
       },
       {
-        img: 'cine-lobby', w: [1280, 1672],
+        img: 'cine-lobby', w: [1280],
         title: 'Входные группы',
         text: 'Лобби с латунью, натуральным камнем и лепниной. Дизайнерские входные группы '
           + 'разработаны бюро SAFRONOVA PROJECT.',
       },
       {
-        img: 'cine-balcony', w: [1280, 1920, 2560],
+        img: 'cine-balcony', w: [1280, 2048],
         title: 'Вид с высоты',
         text: 'С верхних этажей открывается панорама Самарканда — города, ради которого '
           + 'сюда и приезжают.',
@@ -913,26 +913,26 @@ const uz = {
     cineTitle: 'Kerakli hamma narsa —<br>kvartal ichida',
     cine: [
       {
-        img: 'cine-yard', w: [1280, 1920, 2560],
+        img: 'cine-yard', w: [1280, 2048],
         title: 'Hovli-bogʻ',
         text: 'Bir gektarlik yopiq hovli: geoplastika, suv obyektlari, koʻp yillik butalar, '
           + 'mevali va ignabargli daraxtlar. Yopiq soyabonlar va ochiq havodagi mehmonxonalar. '
           + 'Hovlida avtomobillar yoʻq.',
       },
       {
-        img: 'cine-arcade', w: [1280, 1920, 2560],
+        img: 'cine-arcade', w: [1280, 2048],
         title: 'Savdo galereyasi',
         text: 'Kafe va restoranlar, butiklar va parfyumeriya doʻkonlari, goʻzallik salonlari, '
           + 'gul doʻkonlari — birinchi qavatlar boʻylab, arkadalar ostida.',
       },
       {
-        img: 'cine-lobby', w: [1280, 1672],
+        img: 'cine-lobby', w: [1280],
         title: 'Kirish guruhlari',
         text: 'Latun, tabiiy tosh va gansimon bezaklar bilan lobbi. Kirish guruhlari '
           + 'SAFRONOVA PROJECT byurosi loyihasi.',
       },
       {
-        img: 'cine-balcony', w: [1280, 1920, 2560],
+        img: 'cine-balcony', w: [1280, 2048],
         title: 'Balandlikdan manzara',
         text: 'Yuqori qavatlardan Samarqand panoramasi ochiladi — odamlar shu shahar uchun '
           + 'bu yerga keladi.',
