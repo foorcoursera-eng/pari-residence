@@ -1749,11 +1749,17 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .chooser__set .pick{min-width:46px;justify-content:center}
 
 .floor{
-  position:relative;margin:clamp(20px,3vh,32px) 0 0;
+  margin:clamp(20px,3vh,32px) 0 0;
   background:var(--paper);border:1px solid var(--hair);
 }
+.floor__frame{position:relative}
 .floor__plan{display:block;width:100%;height:auto}
 .floor__flats{position:absolute;left:0;top:0;width:100%;height:100%}
+
+@media (max-width:899px){
+  .floor__scroll{overflow-x:auto;overscroll-behavior-x:contain}
+  .floor__frame{min-width:760px}
+}
 .floor__flats path{
   fill:rgba(179,131,43,0);stroke:transparent;stroke-width:1.4;
   vector-effect:non-scaling-stroke;cursor:pointer;

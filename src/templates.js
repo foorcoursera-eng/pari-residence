@@ -848,8 +848,14 @@ ${tabs}
 
   <div class="page__inner">
     <figure class="floor" data-floor-stage>
-      <img class="floor__plan" alt="" data-tpl="${esc(s.planAlt)}" width="885" height="561" decoding="async">
-      <svg class="floor__flats" viewBox="0 0 885 561" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <!-- На телефоне план шире экрана и ездит вбок: в 333 px чертёж с мебелью
+           не прочитать, а квартиры не нащупать пальцем. -->
+      <div class="floor__scroll">
+        <div class="floor__frame">
+          <img class="floor__plan" alt="" data-tpl="${esc(s.planAlt)}" width="885" height="561" decoding="async">
+          <svg class="floor__flats" viewBox="0 0 885 561" preserveAspectRatio="none" aria-hidden="true"></svg>
+        </div>
+      </div>
       <figcaption class="floor__cap" data-floor-cap>${esc(s.pickFlat)}</figcaption>
     </figure>
 
