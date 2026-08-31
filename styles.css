@@ -1999,3 +1999,61 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 @media (max-width:719px){
   .plan-teaser__art img{aspect-ratio:4 / 5;object-fit:cover}
 }
+
+/* ══════════════ 09 · забота в деталях ══════════════
+   Раздел образца: слева список зон, справа кадр 1,43 и абзац. Переключение
+   на радиокнопках — раздел живой и без скрипта. Нумерация разделов идёт
+   по порядку образца, поэтому зоны стоят перед генпланом. */
+.care{background:var(--paper);padding:clamp(72px,11vh,132px) 0}
+.care__inner{width:var(--measure);margin:0 auto}
+.care__body{
+  position:relative;display:grid;gap:clamp(24px,3vw,56px);
+  margin-top:clamp(30px,5vh,52px);
+}
+@media (min-width:900px){
+  .care__body{grid-template-columns:minmax(0,.62fr) minmax(0,1.38fr);align-items:start}
+}
+
+.care__radio{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.care__tabs{display:flex;flex-direction:column}
+.care__tab{
+  display:block;padding:clamp(14px,2vh,20px) 0;cursor:pointer;
+  border-top:1px solid var(--hair);
+  font-size:clamp(15px,1.5vw,19px);line-height:1.35;color:var(--ink-3);
+  transition:color .35s ease,padding-left .35s ease;
+}
+.care__tab:last-of-type{border-bottom:1px solid var(--hair)}
+.care__tab:hover{color:var(--ink)}
+
+.care__panels{position:relative}
+.care__panel{display:none}
+.care__shot{margin:0;overflow:hidden}
+.care__shot img{
+  width:100%;height:auto;aspect-ratio:1400 / 979;object-fit:cover;display:block;
+}
+.care__note{margin-top:clamp(18px,2.6vh,28px)}
+.care__name{
+  margin:0 0 10px;font-family:var(--display);font-weight:400;color:var(--ink);
+  font-size:clamp(20px,2.4vw,32px);line-height:1.2;
+}
+.care__note p{margin:0;max-width:52ch;font-size:clamp(15px,1.4vw,17px);line-height:1.9}
+
+/* выбранная зона: золотая метка слева и чёрный текст */
+#care-0:checked ~ .care__tabs .care__tab:nth-of-type(1),
+#care-1:checked ~ .care__tabs .care__tab:nth-of-type(2),
+#care-2:checked ~ .care__tabs .care__tab:nth-of-type(3),
+#care-3:checked ~ .care__tabs .care__tab:nth-of-type(4){
+  color:var(--ink);padding-left:18px;
+  background:linear-gradient(var(--gold),var(--gold)) left center / 8px 1px no-repeat;
+}
+#care-0:checked ~ .care__panels .care__panel:nth-of-type(1),
+#care-1:checked ~ .care__panels .care__panel:nth-of-type(2),
+#care-2:checked ~ .care__panels .care__panel:nth-of-type(3),
+#care-3:checked ~ .care__panels .care__panel:nth-of-type(4){display:block}
+
+/* видимый фокус с клавиатуры — радиокнопка сама скрыта */
+#care-0:focus-visible ~ .care__tabs .care__tab:nth-of-type(1),
+#care-1:focus-visible ~ .care__tabs .care__tab:nth-of-type(2),
+#care-2:focus-visible ~ .care__tabs .care__tab:nth-of-type(3),
+#care-3:focus-visible ~ .care__tabs .care__tab:nth-of-type(4){outline:2px solid var(--gold);outline-offset:4px}

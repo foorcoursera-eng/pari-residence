@@ -650,6 +650,23 @@ function home(t, page) {
   const areaFrom = byArea[0].area;
   const areaTo = byArea[byArea.length - 1].area;
 
+  /* Зоны благоустройства переключаются радиокнопками, без единой строки
+     скрипта: раздел работает и тогда, когда JS не загрузился. */
+  const careRadios = h.care.map((c, i) => `    <input class="care__radio" type="radio" name="care" id="care-${i}"${i === 0 ? ' checked' : ''}>`).join('\n');
+  const careTabs = h.care.map((c, i) => `      <label class="care__tab" for="care-${i}">${esc(c.title)}</label>`).join('\n');
+  const carePanels = h.care.map((c) => `      <article class="care__panel">
+        <figure class="care__shot figure-mask is-in">
+          <img src="/assets/img/${c.img}-sv-900.webp"
+               srcset="/assets/img/${c.img}-sv-900.webp 900w, /assets/img/${c.img}-sv-1400.webp 1400w"
+               sizes="(min-width:900px) 56vw, 100vw" alt="${esc(c.title)}"
+               width="1400" height="979" loading="lazy" decoding="async">
+        </figure>
+        <div class="care__note">
+          <h3 class="care__name">${esc(c.title)}</h3>
+          <p>${esc(c.text)}</p>
+        </div>
+      </article>`).join('\n');
+
   const p = t.lang === 'ru' ? '' : '/uz';
   const apartmentsHref = `${p}/apartments/`;
   const locationHref = `${p}/location/`;
@@ -855,6 +872,26 @@ ${plans}
     <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
     <h2 class="display" data-lines>${h.yardTitle}</h2>
     <p class="split__text reveal">${esc(h.yardText)}</p>
+  </div>
+</section>
+
+<!-- ══════════════ 09 · ЗАБОТА В ДЕТАЛЯХ ══════════════
+     Раздел образца, которого у нас не было: слева список зон, справа кадр
+     и абзац. Зоны сняты с листа «Генеральный план М1:500» из альбома. -->
+<section class="care" id="care">
+  <div class="care__inner">
+    <p class="eyebrow reveal"><span class="num">${h.careNum}</span> ${esc(h.careEyebrow)}</p>
+    <h2 class="display" data-lines>${h.careTitle}</h2>
+
+    <div class="care__body">
+${careRadios}
+      <div class="care__tabs">
+${careTabs}
+      </div>
+      <div class="care__panels">
+${carePanels}
+      </div>
+    </div>
   </div>
 </section>
 

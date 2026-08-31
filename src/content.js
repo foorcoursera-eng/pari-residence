@@ -454,7 +454,42 @@ const ru = {
        а цвет и шрифты остаются по гайдбуку PARI. Два раздела образца у нас
        раньше жили только на внутренних страницах — генплан и паркинг: их
        тизеры теперь стоят на главной, ровно как в образце. */
-    planNum: '07',
+    /* ── «забота в деталях» ──
+       У образца это раздел с переключателями: слева список зон, справа кадр
+       и абзац. Наши зоны взяты не с потолка, а с листа «Генеральный план
+       М1:500» из альбома проекта — на нём подписаны детские площадки, зона
+       Baby zone, Work out, Green space и Sitting area, навесы и беседки. */
+    careNum: '07',
+    careEyebrow: 'Благоустройство',
+    careTitle: 'Забота<br>в деталях',
+    care: [
+      {
+        img: 'arch-arch',
+        title: 'Закрытый двор',
+        text: 'Двор закрыт для посторонних и для машин: заезды и парковки вынесены '
+          + 'за периметр, внутрь ведут арки. По двору можно идти, не оглядываясь.',
+      },
+      {
+        img: 'arch-yard',
+        title: 'Детские и спортивные площадки',
+        text: 'На генеральном плане размечены детские площадки, отдельная зона для '
+          + 'самых маленьких и площадка для занятий на воздухе.',
+      },
+      {
+        img: 'arch-pergola',
+        title: 'Гостиные под открытым небом',
+        text: 'Крытые беседки и навесы с местами для сидения — двор устроен так, '
+          + 'чтобы в нём проводили вечера, а не проходили его насквозь.',
+      },
+      {
+        img: 'arch-stone',
+        title: 'Озеленение и вода',
+        text: 'Тридцать процентов территории — озеленение: многолетние кустарники, '
+          + 'плодовые и хвойные деревья, геопластика и водные объекты.',
+      },
+    ],
+
+    planNum: '08',
     planEyebrow: 'Генеральный план',
     planTitle: 'Выберите корпус<br>на плане квартала',
     planText: 'Тринадцать корпусов вокруг закрытого двора-парка. На плане видно, '
@@ -462,7 +497,7 @@ const ru = {
     planLink: 'Открыть генплан',
     planAlt: 'Генеральный план PARI Residence: тринадцать корпусов вокруг двора-парка',
 
-    parkNum: '08',
+    parkNum: '09',
     parkEyebrow: 'Паркинг',
     parkTitle: 'Машины остаются<br>за пределами двора',
     parkText: 'Подземный и наземный паркинг. Открытая парковка на 148 машино-мест — '
@@ -1006,7 +1041,39 @@ const uz = {
     masterLink: 'Bosh rejani koʻrish',
 
     /* v4: bosh sahifa boʻlimlari namuna tartibida (stellarresidence.uz). */
-    planNum: '07',
+    /* «Tafsilotlardagi gʻamxoʻrlik» — namunadagi boʻlim; zonalar loyiha
+       albomidagi «Bosh reja M1:500» varagʻidan olingan. */
+    careNum: '07',
+    careEyebrow: 'Obodonlashtirish',
+    careTitle: 'Tafsilotlardagi<br>gʻamxoʻrlik',
+    care: [
+      {
+        img: 'arch-arch',
+        title: 'Yopiq hovli',
+        text: 'Hovli begonalar uchun ham, avtomobillar uchun ham yopiq: kirish va '
+          + 'toʻxtash joylari perimetrdan tashqarida, ichkariga arkalar olib kiradi.',
+      },
+      {
+        img: 'arch-yard',
+        title: 'Bolalar va sport maydonchalari',
+        text: 'Bosh rejada bolalar maydonchalari, eng kichiklar uchun alohida zona va '
+          + 'ochiq havoda mashgʻulot uchun maydoncha belgilangan.',
+      },
+      {
+        img: 'arch-pergola',
+        title: 'Ochiq osmon ostidagi mehmonxonalar',
+        text: 'Yopiq shiyponlar va oʻtirish joylari boʻlgan soyabonlar — hovli undan '
+          + 'oʻtib ketish uchun emas, kechqurunlarni oʻtkazish uchun qilingan.',
+      },
+      {
+        img: 'arch-stone',
+        title: 'Koʻkalamzorlashtirish va suv',
+        text: 'Hududning oʻttiz foizi — koʻkalamzorlashtirish: koʻp yillik butalar, '
+          + 'mevali va ignabargli daraxtlar, geoplastika va suv obyektlari.',
+      },
+    ],
+
+    planNum: '08',
     planEyebrow: 'Bosh reja',
     planTitle: 'Kvartal rejasida<br>blokni tanlang',
     planText: 'Yopiq hovli-bogʻ atrofida oʻn uch blok. Rejada qaysi blok qaysi turga '
@@ -1014,7 +1081,7 @@ const uz = {
     planLink: 'Bosh rejani ochish',
     planAlt: 'PARI Residence bosh rejasi: hovli-bogʻ atrofida oʻn uch blok',
 
-    parkNum: '08',
+    parkNum: '09',
     parkEyebrow: 'Avtoturargoh',
     parkTitle: 'Avtomobillar hovlidan<br>tashqarida qoladi',
     parkText: 'Yer osti va yer usti avtoturargohi. Ochiq avtoturargoh 148 mashina oʻrniga '
