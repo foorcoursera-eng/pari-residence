@@ -56,60 +56,34 @@
     });
   }
 
-  /* ── 1 · первый экран: кадр квартала раскрывается ──
-     Раздел вдвое выше окна, сцена внутри липкая: пока идёт прокрутка, рамка
-     со снимком растёт до полного экрана, а логотип со слоганом растворяется.
-     Без GSAP кадр просто остаётся в рамке — первый экран не ломается. */
-  var lead = document.querySelector('.opening');
+  /* ── 1 · первый экран ──
+     Кадр рекламной кампании: снимок медленно въезжает при загрузке и так же
+     медленно отъезжает, когда экран уходит вверх. Наезд и отъезд повешены на
+     разные узлы — обёртку и саму картинку, — иначе две шкалы дерутся за
+     одно свойство. Без GSAP кадр просто стоит на месте. */
+  var lead = document.querySelector('.m-hero');
   if (lead) {
-    var frame = lead.querySelector('[data-open-frame]');
+    var media = lead.querySelector('.m-hero__media');
+    var shot = lead.querySelector('.m-hero__shot');
     var head = lead.querySelector('[data-open-head]');
-    /* Порог обязан совпадать с точкой перелома в стилях: ниже 900 px
-       первый экран раскладывается сверху вниз, выше — на две колонки. */
-    var narrow = function () { return innerWidth <= 900; };
 
-    if (frame) {
-      gsap.fromTo(frame,
-        {
-          /* Узкий экран: кадр лежит под текстом во всю ширину. Широкий: кадр
-             занимает правые 62% и во всю высоту, а по мере прокрутки
-             разрастается на весь экран. Значения обязаны совпадать с CSS —
-             здесь они попадают в инлайновый стиль и перебивают таблицу. */
-          width: function () { return narrow() ? '100%' : '62%'; },
-          height: function () { return narrow() ? Math.round(innerHeight * 0.52) : innerHeight; },
-        },
-        {
-          width: '100%',
-          height: function () { return innerHeight; },
-          ease: 'none',
-          scrollTrigger: {
-            trigger: lead, start: 'top top', end: 'bottom bottom',
-            scrub: 0.5, invalidateOnRefresh: true,
-          },
-        });
+    if (media) {
+      gsap.fromTo(media, { scale: 1.1 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
     }
-
-    /* Снимок в кадре медленно наезжает: движение едва заметное, но именно
-       оно не даёт первому экрану выглядеть неподвижной картинкой. Перекраски
-       «чертёж → снимок» больше нет — она держала экран белым до середины
-       прокрутки, а чертёж переехал в подложку левого поля. */
-    var shot = frame && frame.querySelector('.opening__shot');
     if (shot) {
-      gsap.fromTo(shot, { scale: 1.08 }, {
-        scale: 1, ease: 'none',
+      gsap.to(shot, {
+        scale: 1.09, ease: 'none',
         scrollTrigger: {
-          trigger: lead, start: 'top top', end: 'bottom bottom',
-          scrub: 0.5, invalidateOnRefresh: true,
+          trigger: lead, start: 'top top', end: 'bottom top',
+          scrub: 0.6, invalidateOnRefresh: true,
         },
       });
     }
-
     if (head) {
       gsap.to(head, {
-        opacity: 0, y: -34, ease: 'none',
+        opacity: 0, y: -42, ease: 'none',
         scrollTrigger: {
-          trigger: lead, start: 'top top',
-          end: function () { return '+=' + innerHeight * 0.55; },
+          trigger: lead, start: 'top top', end: 'bottom top',
           scrub: 0.5, invalidateOnRefresh: true,
         },
       });
@@ -286,9 +260,9 @@
      Надстрочник, затем письмо логотипа (его ведёт script.js), затем фраза и кнопка. */
   if (lead) {
     /* Кнопку звонка сюда не берём: её прозрачностью управляет класс на body
-       (пока человек на первом экране — она в рамке, дальше её роль берёт пара
+       (пока человек на первом экране — она в кадре, дальше её роль берёт пара
        кнопок в углу). Инлайновое значение от GSAP этот класс перебило бы. */
-    var order = [lead.querySelector('.opening__eyebrow'), lead.querySelector('.opening__sub')].filter(Boolean);
+    var order = [lead.querySelector('.m-hero__place'), lead.querySelector('.m-hero__sub')].filter(Boolean);
     gsap.fromTo(order, { opacity: 0, y: 18 },
       { opacity: 1, y: 0, duration: 1.2, ease: EASE, stagger: 0.45, delay: 0.3 });
   }
@@ -296,7 +270,7 @@
   /* ── 11 · кнопка звонка тянется к курсору ──
      Смещение крошечное: жест должен считываться, а не бросаться в глаза. */
   if (wide && window.matchMedia('(hover:hover)').matches) {
-    document.querySelectorAll('.cta, .btn-gold, .btn--call, .pill, .opening__call').forEach(function (btn) {
+    document.querySelectorAll('.cta, .btn-gold, .btn--call, .pill, .m-hero__call').forEach(function (btn) {
       var pull = gsap.quickTo(btn, 'x', { duration: 0.5, ease: 'power3.out' });
       var lift = gsap.quickTo(btn, 'y', { duration: 0.5, ease: 'power3.out' });
       btn.addEventListener('pointermove', function (e) {

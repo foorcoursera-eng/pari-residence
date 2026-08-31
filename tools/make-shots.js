@@ -21,21 +21,12 @@ const patch = `
   /* высоты во вьюпортных единицах при съёмке длинным окном ломают вёрстку */
   .hero, .hero__inner { min-height: 900px !important; }
   .split__media { min-height: 460px !important; }
-  /* первый экран v5 занимает два окна и держит сцену липкой: при съёмке
-     длинным окном это превращается в четыре пустых экрана подряд */
-  .opening { height: 860px !important; }
-  .opening__stage { position: static !important; height: 860px !important; }
-  .opening__frame { height: 860px !important; }
-  .opening__head { height: 860px !important; }
-  /* на широком кадре первый экран двухколоночный, на узком — сверху вниз:
-     иначе съёмка узкого окна показывает пустое поле вместо рендера */
-  @media (min-width: 901px) { .opening__frame { width: 62% !important; } }
-  @media (max-width: 900px) {
-    .opening__frame { height: 420px !important; }
-    .opening__head { height: 440px !important; }
-  }
-  .hectare__panorama img { height: 520px !important; }
-  .scene { min-height: 760px !important; }
+  /* первый экран занимает окно целиком: при съёмке длинным окном svh
+     превращается в четыре пустых экрана подряд */
+  .m-hero { height: 880px !important; min-height: 0 !important; }
+  .m-final { min-height: 720px !important; }
+  .m-full img { height: 460px !important; }
+  .m-full--tall img { height: 560px !important; }
   /* заголовки, написанные «пером», показываем в конечном состоянии — иначе в кадре пусто */
   .pen path { animation: none !important; stroke-dashoffset: 0 !important; fill: currentColor !important; stroke-opacity: 0 !important; }
 

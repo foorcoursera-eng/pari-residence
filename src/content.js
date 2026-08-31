@@ -250,8 +250,6 @@ const ru = {
   /* ── метаданные страниц: уникальные, без перечисления ключевых слов ── */
   meta: {
     home: {
-    /* Нумерация разделов переехала в chapters (v5): номер и название главы
-       задаются там один раз и на разметку, и на боковую навигацию. */
       title: 'PARI Residence — квартиры премиум-класса в Самарканде',
       description: 'PARI Residence — жилой квартал премиум-класса в Самарканде на улице Гуругли: '
         + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 27 до 95 м². '
@@ -297,8 +295,8 @@ const ru = {
 
   /* ── главная ── */
   home: {
-    /* Нумерация разделов переехала в chapters (v5): номер и название главы
-       задаются там один раз и на разметку, и на боковую навигацию. */
+    /* Названия и номера глав задаются один раз в maison (v6) — оттуда их
+       берут и разметка, и боковая навигация. */
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
     heroSlogan: 'Парижское&nbsp;очарование.<br>Самаркандская&nbsp;душа.',
     heroSub: 'Parijona Joziba. Samarqand ruhi.',
@@ -313,21 +311,85 @@ const ru = {
        нужен вход в проект, а не в каталог. */
     heroSecond: 'Посмотреть проект',
 
-    /* ── v5: страница ведётся главами ──
-       Разделы перестали быть перечнем «о нас / преимущества / квартиры»:
-       у страницы семь глав, каждая со своей композицией. Номер и слово главы
-       набираются одним элементом, чтобы порядок нельзя было случайно
-       рассинхронизировать между разметкой и боковой навигацией. */
-    chapters: {
-      idea: { num: '01', word: 'Идея' },
-      arch: { num: '02', word: 'Архитектура' },
-      yard: { num: '03', word: 'Двор-парк' },
-      quarter: { num: '04', word: 'Квартал' },
-      homes: { num: '05', word: 'Квартиры' },
-      city: { num: '06', word: 'Самарканд' },
-      yours: { num: '07', word: 'Ваш PARI' },
+    /* ══════════════ v6 · MAISON PARI ══════════════
+       Главная собрана как выпуск коллекции: двенадцать глав с римскими
+       номерами и короткой французской меткой над русским заголовком.
+       Французское слово здесь — указатель, приём дома моды; весь смысл
+       всегда несёт русский (узбекский) текст рядом. */
+    maison: {
+      house: { i: 'I', fr: 'La Maison', ru: 'Дом' },
+      idea: { i: 'II', fr: 'L’Idée', ru: 'Идея' },
+      arch: { i: 'III', fr: 'L’Architecture', ru: 'Архитектура' },
+      garden: { i: 'IV', fr: 'Le Jardin', ru: 'Двор-парк' },
+      boulevard: { i: 'V', fr: 'Le Boulevard', ru: 'Бульвар' },
+      life: { i: 'VI', fr: 'L’Art de Vivre', ru: 'Образ жизни' },
+      homes: { i: 'VII', fr: 'Les Appartements', ru: 'Квартиры' },
+      plan: { i: 'VIII', fr: 'Le Plan', ru: 'Генеральный план' },
+      city: { i: 'IX', fr: 'La Ville', ru: 'Самарканд' },
+      details: { i: 'X', fr: 'Les Détails', ru: 'Детали' },
+      makers: { i: 'XI', fr: 'Les Créateurs', ru: 'Создатели' },
+      yours: { i: 'XII', fr: 'Votre PARI', ru: 'Ваш PARI' },
     },
-    chapterWord: 'Глава',
+
+    /* Оглавление коллекции сразу под первым экраном: пять слов, которые
+       описывают проект целиком, и они же — быстрые переходы по главам. */
+    collectionTitle: 'Коллекция',
+    collection: [
+      { fr: 'La Maison', ru: 'Дом', href: '#maison' },
+      { fr: 'Le Jardin', ru: 'Двор', href: '#jardin' },
+      { fr: 'Le Boulevard', ru: 'Бульвар', href: '#boulevard' },
+      { fr: 'L’Appartement', ru: 'Квартира', href: '#appartements' },
+      { fr: 'La Ville', ru: 'Город', href: '#ville' },
+    ],
+
+    /* ── глава I ── */
+    houseLead: 'Квартал, в котором парижская лёгкость<br>встречается с самаркандским светом.',
+    specTitle: 'Спецификация',
+    specNote: 'Показатели приведены по альбому проекта.',
+    spec: [
+      ['Блоков', '13'],
+      ['Квартир', '1202'],
+      ['Этажей', '13–16'],
+      ['Площадь квартир', '27–95 м²'],
+      ['Планировок', '33'],
+      ['Двор-парк', '1 гектар'],
+      ['Озеленение', '30%'],
+      ['Открытая парковка', '148 мест'],
+      ['Отделка', 'White-box'],
+      ['Архитектура', 'SAFRONOVA PROJECT'],
+    ],
+
+    /* ── архитектурные листы ──
+       Чертежи подаются как документы: тонкая линия на белом, мелкие подписи,
+       честное указание источника. Лист генплана — из альбома проекта,
+       М1:500; фасадный — наша прорисовка по рендеру, так и подписан. */
+    sheetWord: 'Лист',
+    sheetFacadeTitle: 'Фасады со стороны улицы Гуругли',
+    sheetFacadeNote: 'Прорисовка по рендеру проекта',
+    sheetPlanTitle: 'Генеральный план квартала',
+    sheetPlanNote: 'Лист «Генеральный план М1:500» из альбома проекта',
+    sheetScale: 'М1:500',
+
+    /* ── глава VI · образ жизни ──
+       Каждая строка опирается на подтверждённое: аркады первых этажей,
+       расстояния из site.places, двор без машин, панорама с верхних этажей. */
+    lifeTitle: 'День,<br>рассказанный кварталом',
+    life: [
+      { time: 'Утро', text: 'Кофе под аркадой первого этажа — не выходя за периметр квартала.' },
+      { time: 'День', text: 'Вокзал в трёх минутах, аэропорт в пятнадцати: город рядом, но не под окнами.' },
+      { time: 'Вечер', text: 'Гектар двора без машин: вода, деревья, прогулочные дорожки, беседки.' },
+      { time: 'Ночь', text: 'С верхних этажей открывается панорама Самарканда.' },
+    ],
+
+    /* ── глава VII · каталог ── */
+    catalogLead: 'Тридцать три планировки: от компактной однокомнатной до семейной четырёхкомнатной.',
+    catalogView: 'Смотреть план',
+    catalogAll: 'Весь каталог',
+
+    /* ── глава XII · финал ── */
+    finalLead: 'Найдите<br>своё пространство',
+    finalVisit: 'Посетить PARI',
+
 
     /* Материалы фасадов — те же, что названы в archTitle и подписях кадров;
        список ничего не добавляет к проекту, а только проговаривает вслух. */
@@ -925,8 +987,6 @@ const uz = {
 
   meta: {
     home: {
-    /* Нумерация разделов переехала в chapters (v5): номер и название главы
-       задаются там один раз и на разметку, и на боковую навигацию. */
       title: 'PARI Residence — Samarqandda premium-klass xonadonlar',
       description: 'PARI Residence — Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass turar-joy majmuasi: '
         + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 27–95 m² xonadonlar. '
@@ -971,8 +1031,6 @@ const uz = {
   },
 
   home: {
-    /* Нумерация разделов переехала в chapters (v5): номер и название главы
-       задаются там один раз и на разметку, и на боковую навигацию. */
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
     heroSlogan: 'Parijona&nbsp;Joziba.<br>Samarqand&nbsp;ruhi.',
     heroSub: 'Парижское очарование. Самаркандская душа.',
@@ -982,17 +1040,71 @@ const uz = {
     leadScroll: 'Varaqlang',
     heroSecond: 'Loyihani koʻrish',
 
-    /* ── v5: sahifa boblar bilan olib boriladi ── */
-    chapters: {
-      idea: { num: '01', word: 'Gʻoya' },
-      arch: { num: '02', word: 'Arxitektura' },
-      yard: { num: '03', word: 'Hovli-bogʻ' },
-      quarter: { num: '04', word: 'Kvartal' },
-      homes: { num: '05', word: 'Xonadonlar' },
-      city: { num: '06', word: 'Samarqand' },
-      yours: { num: '07', word: 'Sizning PARI' },
+    /* ══════════════ v6 · MAISON PARI ══════════════
+       Fransuzcha soʻz — koʻrsatkich, maʼnoni har doim yonidagi oʻzbekcha
+       matn olib yuradi. */
+    maison: {
+      house: { i: 'I', fr: 'La Maison', ru: 'Uy' },
+      idea: { i: 'II', fr: 'L’Idée', ru: 'Gʻoya' },
+      arch: { i: 'III', fr: 'L’Architecture', ru: 'Arxitektura' },
+      garden: { i: 'IV', fr: 'Le Jardin', ru: 'Hovli-bogʻ' },
+      boulevard: { i: 'V', fr: 'Le Boulevard', ru: 'Bulvar' },
+      life: { i: 'VI', fr: 'L’Art de Vivre', ru: 'Turmush tarzi' },
+      homes: { i: 'VII', fr: 'Les Appartements', ru: 'Xonadonlar' },
+      plan: { i: 'VIII', fr: 'Le Plan', ru: 'Bosh reja' },
+      city: { i: 'IX', fr: 'La Ville', ru: 'Samarqand' },
+      details: { i: 'X', fr: 'Les Détails', ru: 'Tafsilotlar' },
+      makers: { i: 'XI', fr: 'Les Créateurs', ru: 'Ijodkorlar' },
+      yours: { i: 'XII', fr: 'Votre PARI', ru: 'Sizning PARI' },
     },
-    chapterWord: 'Bob',
+
+    collectionTitle: 'Kolleksiya',
+    collection: [
+      { fr: 'La Maison', ru: 'Uy', href: '#maison' },
+      { fr: 'Le Jardin', ru: 'Hovli', href: '#jardin' },
+      { fr: 'Le Boulevard', ru: 'Bulvar', href: '#boulevard' },
+      { fr: 'L’Appartement', ru: 'Xonadon', href: '#appartements' },
+      { fr: 'La Ville', ru: 'Shahar', href: '#ville' },
+    ],
+
+    houseLead: 'Parij yengilligi samarqand yorugʻligi bilan<br>uchrashadigan kvartal.',
+    specTitle: 'Spetsifikatsiya',
+    specNote: 'Koʻrsatkichlar loyiha albomi boʻyicha keltirilgan.',
+    spec: [
+      ['Bloklar', '13'],
+      ['Xonadonlar', '1202'],
+      ['Qavatlar', '13–16'],
+      ['Xonadon maydoni', '27–95 m²'],
+      ['Tarhlar', '33'],
+      ['Hovli-bogʻ', '1 gektar'],
+      ['Koʻkalamzorlashtirish', '30%'],
+      ['Ochiq avtoturargoh', '148 oʻrin'],
+      ['Pardoz', 'White-box'],
+      ['Arxitektura', 'SAFRONOVA PROJECT'],
+    ],
+
+    sheetWord: 'Varaq',
+    sheetFacadeTitle: 'Goʻroʻgʻli koʻchasi tomonidan fasadlar',
+    sheetFacadeNote: 'Loyiha renderi boʻyicha chizma',
+    sheetPlanTitle: 'Kvartalning bosh rejasi',
+    sheetPlanNote: 'Loyiha albomidagi «Bosh reja M1:500» varagʻi',
+    sheetScale: 'M1:500',
+
+    lifeTitle: 'Kvartal soʻzlab bergan<br>bir kun',
+    life: [
+      { time: 'Tong', text: 'Birinchi qavat arkadasi ostida qahva — kvartal perimetridan chiqmasdan.' },
+      { time: 'Kunduz', text: 'Vokzal uch daqiqada, aeroport oʻn beshda: shahar yaqin, lekin deraza ostida emas.' },
+      { time: 'Kechqurun', text: 'Avtomobilsiz bir gektar hovli: suv, daraxtlar, sayr yoʻlaklari, shiyponlar.' },
+      { time: 'Tun', text: 'Yuqori qavatlardan Samarqand panoramasi ochiladi.' },
+    ],
+
+    catalogLead: 'Oʻttiz uchta tarh: ixcham bir xonalidan oilaviy toʻrt xonaligacha.',
+    catalogView: 'Tarhni koʻrish',
+    catalogAll: 'Butun katalog',
+
+    finalLead: 'Oʻz makoningizni<br>toping',
+    finalVisit: 'PARI’ga tashrif',
+
 
     archMaterials: ['Tabiiy tosh', 'Guruch', 'Ganch', 'Shisha', 'Travertin'],
 

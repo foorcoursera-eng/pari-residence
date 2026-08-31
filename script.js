@@ -5,7 +5,7 @@
 
   var bar = document.getElementById('bar');
   var hero = document.querySelector('.hero');
-  var firstScreen = document.querySelector('.hero, .opening');
+  var firstScreen = document.querySelector('.hero, .m-hero');
   var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
