@@ -64,16 +64,19 @@
   if (lead) {
     var frame = lead.querySelector('[data-open-frame]');
     var head = lead.querySelector('[data-open-head]');
-    var narrow = function () { return innerWidth <= 700; };
+    /* Порог обязан совпадать с точкой перелома в стилях: ниже 900 px
+       первый экран раскладывается сверху вниз, выше — на две колонки. */
+    var narrow = function () { return innerWidth <= 900; };
 
     if (frame) {
       gsap.fromTo(frame,
         {
-          /* На телефоне кадр во всю ширину и вдвое выше: в узкой рамке чертёж
-             не читается. Значения обязаны совпадать с CSS — здесь они
-             попадают в инлайновый стиль и перебивают таблицу стилей. */
-          width: function () { return narrow() ? '100%' : '66%'; },
-          height: function () { return Math.round(innerHeight * (narrow() ? 0.50 : 0.42)); },
+          /* Узкий экран: кадр лежит под текстом во всю ширину. Широкий: кадр
+             занимает правые 62% и во всю высоту, а по мере прокрутки
+             разрастается на весь экран. Значения обязаны совпадать с CSS —
+             здесь они попадают в инлайновый стиль и перебивают таблицу. */
+          width: function () { return narrow() ? '100%' : '62%'; },
+          height: function () { return narrow() ? Math.round(innerHeight * 0.52) : innerHeight; },
         },
         {
           width: '100%',
@@ -86,28 +89,17 @@
         });
     }
 
-    /* Одна шкала прокрутки ведёт весь первый экран: рамка раскрывается,
-       чертёж уходит, снимок проявляется и добирает цвет. Считаем всё в одном
-       обработчике — так этапы гарантированно совпадают по фазе. */
-    var plan = frame && frame.querySelector('.opening__plan');
+    /* Снимок в кадре медленно наезжает: движение едва заметное, но именно
+       оно не даёт первому экрану выглядеть неподвижной картинкой. Перекраски
+       «чертёж → снимок» больше нет — она держала экран белым до середины
+       прокрутки, а чертёж переехал в подложку левого поля. */
     var shot = frame && frame.querySelector('.opening__shot');
-    if (plan || shot) {
-      var seg = function (p, a, b) {
-        var v = (p - a) / (b - a);
-        return v < 0 ? 0 : v > 1 ? 1 : v;
-      };
-      ScrollTrigger.create({
-        trigger: lead, start: 'top top', end: 'bottom bottom',
-        scrub: 0.5, invalidateOnRefresh: true,
-        onUpdate: function (self) {
-          var p = self.progress;
-          /* Слои показывают один и тот же кадр, поэтому меняются они в одном
-             окне и внахлёст: линия тает, краска проступает — рисунок
-             раскрашивается на месте, без подмены ракурса. */
-          var mix = seg(p, 0.24, 0.62);
-          if (plan) { plan.style.opacity = (1 - mix).toFixed(3); }
-          if (shot) { shot.style.opacity = mix.toFixed(3); }
-          frame.classList.toggle('is-photo', mix > 0.55);
+    if (shot) {
+      gsap.fromTo(shot, { scale: 1.08 }, {
+        scale: 1, ease: 'none',
+        scrollTrigger: {
+          trigger: lead, start: 'top top', end: 'bottom bottom',
+          scrub: 0.5, invalidateOnRefresh: true,
         },
       });
     }
@@ -167,13 +159,22 @@
 
   /* ── 5 · фотографии дышат при прокрутке ──
      Картинка внутри своей рамки едет медленнее страницы. */
+  /* Параллакс ставим после загрузки: пока картинки не пришли, высоты рамок
+     ещё не окончательные, и ScrollTrigger со scrub изредка падает при
+     создании. Это украшение, оно не имеет права ронять остальное движение —
+     отсюда и защита, и отложенный запуск. */
   var parallax = function (selector, amount) {
-    gsap.utils.toArray(selector).forEach(function (img) {
-      gsap.fromTo(img, { yPercent: -amount }, {
-        yPercent: amount, ease: 'none',
-        scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+    var run = function () {
+      gsap.utils.toArray(selector).forEach(function (img) {
+        try {
+          gsap.fromTo(img, { yPercent: -amount }, {
+            yPercent: amount, ease: 'none',
+            scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+          });
+        } catch (e) { /* без параллакса кадр просто стоит на месте */ }
       });
-    });
+    };
+    if (document.readyState === 'complete') { run(); } else { addEventListener('load', run); }
   };
   /* На телефоне пина и инерции нет, поэтому параллакс — единственное, что даёт
      кадрам глубину. Амплитуду там уменьшаем: экран узкий, сдвиг заметнее. */
@@ -295,7 +296,7 @@
   /* ── 11 · кнопка звонка тянется к курсору ──
      Смещение крошечное: жест должен считываться, а не бросаться в глаза. */
   if (wide && window.matchMedia('(hover:hover)').matches) {
-    document.querySelectorAll('.cta, .btn-gold, .btn--call').forEach(function (btn) {
+    document.querySelectorAll('.cta, .btn-gold, .btn--call, .pill, .opening__call').forEach(function (btn) {
       var pull = gsap.quickTo(btn, 'x', { duration: 0.5, ease: 'power3.out' });
       var lift = gsap.quickTo(btn, 'y', { duration: 0.5, ease: 'power3.out' });
       btn.addEventListener('pointermove', function (e) {
@@ -362,3 +363,4 @@
     document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
   }
 })();
+

@@ -128,9 +128,34 @@
     if (el) { track(el.getAttribute('data-track'), { page: location.pathname }); }
   });
 
+  /* ══════════════ глубина прокрутки ══════════════
+     Страница длинная и ведётся главами: без этого события нельзя понять,
+     до какой главы люди вообще доходят. Каждый порог отправляется один раз,
+     обработчик снимается сам, когда пройдены все. */
+  (function () {
+    var marks = [25, 50, 75, 100];
+    var seen = 0;
+    var onScroll = function () {
+      var doc = document.documentElement;
+      var full = doc.scrollHeight - innerHeight;
+      if (full <= 0) { return; }
+      var pct = ((pageYOffset / full) * 100);
+      while (seen < marks.length && pct >= marks[seen]) {
+        track('scroll_depth', { percent: marks[seen], page: location.pathname });
+        seen += 1;
+      }
+      if (seen >= marks.length) { removeEventListener('scroll', onScroll); }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+  }());
+
   /* ══════════════ шапка вне главной ══════════════
-     На внутренних страницах нет первого экрана, поэтому шапка нужна сразу. */
-  if (!hero && bar) { bar.classList.add('is-solid'); }
+     На внутренних страницах нет первого экрана, поэтому шапка нужна сразу.
+     Проверяем именно первый экран, а не старый класс .hero: после v3 главная
+     открывается разделом .opening, условие переставало срабатывать — и на
+     главной шапка стояла плотной прямо поверх титульного кадра, дублируя
+     кнопку звонка, которая и так лежит в кадре. */
+  if (!firstScreen && bar) { bar.classList.add('is-solid'); }
 
   /* ══════════════ карта ══════════════
      Виджет Яндекса подключается сам, когда карта подходит к экрану: заранее
@@ -503,7 +528,7 @@
       var now = (window.scrollY || window.pageYOffset) > limit;
       if (now === past) { return; }
       past = now;
-      if (bar && hero) { bar.classList.toggle('is-solid', now); }
+      if (bar && firstScreen) { bar.classList.toggle('is-solid', now); }
       /* шапка уходит при движении вниз и возвращается при движении вверх:
          так на длинной странице она не закрывает кадры */
       if (bar) {

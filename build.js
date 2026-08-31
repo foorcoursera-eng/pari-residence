@@ -62,7 +62,7 @@ const complexLd = (t) => ({
   '@type': 'ApartmentComplex',
   name: site.brand,
   url: T.url(t.lang === 'ru' ? '/' : '/uz/'),
-  image: T.url('/assets/img/hero-aerial-1920.webp'),
+  image: T.url('/assets/img/opening-shot-1920.webp'),
   description: t.meta.home.description,
   numberOfAccommodationUnits: site.facts.apartments,
   telephone: site.phone.intl,
@@ -102,13 +102,14 @@ const crumbsLd = (t, items) => ({
 function pagesFor(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   const home = `${p}/` || '/';
-  /* Предзагружаем ровно тот кадр, который человек видит первым, — чертёж
-     первого экрана. Раньше здесь стоял аэро-рендер: его убрали с экрана,
-     а предзагрузка осталась, и браузер тянул с высоким приоритетом картинку,
-     которую никто не показывает. */
-  const preloadHome = '<link rel="preload" as="image" href="/assets/img/opening-line-1600.webp"'
-    + ' imagesrcset="/assets/img/opening-line-1600.webp 1600w, /assets/img/opening-line-2400.webp 2400w"'
-    + ' imagesizes="100vw" fetchpriority="high">';
+  /* Предзагружаем ровно тот кадр, который человек видит первым. С v5 это
+     рендер квартала: он занимает правые две трети экрана и почти всегда
+     оказывается самым крупным элементом первой отрисовки (LCP). Чертёж
+     ушёл в подложку левого поля и грузится обычным порядком. */
+  const preloadHome = '<link rel="preload" as="image" href="/assets/img/opening-shot-1920.webp"'
+    + ' imagesrcset="/assets/img/opening-shot-1280.webp 1280w, /assets/img/opening-shot-1920.webp 1920w,'
+    + ' /assets/img/opening-shot-2560.webp 2560w"'
+    + ' imagesizes="(min-width:900px) 62vw, 100vw" fetchpriority="high">';
 
   return [
     {

@@ -250,6 +250,8 @@ const ru = {
   /* ── метаданные страниц: уникальные, без перечисления ключевых слов ── */
   meta: {
     home: {
+    /* Нумерация разделов переехала в chapters (v5): номер и название главы
+       задаются там один раз и на разметку, и на боковую навигацию. */
       title: 'PARI Residence — квартиры премиум-класса в Самарканде',
       description: 'PARI Residence — жилой квартал премиум-класса в Самарканде на улице Гуругли: '
         + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 27 до 95 м². '
@@ -295,6 +297,8 @@ const ru = {
 
   /* ── главная ── */
   home: {
+    /* Нумерация разделов переехала в chapters (v5): номер и название главы
+       задаются там один раз и на разметку, и на боковую навигацию. */
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
     heroSlogan: 'Парижское&nbsp;очарование.<br>Самаркандская&nbsp;душа.',
     heroSub: 'Parijona Joziba. Samarqand ruhi.',
@@ -305,10 +309,50 @@ const ru = {
        прорисовывается штрихом, кадр квартала раскрывается при прокрутке.
        Разделы пересобраны по сценарию, который заказчик показал как образец. */
     leadScroll: 'Листайте',
+    /* Вторая кнопка первого экрана: тем, кто ещё не готов выбирать квартиру,
+       нужен вход в проект, а не в каталог. */
+    heroSecond: 'Посмотреть проект',
+
+    /* ── v5: страница ведётся главами ──
+       Разделы перестали быть перечнем «о нас / преимущества / квартиры»:
+       у страницы семь глав, каждая со своей композицией. Номер и слово главы
+       набираются одним элементом, чтобы порядок нельзя было случайно
+       рассинхронизировать между разметкой и боковой навигацией. */
+    chapters: {
+      idea: { num: '01', word: 'Идея' },
+      arch: { num: '02', word: 'Архитектура' },
+      yard: { num: '03', word: 'Двор-парк' },
+      quarter: { num: '04', word: 'Квартал' },
+      homes: { num: '05', word: 'Квартиры' },
+      city: { num: '06', word: 'Самарканд' },
+      yours: { num: '07', word: 'Ваш PARI' },
+    },
+    chapterWord: 'Глава',
+
+    /* Материалы фасадов — те же, что названы в archTitle и подписях кадров;
+       список ничего не добавляет к проекту, а только проговаривает вслух. */
+    archMaterials: ['Натуральный камень', 'Латунь', 'Лепнина', 'Стекло', 'Травертин'],
+
+    /* ── глава 03: двор ──
+       Раньше двор занимал половину разворота рядом с текстом. Гектар тишины —
+       главный аргумент проекта, и он заслуживает панорамы во всю ширину. */
+    hectareTitle: 'Один гектар тишины<br>в центре Самарканда',
+    hectareLead: 'Машин во дворе нет.',
+    hectareText: 'Заезды и парковки вынесены за периметр квартала, внутрь ведут арки. '
+      + 'Во дворе остаётся только то, ради чего в него выходят.',
+    hectareList: ['Геопластика', 'Водные объекты', 'Многолетние кустарники',
+      'Плодовые и хвойные деревья', 'Крытые беседки', 'Гостиные под открытым небом',
+      'Прогулочные дорожки'],
+    hectareAlt: 'Двор-парк PARI Residence: панорама с прогулочными дорожками',
+
+    /* ── глава 07: финальная сцена перед формой ── */
+    sceneTitle: 'Парижское очарование.<br>Самаркандская душа.',
+    sceneText: 'Выберите пространство,<br>которое станет вашим.',
+    sceneVisit: 'Посетить отдел продаж',
+    sceneAlt: 'PARI Residence — двор-парк квартала',
     leadFrameAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
     leadPlanAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
 
-    aboutNum: '01',
     aboutEyebrow: 'О проекте',
     aboutTitle: 'Премиальный <em>квартал</em><br>на тринадцать блоков',
     aboutText: 'PARI Residence — жилой квартал премиум-класса в Самарканде: тринадцать блоков '
@@ -338,7 +382,6 @@ const ru = {
 
     // Раздел «Концепция» снят с сайта по просьбе заказчика. Тексты оставлены
     // на случай, если он вернётся в другом оформлении.
-    conceptNum: '01',
     conceptEyebrow: 'Концепция',
     conceptTitle: 'На встрече двух миров<br>рождается <em>PARI</em>',
     conceptLeft: 'Париж вдохновляет мир своим вкусом, изяществом и удивительным умением '
@@ -348,7 +391,6 @@ const ru = {
     conceptReliefAlt: 'Барельеф: Регистан и Париж в едином орнаменте',
     conceptWhisper: 'В восточной традиции PARI — фея, образ лёгкости и почти волшебного очарования.',
 
-    infraNum: '03',
     cineLabel: 'Состав квартала',
     cinePrev: 'Предыдущий раздел',
     cineNext: 'Следующий раздел',
@@ -404,7 +446,6 @@ const ru = {
       { img: 'cine-parking', w: [1280, 1535], h: 1024, cap: 'Подземный паркинг', wide: true },
     ],
 
-    yardNum: '06',
     yardEyebrow: 'Двор-парк',
     yardTitle: 'Один гектар двора,<br>в котором нет машин',
     yardText: 'Закрытый двор-парк площадью 1 га: геопластика, водные объекты, многолетние кустарники, '
@@ -417,12 +458,10 @@ const ru = {
       { value: 1, label: 'гектар двора' },
     ],
 
-    placeNum: '02',
     placeEyebrow: 'Локация',
     placeTitle: 'Самарканд<br>в шаге отсюда',
     placeReliefAlt: 'Барельеф: девушка на велосипеде у парижского фасада',
 
-    homesNum: '05',
     homesEyebrow: 'Квартиры',
     homesTitle: 'От компактных однокомнатных<br>до семейных четырёхкомнатных',
     /* Планировки вынесены в общую ленту главной: раньше они жили только на
@@ -439,7 +478,6 @@ const ru = {
 
     /* Раздел «Архитектурные решения» на главной: заказчик просил показать
        фасады и входные группы вблизи — это то, что продаёт проект. */
-    archNum: '04',
     archEyebrow: 'Архитектурные решения',
     archTitle: 'Натуральный камень,<br>латунь и лепнина',
     archText: 'Выразительные фасады с натуральным камнем и декоративными элементами, '
@@ -487,7 +525,6 @@ const ru = {
       + 'наполняют комнаты светом. Отделку хозяин выбирает сам.',
     interiors: [],
 
-    careNum: '07',
     careEyebrow: 'Благоустройство',
     careTitle: 'Забота<br>в деталях',
     care: [
@@ -517,7 +554,6 @@ const ru = {
       },
     ],
 
-    planNum: '08',
     planEyebrow: 'Генеральный план',
     planTitle: 'Выберите корпус<br>на плане квартала',
     planText: 'Тринадцать корпусов вокруг закрытого двора-парка. На плане видно, '
@@ -525,7 +561,6 @@ const ru = {
     planLink: 'Открыть генплан',
     planAlt: 'Генеральный план PARI Residence: тринадцать корпусов вокруг двора-парка',
 
-    parkNum: '09',
     parkEyebrow: 'Паркинг',
     parkTitle: 'Машины остаются<br>за пределами двора',
     parkText: 'Подземный и наземный паркинг. Открытая парковка на 148 машино-мест — '
@@ -890,6 +925,8 @@ const uz = {
 
   meta: {
     home: {
+    /* Нумерация разделов переехала в chapters (v5): номер и название главы
+       задаются там один раз и на разметку, и на боковую навигацию. */
       title: 'PARI Residence — Samarqandda premium-klass xonadonlar',
       description: 'PARI Residence — Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass turar-joy majmuasi: '
         + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 27–95 m² xonadonlar. '
@@ -934,6 +971,8 @@ const uz = {
   },
 
   home: {
+    /* Нумерация разделов переехала в chapters (v5): номер и название главы
+       задаются там один раз и на разметку, и на боковую навигацию. */
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
     heroSlogan: 'Parijona&nbsp;Joziba.<br>Samarqand&nbsp;ruhi.',
     heroSub: 'Парижское очарование. Самаркандская душа.',
@@ -941,10 +980,38 @@ const uz = {
 
     /* ── v3 (28.08.2026): birinchi ekran yorugʻ boʻldi, boʻlimlar qayta yigʻildi ── */
     leadScroll: 'Varaqlang',
+    heroSecond: 'Loyihani koʻrish',
+
+    /* ── v5: sahifa boblar bilan olib boriladi ── */
+    chapters: {
+      idea: { num: '01', word: 'Gʻoya' },
+      arch: { num: '02', word: 'Arxitektura' },
+      yard: { num: '03', word: 'Hovli-bogʻ' },
+      quarter: { num: '04', word: 'Kvartal' },
+      homes: { num: '05', word: 'Xonadonlar' },
+      city: { num: '06', word: 'Samarqand' },
+      yours: { num: '07', word: 'Sizning PARI' },
+    },
+    chapterWord: 'Bob',
+
+    archMaterials: ['Tabiiy tosh', 'Guruch', 'Ganch', 'Shisha', 'Travertin'],
+
+    hectareTitle: 'Samarqand markazida<br>bir gektar sukunat',
+    hectareLead: 'Hovlida avtomobil yoʻq.',
+    hectareText: 'Kirish va toʻxtash joylari kvartal perimetridan tashqariga chiqarilgan, '
+      + 'ichkariga arkalar olib kiradi. Hovlida faqat unga chiqiladigan narsa qoladi.',
+    hectareList: ['Geoplastika', 'Suv obyektlari', 'Koʻp yillik butalar',
+      'Mevali va ignabargli daraxtlar', 'Yopiq shiyponlar', 'Ochiq osmon ostidagi mehmon zonalari',
+      'Sayr yoʻlaklari'],
+    hectareAlt: 'PARI Residence hovli-bogʻi: sayr yoʻlaklari bilan panorama',
+
+    sceneTitle: 'Parijona Joziba.<br>Samarqand ruhi.',
+    sceneText: 'Oʻzingizniki boʻladigan<br>makonni tanlang.',
+    sceneVisit: 'Savdo boʻlimiga tashrif',
+    sceneAlt: 'PARI Residence — kvartal hovli-bogʻi',
     leadFrameAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan kvartal fasadlari',
     leadPlanAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan fasadlar',
 
-    aboutNum: '01',
     aboutEyebrow: 'Loyiha haqida',
     aboutTitle: 'Oʻn uch blokdan iborat<br><em>premium</em> kvartal',
     aboutText: 'PARI Residence — Samarqanddagi premium toifadagi turar-joy kvartali: 13 dan 16 '
@@ -974,7 +1041,6 @@ const uz = {
 
     // Раздел «Концепция» снят с сайта по просьбе заказчика. Тексты оставлены
     // на случай, если он вернётся в другом оформлении.
-    conceptNum: '01',
     conceptEyebrow: 'Konsepsiya',
     conceptTitle: 'Ikki dunyo uchrashgan joyda<br><em>PARI</em> tugʻiladi',
     conceptLeft: 'Parij dunyoni oʻz didi, nafisligi va shahar arxitekturasini tabiat bilan '
@@ -984,7 +1050,6 @@ const uz = {
     conceptReliefAlt: 'Barelyef: Registon va Parij yagona naqshda',
     conceptWhisper: 'Sharq anʼanasida PARI — pari, yengillik va sehrli joziba timsoli.',
 
-    infraNum: '03',
     cineLabel: 'Kvartal tarkibi',
     cinePrev: 'Oldingi boʻlim',
     cineNext: 'Keyingi boʻlim',
@@ -1033,7 +1098,6 @@ const uz = {
       { img: 'cine-parking', w: [1280, 1535], h: 1024, cap: 'Yer osti avtoturargohi', wide: true },
     ],
 
-    yardNum: '06',
     yardEyebrow: 'Hovli-bogʻ',
     yardTitle: 'Bir gektar hovli —<br>mashinalarsiz',
     yardText: '1 gektarlik yopiq hovli-bogʻ: geoplastika, suv havzalari, koʻp yillik butalar, '
@@ -1046,12 +1110,10 @@ const uz = {
       { value: 1, label: 'gektar hovli' },
     ],
 
-    placeNum: '02',
     placeEyebrow: 'Joylashuv',
     placeTitle: 'Samarqand<br>bir qadam narida',
     placeReliefAlt: 'Barelyef: parij fasadi yonida velosipedda ketayotgan qiz',
 
-    homesNum: '05',
     homesEyebrow: 'Xonadonlar',
     homesTitle: 'Ixcham bir xonalidan<br>oilaviy toʻrt xonaligacha',
     homesPreview: ['f1-2721', 'f1-3981', 'f2-4169', 'f2-6708', 'f3-8531', 'f4-8911'],
@@ -1064,7 +1126,6 @@ const uz = {
     homesLink: 'Barcha tarhlar',
     homesAlt: 'PARI Residence kirish guruhi: guruch va tabiiy toshli lobbi',
 
-    archNum: '04',
     archEyebrow: 'Arxitektura yechimlari',
     archTitle: 'Tabiiy tosh,<br>guruch va ganch',
     archText: 'Tabiiy tosh va bezak elementlari bilan ishlangan taʼsirchan fasadlar, dizayner '
@@ -1095,7 +1156,6 @@ const uz = {
       + 'derazalar xonalarni yorugʻlik bilan toʻldiradi. Pardozni egasi oʻzi tanlaydi.',
     interiors: [],
 
-    careNum: '07',
     careEyebrow: 'Obodonlashtirish',
     careTitle: 'Tafsilotlardagi<br>gʻamxoʻrlik',
     care: [
@@ -1125,7 +1185,6 @@ const uz = {
       },
     ],
 
-    planNum: '08',
     planEyebrow: 'Bosh reja',
     planTitle: 'Kvartal rejasida<br>blokni tanlang',
     planText: 'Yopiq hovli-bogʻ atrofida oʻn uch blok. Rejada qaysi blok qaysi turga '
@@ -1133,7 +1192,6 @@ const uz = {
     planLink: 'Bosh rejani ochish',
     planAlt: 'PARI Residence bosh rejasi: hovli-bogʻ atrofida oʻn uch blok',
 
-    parkNum: '09',
     parkEyebrow: 'Avtoturargoh',
     parkTitle: 'Avtomobillar hovlidan<br>tashqarida qoladi',
     parkText: 'Yer osti va yer usti avtoturargohi. Ochiq avtoturargoh 148 mashina oʻrniga '
