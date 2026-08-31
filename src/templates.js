@@ -667,6 +667,30 @@ function home(t, page) {
         </div>
       </article>`).join('\n');
 
+  /* Раздел интерьеров собирается только когда есть кадры: пустой список
+     не оставляет на странице ни одного лишнего узла. Формат тот же, что у
+     слайдов раздела, — 16:10 (файлы -w16- готовит tools/make-formats.py). */
+  const interiors = !h.interiors.length ? '' : `
+<!-- ══════════════ ИНТЕРЬЕРЫ ══════════════ -->
+<section class="interiors" id="interiors">
+  <div class="band-head">
+    <p class="eyebrow reveal">${esc(h.interiorsEyebrow)}</p>
+    <h2 class="display" data-lines>${h.interiorsTitle}</h2>
+    <p class="band-head__text reveal">${esc(h.interiorsText)}</p>
+  </div>
+  <div class="tiles tiles--wide" data-rail>
+${h.interiors.map((x) => `      <figure class="tile tile--wide reveal">
+        <img src="/assets/img/${x.img}-w16-${x.w[0]}.webp"
+             srcset="${x.w.map((w) => `/assets/img/${x.img}-w16-${w}.webp ${w}w`).join(', ')}"
+             sizes="(min-width:900px) 62vw, 88vw" alt="${esc(x.cap)}"
+             width="${x.w[x.w.length - 1]}" height="${Math.round(x.w[x.w.length - 1] / 1.6)}"
+             loading="lazy" decoding="async">
+        <figcaption>${esc(x.cap)}</figcaption>
+      </figure>`).join('\n')}
+  </div>
+</section>
+`;
+
   const p = t.lang === 'ru' ? '' : '/uz';
   const apartmentsHref = `${p}/apartments/`;
   const locationHref = `${p}/location/`;
@@ -860,6 +884,7 @@ ${plans}
   </div>
 </section>
 
+${interiors}
 <!-- ══════════════ 06 · ДВОР-ПАРК ══════════════ -->
 <section class="split" id="yard">
   <div class="split__media figure-mask">

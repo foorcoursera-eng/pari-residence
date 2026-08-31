@@ -2067,3 +2067,11 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .frame{height:auto;aspect-ratio:16 / 10}
 .cine.is-live .cine__stage{height:auto;aspect-ratio:16 / 10;max-height:100svh}
 .cine.is-live .frame{height:100%}
+
+/* ── лента интерьеров ──
+   Раздел появится, когда придут интерьерные рендеры (владелец назвал конец
+   сентября 2026). Формат карточки тот же 16:10, что у слайдов раздела. */
+.interiors{background:var(--paper);padding:clamp(72px,11vh,132px) 0}
+.tiles--wide{margin-top:clamp(30px,5vh,52px)}
+.tile--wide{flex:0 0 clamp(280px,62vw,900px)}
+.tile--wide img{aspect-ratio:16 / 10}

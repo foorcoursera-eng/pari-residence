@@ -459,6 +459,21 @@ const ru = {
        и абзац. Наши зоны взяты не с потолка, а с листа «Генеральный план
        М1:500» из альбома проекта — на нём подписаны детские площадки, зона
        Baby zone, Work out, Green space и Sitting area, навесы и беседки. */
+    /* ── интерьеры ──
+       У образца под интерьеры отведён отдельный раздел на восьми кадрах, и
+       именно он больше всего добавляет ощущение премиума. Интерьерных
+       рендеров PARI пока нет: владелец сказал 31.08.2026, что они будут в
+       конце сентября. Раздел собран заранее и не попадает в разметку, пока
+       список пуст — когда кадры придут, достаточно добавить сюда строки
+       вида { img: 'inter-living', w: [1280, 2048], cap: '...' } и положить
+       файлы через tools/make-formats.py в формате w16.
+       TODO(владелец): интерьерные рендеры — конец сентября 2026. */
+    interiorsEyebrow: 'Интерьеры',
+    interiorsTitle: 'Квартиры сдаются<br>в формате white-box',
+    interiorsText: 'Планировки позволяют развести личные и общие зоны, а панорамные окна '
+      + 'наполняют комнаты светом. Отделку хозяин выбирает сам.',
+    interiors: [],
+
     careNum: '07',
     careEyebrow: 'Благоустройство',
     careTitle: 'Забота<br>в деталях',
@@ -1043,6 +1058,14 @@ const uz = {
     /* v4: bosh sahifa boʻlimlari namuna tartibida (stellarresidence.uz). */
     /* «Tafsilotlardagi gʻamxoʻrlik» — namunadagi boʻlim; zonalar loyiha
        albomidagi «Bosh reja M1:500» varagʻidan olingan. */
+    /* Interyerlar: renderlar 2026-yil sentyabr oxirida keladi — roʻyxat
+       boʻsh boʻlgunicha boʻlim sahifaga chiqmaydi. */
+    interiorsEyebrow: 'Interyerlar',
+    interiorsTitle: 'Xonadonlar white-box<br>formatida topshiriladi',
+    interiorsText: 'Tarhlar shaxsiy va umumiy zonalarni ajratishga imkon beradi, panoramali '
+      + 'derazalar xonalarni yorugʻlik bilan toʻldiradi. Pardozni egasi oʻzi tanlaydi.',
+    interiors: [],
+
     careNum: '07',
     careEyebrow: 'Obodonlashtirish',
     careTitle: 'Tafsilotlardagi<br>gʻamxoʻrlik',
