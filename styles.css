@@ -1989,9 +1989,11 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 }
 .parking__media img{height:auto;min-height:0;aspect-ratio:2 / 3;object-fit:cover}
 @media (min-width:900px){
-  .parking{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
-  .parking__media{justify-self:end;margin-right:clamp(0px,2vw,32px)}
-  .parking__panel{padding:0 var(--gutter) 0 clamp(24px,4vw,64px)}
+  /* Разворот зеркалит двор-парк: там кадр слева, здесь справа — соседние
+     развороты не должны повторять друг друга. */
+  .parking{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+  .parking__media{grid-column:2;grid-row:1;justify-self:start;margin-left:clamp(0px,2vw,32px)}
+  .parking__panel{grid-column:1;grid-row:1;padding:0 clamp(24px,4vw,64px) 0 var(--gutter)}
 }
 
 /* ── генплан: лист в поле 2:1, как у образца; чертёж не режем ── */
