@@ -69,8 +69,11 @@
     if (frame) {
       gsap.fromTo(frame,
         {
-          width: function () { return narrow() ? '88%' : '66%'; },
-          height: function () { return Math.round(innerHeight * (narrow() ? 0.38 : 0.42)); },
+          /* На телефоне кадр во всю ширину и вдвое выше: в узкой рамке чертёж
+             не читается. Значения обязаны совпадать с CSS — здесь они
+             попадают в инлайновый стиль и перебивают таблицу стилей. */
+          width: function () { return narrow() ? '100%' : '66%'; },
+          height: function () { return Math.round(innerHeight * (narrow() ? 0.50 : 0.42)); },
         },
         {
           width: '100%',
