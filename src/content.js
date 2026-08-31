@@ -382,6 +382,13 @@ const ru = {
     ],
 
     /* ── глава VII · каталог ── */
+    /* Акт об идее: три движения — Париж, Самарканд и то, что рождается на их
+       встрече. Фразы взяты из платформы бренда (conceptLeft / conceptRight),
+       подписи ниже нужны только кадрам. */
+    ideaCityAlt: 'Самарканд на закате: купола Регистана над городом',
+    ideaPariAlt: 'PARI Residence — фасады с первой линии',
+    materialsLabel: 'Материалы',
+
     catalogLead: 'Тридцать три планировки: от компактной однокомнатной до семейной четырёхкомнатной.',
     catalogView: 'Смотреть план',
     catalogAll: 'Весь каталог',
@@ -1097,6 +1104,10 @@ const uz = {
       { time: 'Kechqurun', text: 'Avtomobilsiz bir gektar hovli: suv, daraxtlar, sayr yoʻlaklari, shiyponlar.' },
       { time: 'Tun', text: 'Yuqori qavatlardan Samarqand panoramasi ochiladi.' },
     ],
+
+    ideaCityAlt: 'Quyosh botishida Samarqand: shahar uzra Registon gumbazlari',
+    ideaPariAlt: 'PARI Residence — birinchi chiziqdan fasadlar',
+    materialsLabel: 'Materiallar',
 
     catalogLead: 'Oʻttiz uchta tarh: ixcham bir xonalidan oilaviy toʻrt xonaligacha.',
     catalogView: 'Tarhni koʻrish',

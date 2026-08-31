@@ -967,42 +967,56 @@ ${spec}
 </section>
 
 <!-- ══════════════ II · L’IDÉE ══════════════
-     Откуда взялось имя: Париж по одну сторону, Самарканд по другую,
-     барельеф между ними. Ниже — переход «Париж → Самарканд → PARI». -->
-<section class="m-chapter" id="idee">
+     Самый длинный акт страницы — так же, как у образца, где история дома
+     занимает пятую часть полотна. Три движения: Париж, Самарканд и то, что
+     рождается на их встрече. Ни одного придуманного факта: обе фразы взяты
+     из платформы бренда, третье движение договаривает слоганом. -->
+<section class="m-chapter m-chapter--act" id="idee">
   <div class="m-wrap">
     ${plate(t, 'idea')}
     <h2 class="m-display m-display--xl" data-lines>${h.conceptTitle}</h2>
-
-    <div class="m-idea">
-      <p class="m-idea__col reveal"><b lang="fr">Paris</b>${esc(h.conceptLeft)}</p>
-      <figure class="m-idea__relief reveal">
-        <img src="/assets/img/relief-bicycle.webp" alt="${esc(h.placeReliefAlt)}"
-             width="926" height="1076" loading="lazy" decoding="async">
-      </figure>
-      <p class="m-idea__col reveal"><b>Samarkand</b>${esc(h.conceptRight)}</p>
-    </div>
-
     <p class="m-whisper reveal">${esc(h.conceptWhisper)}</p>
   </div>
 
-  <!-- переход: парижский мотив — самаркандский фасад -->
-  <div class="m-cross">
-    <figure class="m-cross__half reveal">
-      <img src="/assets/img/arch-entrance-sq-700.webp"
-           srcset="/assets/img/arch-entrance-sq-700.webp 700w, /assets/img/arch-entrance-sq-1100.webp 1100w"
-           sizes="(min-width:760px) 46vw, 92vw" alt="${esc(h.aboutArchAlt)}"
-           width="1400" height="1501" loading="lazy" decoding="async">
-      <figcaption lang="fr">Paris</figcaption>
+  <!-- движение 1 · Париж -->
+  <article class="m-act m-act--paris">
+    <figure class="m-act__media reveal">
+      <img src="/assets/img/relief-bicycle.webp" alt="${esc(h.placeReliefAlt)}"
+           width="926" height="1076" loading="lazy" decoding="async">
     </figure>
-    <figure class="m-cross__half reveal">
-      <img src="/assets/img/arch-stone-sq-700.webp"
-           srcset="/assets/img/arch-stone-sq-700.webp 700w, /assets/img/arch-stone-sq-1100.webp 1100w"
-           sizes="(min-width:760px) 46vw, 92vw" alt="${esc(h.arch[2].cap)}"
-           width="1400" height="1501" loading="lazy" decoding="async">
-      <figcaption>Samarkand</figcaption>
+    <div class="m-act__text">
+      <p class="m-act__label reveal" lang="fr">Paris</p>
+      <p class="m-act__line reveal">${esc(h.conceptLeft)}</p>
+    </div>
+  </article>
+
+  <!-- движение 2 · Самарканд -->
+  <article class="m-act m-act--full">
+    <figure class="m-act__bg">
+      <img src="/assets/img/hero-poster-1024.webp"
+           srcset="/assets/img/hero-poster-1024.webp 1024w, /assets/img/hero-poster-1600.webp 1600w"
+           sizes="100vw" alt="${esc(h.ideaCityAlt)}" width="1600" height="800"
+           loading="lazy" decoding="async">
     </figure>
-  </div>
+    <div class="m-act__over">
+      <p class="m-act__label m-act__label--light">Samarkand</p>
+      <p class="m-act__line m-act__line--light">${esc(h.conceptRight)}</p>
+    </div>
+  </article>
+
+  <!-- движение 3 · PARI -->
+  <article class="m-act m-act--full m-act--pari">
+    <figure class="m-act__bg">
+      <img src="/assets/img/arch-line-1280.webp"
+           srcset="/assets/img/arch-line-1280.webp 1280w, /assets/img/arch-line-1920.webp 1920w, /assets/img/arch-line-2560.webp 2560w"
+           sizes="100vw" alt="${esc(h.ideaPariAlt)}" width="2560" height="1429"
+           loading="lazy" decoding="async">
+    </figure>
+    <div class="m-act__over">
+      <p class="m-act__label m-act__label--light">PARI</p>
+      <p class="m-act__slogan script">${h.heroSlogan}</p>
+    </div>
+  </article>
 </section>
 
 <!-- ══════════════ ВСТАВКА · ФИЛЬМ ══════════════
@@ -1030,12 +1044,7 @@ ${spec}
   <div class="m-wrap">
     ${plate(t, 'arch')}
     <h2 class="m-display m-display--xl" data-lines>${h.archTitle}</h2>
-    <div class="m-two">
-      <p class="m-lede reveal">${esc(h.archText)}</p>
-      <ul class="m-materials reveal">
-${h.archMaterials.map((m) => `        <li>${esc(m)}</li>`).join('\n')}
-      </ul>
-    </div>
+    <p class="m-lede reveal">${esc(h.archText)}</p>
   </div>
 
   <figure class="m-full">
@@ -1051,7 +1060,7 @@ ${macro}
     </div>
 
     ${sheet(t, {
-      src: '/assets/img/opening-line-1600.webp',
+      src: '/assets/img/opening-line-1600.webp',  /* лист чертежа */
       srcset: '/assets/img/opening-line-1600.webp 1600w, /assets/img/opening-line-2400.webp 2400w',
       w: 2400, h: 1339, no: 'I',
       alt: h.leadPlanAlt, title: h.sheetFacadeTitle, note: h.sheetFacadeNote,
@@ -1059,22 +1068,36 @@ ${macro}
 
     <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
   </div>
+
+  <!-- Материалы фасада крупно, на чёрном: у образца ровно здесь стоит тёмная
+       полоса о материалах, и именно она задаёт странице ритм светлое → тёмное
+       → светлое. Перечень тот же, что назван в заголовке и подписях кадров. -->
+  <div class="m-matter">
+    <div class="m-wrap">
+      <p class="m-matter__label">${esc(h.materialsLabel)}</p>
+      <ul class="m-matter__list">
+${h.archMaterials.map((m) => `        <li class="reveal">${esc(m)}</li>`).join('\n')}
+      </ul>
+    </div>
+  </div>
 </section>
 
 <!-- ══════════════ IV · LE JARDIN ══════════════
      Гектар без машин — главный аргумент проекта: панорама во всю ширину. -->
-<section class="m-chapter m-chapter--milk" id="jardin">
-  <div class="m-wrap">
-    ${plate(t, 'garden')}
-    <h2 class="m-display m-display--xl" data-lines>${h.hectareTitle}</h2>
-  </div>
-
-  <figure class="m-full m-full--tall figure-mask">
+<section class="m-chapter m-chapter--milk m-chapter--open" id="jardin">
+  <!-- Единственная глава, которая начинается кадром, а не заголовком: двор
+       сначала показывают, потом называют. -->
+  <figure class="m-full m-full--tall m-full--top figure-mask">
     <img src="/assets/img/cine-yard-w16-1280.webp"
          srcset="/assets/img/cine-yard-w16-1280.webp 1280w, /assets/img/cine-yard-w16-1600.webp 1600w, /assets/img/cine-yard-w16-2048.webp 2048w"
          sizes="100vw" alt="${esc(h.hectareAlt)}" width="2048" height="1280"
          loading="lazy" decoding="async">
   </figure>
+
+  <div class="m-wrap">
+    ${plate(t, 'garden')}
+    <h2 class="m-display m-display--xl" data-lines>${h.hectareTitle}</h2>
+  </div>
 
   <div class="m-wrap">
     <div class="m-two">
@@ -1142,15 +1165,19 @@ ${cineItems.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : 
 <section class="m-chapter" id="vivre">
   <div class="m-wrap">
     ${plate(t, 'life')}
-    <h2 class="m-display m-display--xl" data-lines>${h.lifeTitle}</h2>
+  </div>
 
-    <div class="m-spread m-spread--left">
-      <figure class="m-spread__media figure-mask">
-        <img src="/assets/img/cine-balcony-w16-1280.webp"
-             srcset="/assets/img/cine-balcony-w16-1280.webp 1280w, /assets/img/cine-balcony-w16-1600.webp 1600w"
-             sizes="(min-width:900px) 46vw, 100vw" alt="${esc(h.cine[3].title)}"
-             width="1600" height="1000" loading="lazy" decoding="async">
-      </figure>
+  <!-- Кадр выходит за поле к левому краю экрана, текст остаётся в поле:
+       разворот, а не две одинаковые колонки. -->
+  <div class="m-bleed">
+    <figure class="m-bleed__media figure-mask">
+      <img src="/assets/img/yard-w16-1280.webp"
+           srcset="/assets/img/yard-w16-1280.webp 1280w, /assets/img/yard-w16-1600.webp 1600w"
+           sizes="(min-width:1000px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
+           width="1600" height="1000" loading="lazy" decoding="async">
+    </figure>
+    <div class="m-bleed__text">
+      <h2 class="m-display m-display--xl" data-lines>${h.lifeTitle}</h2>
       <dl class="m-life">
 ${life}
       </dl>
@@ -1257,10 +1284,12 @@ ${carePanels}
 <section class="m-chapter" id="createurs">
   <div class="m-wrap">
     ${plate(t, 'makers')}
-    <h2 class="m-display m-display--xl" data-lines>${h.makerTitle}</h2>
+    <!-- Здесь крупным набран не заголовок, а имена: так подписывают авторов
+         коллекции. Заголовок остаётся в разметке для структуры страницы. -->
+    <h2 class="m-credits__h">${esc(h.makerTitle.replace(/<br\s*\/?>/gi, ' '))}</h2>
     <p class="m-lede reveal">${esc(h.makerText)}</p>
 
-    <dl class="m-credits">
+    <dl class="m-credits m-credits--loud">
       <div class="m-credits__row reveal">
         <dt lang="fr">Développeur</dt>
         <dd><b>${esc(site.developer.name)}</b><span>${esc(h.makerDev)}</span></dd>
@@ -1277,9 +1306,8 @@ ${carePanels}
      Последний кадр: квартал целиком, одно предложение и два действия. -->
 <section class="m-final" id="votre">
   <figure class="m-final__media">
-    <img src="/assets/img/cine-yard-w16-1280.webp"
-         srcset="/assets/img/cine-yard-w16-1280.webp 1280w, /assets/img/cine-yard-w16-1600.webp 1600w, /assets/img/cine-yard-w16-2048.webp 2048w"
-         sizes="100vw" alt="${esc(h.hectareAlt)}" width="2048" height="1280"
+    <img src="/assets/img/hero-aerial-1920.webp" sizes="100vw"
+         alt="${esc(h.sceneAlt)}" width="1920" height="1080"
          loading="lazy" decoding="async">
   </figure>
   <div class="m-final__inner">
