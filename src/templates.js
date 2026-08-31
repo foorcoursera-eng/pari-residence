@@ -1353,14 +1353,96 @@ function select(t, page) {
                 data-entrance="${x.podil}" data-floors="${x.floors.join(',')}"
                 aria-pressed="${i === 0}">${x.podil}</button>`).join('\n');
 
+  /* Какие этажи вообще нарисованы: у полусотни квартир из выгрузки чертежа
+     нет (см. src/flats.js), и предлагать «показать на плане» там нечестно. */
+  const drawn = {};
+  list.forEach((x) => { drawn[x.podil] = x.floors; });
+
+  const rooms = [
+    ['', s.filterAny],
+    ['s', s.roomsStudio],
+    ['1', s.roomsN[1]], ['2', s.roomsN[2]], ['3', s.roomsN[3]], ['4', s.roomsN[4]],
+  ].map(([v, label], i) => `          <button class="pick${i === 0 ? ' is-on' : ''}" type="button"
+                  data-rooms="${v}" aria-pressed="${i === 0}">${esc(label)}</button>`).join('\n');
+
+  const ents = [['', s.entranceAny]].concat(list.map((x) => [String(x.podil), String(x.podil)]))
+    .map(([v, label], i) => `          <button class="pick${i === 0 ? ' is-on' : ''}" type="button"
+                  data-ent="${v}" aria-pressed="${i === 0}">${esc(label)}</button>`).join('\n');
+
   page.body = `<section class="page">
   <div class="page__inner">
     ${breadcrumbs(t, [[page.path, s.h1]])}
     <h1 class="display" data-lines>${esc(s.h1)}</h1>
-    <p class="page__lead">${esc(s.lead)}</p>
+    <p class="page__lead">${esc(s.filterLead)}</p>
   </div>
 
+  <!-- ══════════════ подбор по реальному составу ══════════════
+       Данные — выгрузка шахматки отдела продаж, 1186 квартир: подъезд, этаж,
+       номер, комнатность, площадь. Статусов «продано / свободно» здесь нет
+       намеренно: наличие меняется каждый день, а страница пересобирается
+       только при выкладке. -->
   <div class="page__inner">
+    <div class="fl" data-flats
+         data-src="/assets/data/flats.json?v=${page.v}"
+         data-drawn='${JSON.stringify(drawn)}'
+         data-word-entrance="${esc(s.filterEntrance)}"
+         data-word-floor="${esc(s.colFloor)}"
+         data-word-sqm="${esc(t.ui.sqm)}"
+         data-word-studio="${esc(s.roomsStudio)}"
+         data-word-rooms="${esc(s.roomsN.join('|'))}"
+         data-word-flat="${esc(s.flat)}"
+         data-word-go="${esc(s.showOnPlan)}"
+         data-word-noplan="${esc(s.noPlan)}">
+
+      <div class="fl__row">
+        <p class="fl__label">${esc(s.filterRooms)}</p>
+        <div class="fl__set" role="group" aria-label="${esc(s.filterRooms)}">
+${rooms}
+        </div>
+      </div>
+
+      <div class="fl__row">
+        <p class="fl__label">${esc(s.filterEntrance)}</p>
+        <div class="fl__set fl__set--num" role="group" aria-label="${esc(s.filterEntrance)}">
+${ents}
+        </div>
+      </div>
+
+      <div class="fl__pair">
+        <div class="fl__row">
+          <p class="fl__label">${esc(s.filterFloor)} <b data-out-floor></b></p>
+          <div class="fl__range" data-range="floor">
+            <input type="range" data-lo min="2" max="16" step="1" value="2" aria-label="${esc(s.filterFloor)}">
+            <input type="range" data-hi min="2" max="16" step="1" value="16" aria-label="${esc(s.filterFloor)}">
+            <span class="fl__track" aria-hidden="true"><i></i></span>
+          </div>
+        </div>
+
+        <div class="fl__row">
+          <p class="fl__label">${esc(s.filterArea)} <b data-out-area></b></p>
+          <div class="fl__range" data-range="area">
+            <input type="range" data-lo min="27" max="96" step="1" value="27" aria-label="${esc(s.filterArea)}">
+            <input type="range" data-hi min="27" max="96" step="1" value="96" aria-label="${esc(s.filterArea)}">
+            <span class="fl__track" aria-hidden="true"><i></i></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fl__foot">
+        <p class="fl__found" aria-live="polite"><b data-found>—</b> <span>${esc(s.found)}</span></p>
+        <button class="link-call" type="button" data-reset>${esc(s.reset)}</button>
+      </div>
+    </div>
+
+    <p class="fl__empty" data-empty hidden>${esc(s.foundNone)}</p>
+    <div class="fl__list" data-results></div>
+    <div class="fl__more"><button class="pick" type="button" data-more hidden>${esc(s.more)}</button></div>
+
+    <p class="plans__note">${esc(s.crmNote)}</p>
+  </div>
+
+  <!-- ══════════════ подъезд и этаж ══════════════ -->
+  <div class="page__inner" id="plan">
     <div class="chooser" data-chooser data-total="${total}"
          data-entrance-word="${esc(s.entrance)}" data-floor-word="${esc(s.floorShort)}"
          data-flat-word="${esc(s.flat)}" data-counted-word="${esc(s.counted)}">
@@ -1393,6 +1475,7 @@ ${tabs}
 
     <aside class="floor__card" data-floor-card hidden aria-live="polite">
       <p class="eyebrow">${esc(s.flat)} <b data-flat-num></b></p>
+      <p class="floor__area" data-flat-area hidden></p>
       <p class="floor__where"><span data-flat-where></span></p>
       <p class="floor__note">${esc(s.note)}</p>
       <a class="pill" href="tel:${site.phone.tel}" data-track="phone_click">${esc(s.ask)}</a>
@@ -1467,7 +1550,11 @@ ${zones}
       <p class="gp__floors"><b data-gp-floors>${first.floors}</b> <span>${esc(g.floorsWord)}</span></p>
       <p class="gp__scheme"><span data-gp-scheme>${esc(first.scheme)}</span> — ${esc(g.schemeWord)}</p>
       <p class="gp__note">${esc(g.note)}</p>
-      <a class="pill" href="${p}/apartments/">${esc(g.toPlans)}</a>
+      <!-- С генплана ведём в подбор: там реальный состав квартир и планы
+           этажей. Соответствие «корпус на чертеже → подъезд» застройщиком
+           пока не подтверждено, поэтому корпус фильтр не подставляет. -->
+      <a class="pill" href="${p}/select/" data-track="cta_click">${esc(t.nav.select)}</a>
+      <a class="link-call gp__more" href="${p}/apartments/">${esc(g.toPlans)}</a>
     </aside>
   </div>
 

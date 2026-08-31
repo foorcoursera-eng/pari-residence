@@ -14,6 +14,7 @@ const crypto = require('crypto');
 
 const { site, ru, uz } = require('./src/content');
 const T = require('./src/templates');
+const flats = require('./src/flats');
 
 const root = __dirname;
 const dist = path.join(root, 'dist');
@@ -227,6 +228,24 @@ Sitemap: ${T.url('/sitemap.xml')}
 
   /* статические файлы */
   copyDir(path.join(root, 'assets'), path.join(dist, 'assets'));
+
+  /* Реальный состав квартир для подбора. Пишем после копирования ассетов,
+     иначе файл затрётся. Отдаём массивом массивов: имена полей у 1186 записей
+     весили бы втрое больше, а читает их только один скрипт. */
+  const list = flats.expand();
+  const areas = list.map((f) => f.area);
+  const floors = list.map((f) => f.floor);
+  write(path.join('assets', 'data', 'flats.json'), JSON.stringify({
+    source: flats.source,
+    total: list.length,
+    areaFrom: Math.min.apply(null, areas),
+    areaTo: Math.max.apply(null, areas),
+    floorFrom: Math.min.apply(null, floors),
+    floorTo: Math.max.apply(null, floors),
+    /* [подъезд, этаж, номер, комнат, площадь, студия] */
+    items: list.map((f) => [f.ent, f.floor, f.num, f.rooms, f.area, f.studio ? 1 : 0]),
+  }));
+  console.log('Квартир в подборе:', list.length);
   ['styles.css', 'script.js'].forEach((f) => fs.copyFileSync(path.join(root, f), path.join(dist, f)));
 
   console.log('Собрано страниц:', written.length);

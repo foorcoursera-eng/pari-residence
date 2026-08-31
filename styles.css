@@ -2481,3 +2481,104 @@ body.has-callbar .m-hero__foot{opacity:0;pointer-events:none}
 .m-display + .m-lede,
 .m-display + .m-body,
 .m-credits__h + .m-lede{margin-top:clamp(16px,2.6vh,30px)}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Подбор квартиры по реальному составу
+   Фильтр стоит над планом этажа: комнатность, подъезд, диапазон этажей и
+   площадей. Результат — список квартир, каждая открывается на чертеже.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.fl{
+  display:grid;gap:clamp(18px,2.6vh,28px);
+  margin:clamp(26px,4vh,44px) 0 0;padding:clamp(20px,3vw,34px);
+  background:var(--ivory);
+}
+.fl__row{display:grid;gap:12px}
+.fl__label{
+  margin:0;display:flex;align-items:baseline;gap:.7em;flex-wrap:wrap;
+  font-size:10px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-3);
+}
+.fl__label b{
+  font-family:var(--display);font-weight:400;font-size:15px;
+  letter-spacing:.06em;text-transform:none;color:var(--ink);
+}
+.fl__set{display:flex;flex-wrap:wrap;gap:8px}
+.fl__set--num .pick{min-width:44px;justify-content:center}
+.fl__pair{display:grid;gap:clamp(18px,2.6vh,28px)}
+@media (min-width:760px){.fl__pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(24px,4vw,56px)}}
+
+/* ── парный ползунок ──
+   Два обычных input[type=range] лежат друг на друге: сами дорожки прозрачны,
+   видимую линию рисует .fl__track, а события ловят только бегунки. */
+.fl__range{position:relative;height:38px}
+.fl__range input[type=range]{
+  position:absolute;left:0;right:0;top:0;width:100%;height:38px;margin:0;
+  -webkit-appearance:none;appearance:none;background:transparent;pointer-events:none;
+}
+.fl__range input[type=range]:focus-visible{outline:none}
+.fl__range input[type=range]::-webkit-slider-runnable-track{height:2px;background:transparent}
+.fl__range input[type=range]::-moz-range-track{height:2px;background:transparent}
+.fl__range input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;pointer-events:auto;cursor:pointer;
+  width:20px;height:20px;margin-top:-9px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--paper);box-shadow:0 1px 6px rgba(0,0,0,.22);
+}
+.fl__range input[type=range]::-moz-range-thumb{
+  pointer-events:auto;cursor:pointer;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--paper);box-shadow:0 1px 6px rgba(0,0,0,.22);
+}
+.fl__range input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--ink);outline-offset:2px}
+.fl__track{position:absolute;left:0;right:0;top:18px;height:2px;background:var(--stone);pointer-events:none}
+.fl__track i{position:absolute;top:0;bottom:0;left:0;right:0;background:var(--gold)}
+
+.fl__foot{
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:16px;
+  padding-top:clamp(14px,2vh,20px);border-top:1px solid var(--stone);
+}
+.fl__found{margin:0;display:flex;align-items:baseline;gap:.6em}
+.fl__found b{font-family:var(--display);font-size:clamp(24px,3vw,38px);color:var(--gold);line-height:1}
+.fl__found span{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3)}
+/* «Сбросить» — ссылка, а не кнопка браузера: рамку и фон снимаем. */
+button.link-call{border:0;background:none;padding:0;font:inherit;cursor:pointer}
+
+/* ── найденные квартиры ── */
+.fl__empty{margin:clamp(22px,3.4vh,34px) 0 0;font-size:15px;color:var(--ink-3);max-width:56ch}
+.fl__list{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:1px;
+  margin:clamp(22px,3.4vh,34px) 0 0;background:var(--stone);
+}
+@media (min-width:640px){.fl__list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1100px){.fl__list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.fl__item{
+  display:grid;gap:7px;width:100%;margin:0;padding:clamp(16px,2.2vw,22px);
+  background:var(--paper);border:0;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;transition:background .35s ease;
+}
+.fl__item.is-flat{cursor:default}
+@media (hover:hover){.fl__item:not(.is-flat):hover{background:#fff}}
+.fl__a{font-family:var(--display);font-size:clamp(21px,2.3vw,29px);line-height:1;color:var(--ink)}
+.fl__a i{font-style:normal;font-size:.4em;letter-spacing:.12em;color:var(--ink-3);margin-left:.45em}
+.fl__r{font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.fl__w{font-size:12px;line-height:1.5;color:var(--ink-3)}
+.fl__g{
+  position:relative;justify-self:start;margin-top:4px;padding-bottom:5px;
+  font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink);
+}
+.fl__g::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--gold);
+  transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.22,.61,.36,1);
+}
+.fl__item:not(.is-flat):hover .fl__g::after{transform:scaleX(1)}
+.fl__item.is-flat .fl__g{color:var(--ink-3)}
+.fl__item.is-flat .fl__g::after{display:none}
+.fl__more{display:flex;justify-content:center;margin-top:clamp(18px,2.6vh,28px)}
+
+/* площадь и комнатность в карточке выбранной квартиры */
+.floor__area{
+  margin:6px 0 0;font-family:var(--display);font-size:clamp(17px,1.7vw,22px);color:var(--ink);
+}
+
+/* вторая ссылка в карточке корпуса */
+.gp__more{display:inline-block;margin-top:14px}

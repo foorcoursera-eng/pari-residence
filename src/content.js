@@ -722,6 +722,31 @@ const ru = {
       + 'наличие меняется каждый день.',
     source: 'Планы этажей предоставлены застройщиком.',
     counted: 'квартир на этаже',
+
+    /* ── подбор по реальному составу ──
+       Данные — выгрузка шахматки отдела продаж. Статусов «продано / свободно»
+       на сайте нет намеренно: наличие меняется каждый день, а страница
+       пересобирается при выкладке, и устаревшая отметка хуже её отсутствия. */
+    filterTitle: 'Подбор квартиры',
+    filterLead: 'Отберите по комнатности, этажу и площади — покажем подходящие квартиры '
+      + 'и откроем их на плане этажа.',
+    filterRooms: 'Комнатность',
+    filterAny: 'Любая',
+    roomsStudio: 'Студия',
+    roomsN: ['', '1 комната', '2 комнаты', '3 комнаты', '4 комнаты'],
+    filterFloor: 'Этаж',
+    filterArea: 'Площадь, м²',
+    filterEntrance: 'Подъезд',
+    entranceAny: 'Все',
+    found: 'квартир подходит',
+    foundNone: 'По этим условиям квартир нет — расширьте диапазон или выберите другую комнатность.',
+    reset: 'Сбросить',
+    more: 'Показать ещё',
+    showOnPlan: 'На плане',
+    noPlan: 'Чертёж этажа уточняется',
+    colFloor: 'этаж',
+    crmNote: 'Состав квартир — по данным отдела продаж. Свободные квартиры, этажи и стоимость '
+      + 'уточняйте по телефону: наличие меняется каждый день.',
   },
   plans: {
     title: 'Планировки',
@@ -1398,6 +1423,29 @@ const uz = {
       + 'mavjudlik har kuni oʻzgaradi.',
     source: 'Qavat rejalari quruvchi tomonidan taqdim etilgan.',
     counted: 'ta xonadon qavatda',
+
+    /* Tanlov savdo boʻlimi maʼlumotlari asosida. «Sotilgan / boʻsh» holati
+       saytda ataylab koʻrsatilmaydi: mavjudlik har kuni oʻzgaradi. */
+    filterTitle: 'Xonadon tanlash',
+    filterLead: 'Xonalar soni, qavat va maydon boʻyicha saralang — mos xonadonlarni koʻrsatamiz '
+      + 'va qavat rejasida ochamiz.',
+    filterRooms: 'Xonalar soni',
+    filterAny: 'Har qanday',
+    roomsStudio: 'Studiya',
+    roomsN: ['', '1 xonali', '2 xonali', '3 xonali', '4 xonali'],
+    filterFloor: 'Qavat',
+    filterArea: 'Maydon, m²',
+    filterEntrance: 'Podyezd',
+    entranceAny: 'Barchasi',
+    found: 'ta xonadon mos keladi',
+    foundNone: 'Bu shartlarga mos xonadon yoʻq — oraliqni kengaytiring yoki boshqa xonalar sonini tanlang.',
+    reset: 'Tozalash',
+    more: 'Yana koʻrsatish',
+    showOnPlan: 'Rejada',
+    noPlan: 'Qavat chizmasi aniqlanmoqda',
+    colFloor: 'qavat',
+    crmNote: 'Xonadonlar tarkibi — savdo boʻlimi maʼlumotlari boʻyicha. Boʻsh xonadonlar, qavatlar '
+      + 'va narxni telefon orqali aniqlang: mavjudlik har kuni oʻzgaradi.',
   },
   plans: {
     title: 'Xonadon tarhlari',
