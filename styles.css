@@ -2075,3 +2075,145 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .tiles--wide{margin-top:clamp(30px,5vh,52px)}
 .tile--wide{flex:0 0 clamp(280px,62vw,900px)}
 .tile--wide img{aspect-ratio:16 / 10}
+
+/* ── зона появляется при каждом переключении ──
+   Кадр не просто подменяется: он всплывает так же, как остальные фотографии
+   на странице. Анимация повешена на само правило показа, поэтому играет
+   каждый раз, когда человек выбирает зону, а не один раз при загрузке. */
+@keyframes careIn{
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:none}
+}
+#care-0:checked ~ .care__panels .care__panel:nth-of-type(1),
+#care-1:checked ~ .care__panels .care__panel:nth-of-type(2),
+#care-2:checked ~ .care__panels .care__panel:nth-of-type(3),
+#care-3:checked ~ .care__panels .care__panel:nth-of-type(4){
+  animation:careIn .85s cubic-bezier(.22,.61,.36,1) both;
+}
+.care__shot img{transition:transform 1.4s cubic-bezier(.22,.61,.36,1)}
+@media (hover:hover){ .care__panel:hover .care__shot img{transform:scale(1.03)} }
+
+@media (prefers-reduced-motion:reduce){
+  #care-0:checked ~ .care__panels .care__panel:nth-of-type(1),
+  #care-1:checked ~ .care__panels .care__panel:nth-of-type(2),
+  #care-2:checked ~ .care__panels .care__panel:nth-of-type(3),
+  #care-3:checked ~ .care__panels .care__panel:nth-of-type(4){animation:none}
+  .care__shot img{transition:none}
+}
+
+/* ══════════════ схема окружения ══════════════
+   Своя карта вместо чужого виджета: на нём квартал ничем не подписан.
+   Рисунок строится из настоящих координат (см. localMap в templates.js),
+   поэтому направления честные. Цвета — гайдбучные: линии золотом тонко,
+   подписи чёрным, фон светлый (§3.2). */
+.locmap{
+  margin:0;display:grid;gap:clamp(20px,3vw,40px);
+  align-items:start;
+}
+@media (min-width:1000px){
+  .locmap{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)}
+}
+
+.locmap__art{
+  width:100%;height:auto;display:block;
+  background:linear-gradient(180deg,#fff,var(--paper));
+  border:1px solid var(--hair);
+}
+
+/* кольца масштаба и лучи к точкам — фон, а не рисунок */
+.locmap__ring{fill:none;stroke:rgba(179,131,43,.22);stroke-width:1;stroke-dasharray:4 7}
+.locmap__ringlab{
+  fill:var(--ink-3);font-family:'Cygre',Arial,sans-serif;font-size:19px;
+  letter-spacing:.16em;text-anchor:middle;text-transform:uppercase;
+}
+.locmap__spoke{stroke:rgba(0,0,0,.14);stroke-width:1}
+
+.locmap__north line{stroke:var(--ink-3);stroke-width:1.4}
+.locmap__north path{fill:var(--gold)}
+.locmap__north text{
+  fill:var(--ink-3);font-family:'Cygre',Arial,sans-serif;font-size:22px;
+  letter-spacing:.1em;text-anchor:middle;
+}
+
+/* точки окружения */
+.locmap__hit{fill:transparent}
+.locmap__dot{
+  fill:#fff;stroke:var(--gold);stroke-width:1.6;
+  transition:fill .35s ease,stroke-width .35s ease;
+}
+.locmap__num{
+  fill:var(--ink);font-family:'Cygre',Arial,sans-serif;font-weight:500;font-size:20px;
+  text-anchor:middle;pointer-events:none;
+}
+.locmap__pt:hover .locmap__dot,
+.locmap__pt:focus-visible .locmap__dot{fill:var(--milk);stroke-width:2.6}
+.locmap__pt:focus-visible{outline:none}
+.locmap__pt:focus-visible .locmap__hit{stroke:var(--gold);stroke-width:2;stroke-dasharray:3 3}
+
+/* сам квартал — единственный золотой знак на схеме (5.1: один центр) */
+.locmap__mark{fill:var(--gold)}
+.locmap__pulse{fill:rgba(179,131,43,.14)}
+.locmap__label{
+  fill:var(--ink);font-family:'Tenor Sans',Georgia,serif;font-size:27px;
+  letter-spacing:.04em;text-anchor:start;
+}
+.locmap__here:hover .locmap__pulse{fill:rgba(179,131,43,.24)}
+
+/* легенда: она же список ссылок на карту с координатами */
+.locmap__title{
+  margin:0 0 clamp(14px,2vh,20px);font-family:var(--display);font-weight:400;
+  color:var(--ink);font-size:clamp(19px,2vw,26px);line-height:1.2;
+}
+.locmap__legend{list-style:none;margin:0;padding:0;display:grid}
+.locmap__legend li{border-top:1px solid var(--hair)}
+.locmap__legend li:last-child{border-bottom:1px solid var(--hair)}
+.locmap__legend a{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
+  gap:14px;padding:clamp(11px,1.8vh,15px) 0;
+  color:var(--ink-2);transition:color .3s ease;
+}
+.locmap__legend a:hover{color:var(--ink)}
+.locmap__legend i{
+  width:26px;height:26px;display:grid;place-items:center;font-style:normal;
+  border:1px solid var(--hair);border-radius:50%;
+  font-size:11px;font-weight:500;color:var(--ink);
+  transition:background .3s ease,border-color .3s ease;
+}
+.locmap__legend a:hover i{background:var(--gold);border-color:var(--gold)}
+.locmap__legend span{font-size:clamp(14px,1.35vw,16px);line-height:1.35}
+.locmap__legend b{
+  font-family:var(--display);font-weight:400;color:var(--gold);
+  font-size:clamp(15px,1.5vw,19px);white-space:nowrap;
+}
+.locmap__note{
+  margin:clamp(14px,2vh,20px) 0 0;font-size:12px;line-height:1.6;color:var(--ink-3);
+  max-width:44ch;
+}
+
+/* ── схема в разделе локации ──
+   Схема — главный предмет раздела, а не иллюстрация сбоку: колонка под неё
+   шире, легенда встаёт под рисунком, а не рядом (в узкой колонке названия
+   мест налезали на километры). */
+@media (min-width:820px){
+  .place .place__inner{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}
+}
+.locmap{grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){
+  .locmap{grid-template-columns:minmax(0,1fr)}
+}
+.locmap__side{margin:0}
+.locmap__legend a{gap:16px}
+@media (min-width:560px){
+  /* легенда в две колонки: шесть строк подряд читаются как список дел */
+  .locmap__legend{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(20px,3vw,44px)}
+  .locmap__legend li:nth-child(2){border-top:1px solid var(--hair)}
+  .locmap__legend li:nth-last-child(2){border-bottom:1px solid var(--hair)}
+}
+
+/* ── мастер-план в том же поле 2:1, что и генплан ──
+   Лист не режем: чертёж ложится в поле целиком, поля добираются бумагой.
+   Так все планы на сайте одного формата — как у образца. */
+.master__view img{aspect-ratio:2 / 1;object-fit:contain;background:var(--paper);width:100%;height:auto}
+@media (max-width:719px){
+  .master__view img{aspect-ratio:4 / 5;object-fit:cover}
+}

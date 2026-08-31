@@ -141,10 +141,17 @@
     });
   });
 
-  /* ── 3 · блоки проявляются по мере подхода ── */
+  /* ── 3 · блоки проявляются по мере подхода ──
+     У кадров ход длиннее, чем у текста: фотография поднимается заметно, как
+     в образце, а подписи и абзацы только подступают. Плитки в ленте галереи
+     выходят по очереди — иначе они, стоя рядом, вспыхивают все разом. */
   gsap.utils.toArray('.reveal').forEach(function (el) {
+    var photo = !!el.querySelector('img') || el.tagName === 'IMG';
+    var row = el.parentElement && el.parentElement.classList.contains('tiles');
+    var step = row ? [].indexOf.call(el.parentElement.children, el) : 0;
     gsap.from(el, {
-      opacity: 0, y: 26, duration: 1.1, ease: EASE,
+      opacity: 0, y: photo ? 48 : 26, duration: photo ? 1.25 : 1.1, ease: EASE,
+      delay: Math.min(step, 4) * 0.12,
       scrollTrigger: { trigger: el, start: 'top 88%', once: true },
     });
   });

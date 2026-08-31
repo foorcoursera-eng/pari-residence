@@ -28,6 +28,19 @@ const site = {
     country: 'UZ',
   },
   geo: { lat: 39.685917, lon: 66.94061 },        // офис продаж, подтверждено владельцем
+  /* Точки на схеме окружения. Координаты сняты из OpenStreetMap, не на глаз:
+     схему строит templates.js по настоящим широте и долготе, поэтому
+     направления и расстояния на ней честные. Расстояние считается по прямой
+     и подписывается на схеме; время в пути — отдельный список distances,
+     оно по дорогам и больше. */
+  places: [
+    { id: 'station', lat: 39.6854655, lon: 66.9289678 },
+    { id: 'korzinka', lat: 39.6822471, lon: 66.9302773 },
+    { id: 'airport', lat: 39.6988761, lon: 66.9912281 },
+    { id: 'registan', lat: 39.6547776, lon: 66.9757583 },
+    { id: 'bazaar', lat: 39.6627889, lon: 66.9805432 },
+    { id: 'university', lat: 39.6443089, lon: 66.9617166 },
+  ],
   hours: {
     // Подтверждено владельцем 19.08.2026: ежедневно 09:00–20:00.
     ru: 'Ежедневно с 9:00 до 20:00',
@@ -530,6 +543,22 @@ const ru = {
   /* ── список «сколько ехать»: общий для главной, локации и контактов ──
      TODO(владелец): времена не подтверждены документом; подпись «на машине» добавлена,
      потому что пешком те же цифры недостижимы. */
+  /* Подписи точек на схеме окружения; координаты лежат в site.places. */
+  placeNames: {
+    station: 'Железнодорожный вокзал',
+    korzinka: 'Супермаркет Korzinka',
+    airport: 'Международный аэропорт',
+    registan: 'Площадь Регистан',
+    bazaar: 'Сиабский базар',
+    university: 'Университет имени Шарофа Рашидова',
+  },
+  mapScheme: 'Схема',
+  mapReal: 'Карта',
+  mapSchemeTitle: 'Что вокруг квартала',
+  mapSchemeNote: 'Расстояния по прямой от квартала. Нажмите на точку — откроется карта с её координатами.',
+  mapHere: 'Квартал PARI Residence',
+  mapKm: 'км',
+
   distancesNote: 'Время в пути на машине',
   distances: [
     ['Ж/д вокзал', '3 минуты'],
@@ -1118,6 +1147,21 @@ const uz = {
     finalText: 'Ism va telefoningizni qoldiring — menejer boʻsh xonadonlar va sotib olish shartlari '
       + 'haqida aytib beradi hamda tashrif vaqtini kelishadi.',
   },
+
+  placeNames: {
+    station: 'Temir yoʻl vokzali',
+    korzinka: 'Korzinka supermarketi',
+    airport: 'Xalqaro aeroport',
+    registan: 'Registon maydoni',
+    bazaar: 'Siyob bozori',
+    university: 'Sharof Rashidov nomidagi universitet',
+  },
+  mapScheme: 'Sxema',
+  mapReal: 'Xarita',
+  mapSchemeTitle: 'Kvartal atrofida nima bor',
+  mapSchemeNote: 'Masofalar kvartaldan toʻgʻri chiziq boʻyicha. Nuqtani bosing — uning koordinatalari bilan xarita ochiladi.',
+  mapHere: 'PARI Residence kvartali',
+  mapKm: 'km',
 
   distancesNote: 'Mashinada yoʻl vaqti',
   distances: [

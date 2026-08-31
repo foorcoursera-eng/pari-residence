@@ -323,7 +323,7 @@ function squareGrid(items) {
    узбекском и не расплывается при увеличении. */
 function masterplan(t) {
   const l = t.location;
-  return `<figure class="master">
+  return `<figure class="master reveal">
       <button class="master__view" type="button"
               data-zoom="/assets/img/masterplan-2560.webp"
               data-zoom-label="${esc(l.masterTitle)}"
@@ -342,6 +342,117 @@ ${l.masterLegend.map((x) => `          <li>${esc(x)}</li>`).join('\n')}
       </figcaption>
     </figure>`;
 }
+
+/* ── схема окружения ──
+   Своя карта вместо чужого виджета: на нём офис продаж ничем не подписан,
+   потому что карточка организации в Яндексе ещё не заведена, и заказчик
+   справедливо сказал, что «не видно PARI». Здесь квартал — главная точка,
+   а вокруг пронумерованы места, до которых чаще всего едут.
+
+   Схема не рисуется на глаз: координаты точек лежат в site.places, здесь они
+   переводятся в метры от квартала (равнопромежуточная проекция — на таких
+   расстояниях искажение меньше метра) и укладываются в поле. Поэтому
+   направления и расстояния на схеме настоящие: аэропорт действительно
+   северо-восточнее, Регистан — юго-восточнее.
+
+   Каждая точка — ссылка на карту с её координатами. */
+function localMap(t, mod) {
+  const R = 111320;                       /* метров в градусе широты */
+  const kx = Math.cos(site.geo.lat * Math.PI / 180);
+  const pts = site.places.map((p, i) => ({
+    id: p.id,
+    n: i + 1,
+    lat: p.lat,
+    lon: p.lon,
+    x: (p.lon - site.geo.lon) * R * kx,
+    y: -(p.lat - site.geo.lat) * R,       /* на экране вниз — юг */
+  }));
+
+  const xs = pts.map((p) => p.x).concat([0]);
+  const ys = pts.map((p) => p.y).concat([0]);
+  const minX = Math.min.apply(null, xs);
+  const maxX = Math.max.apply(null, xs);
+  const minY = Math.min.apply(null, ys);
+  const maxY = Math.max.apply(null, ys);
+
+  const W = 1000;
+  const H = 1180;
+  const pad = 118;                        /* поле под номера и подпись у края */
+  const k = Math.min((W - pad * 2) / (maxX - minX), (H - pad * 2) / (maxY - minY));
+  /* центр рисунка совмещаем с центром облака точек */
+  const cx = W / 2 - (minX + maxX) / 2 * k;
+  const cy = H / 2 - (minY + maxY) / 2 * k;
+  const sx = (m) => (cx + m * k).toFixed(1);
+  const sy = (m) => (cy + m * k).toFixed(1);
+
+  /* кольца через каждый километр показывают масштаб без линейки */
+  const rings = [1000, 3000, 5000].map((m) => `      <circle class="locmap__ring" cx="${sx(0)}" cy="${sy(0)}" r="${(m * k).toFixed(1)}"/>
+      <text class="locmap__ringlab" x="${sx(0)}" y="${(+sy(0) - m * k - 8).toFixed(1)}">${m / 1000} ${esc(t.mapKm)}</text>`).join('\n');
+
+  const spokes = pts.map((p) => `      <line class="locmap__spoke" x1="${sx(0)}" y1="${sy(0)}" x2="${sx(p.x)}" y2="${sy(p.y)}"/>`).join('\n');
+
+  const dots = pts.map((p) => {
+    const km = (Math.hypot(p.x, p.y) / 1000).toFixed(1).replace('.', ',');
+    const name = t.placeNames[p.id];
+    return `      <a class="locmap__pt" href="${mapLink(p.lon, p.lat)}" target="_blank" rel="noopener noreferrer"
+         aria-label="${esc(name)} — ${km} ${esc(t.mapKm)}">
+        <circle class="locmap__hit" cx="${sx(p.x)}" cy="${sy(p.y)}" r="34"/>
+        <circle class="locmap__dot" cx="${sx(p.x)}" cy="${sy(p.y)}" r="19"/>
+        <text class="locmap__num" x="${sx(p.x)}" y="${sy(p.y)}" dy=".36em">${p.n}</text>
+      </a>`;
+  }).join('\n');
+
+  const legend = pts.map((p) => {
+    const km = (Math.hypot(p.x, p.y) / 1000).toFixed(1).replace('.', ',');
+    return `      <li>
+        <a href="${mapLink(p.lon, p.lat)}" target="_blank" rel="noopener noreferrer">
+          <i>${p.n}</i><span>${esc(t.placeNames[p.id])}</span><b>${km}&nbsp;${esc(t.mapKm)}</b>
+        </a>
+      </li>`;
+  }).join('\n');
+
+  return `<figure class="locmap${mod ? ' ' + mod : ''} reveal">
+  <svg class="locmap__art" viewBox="0 0 ${W} ${H}" role="img"
+       aria-label="${esc(t.mapSchemeTitle)}">
+    <g>
+${rings}
+    </g>
+    <g>
+${spokes}
+    </g>
+
+    <!-- север: без него схема читается как абстракция -->
+    <g class="locmap__north" transform="translate(${W - 62}, 62)">
+      <line x1="0" y1="26" x2="0" y2="-14"/>
+      <path d="M0 -22 L6 -8 L0 -12 L-6 -8 Z"/>
+      <text y="44">N</text>
+    </g>
+
+${dots}
+
+    <a class="locmap__here" href="${mapLink(site.geo.lon, site.geo.lat)}"
+       target="_blank" rel="noopener noreferrer" aria-label="${esc(t.mapHere)}">
+      <circle class="locmap__pulse" cx="${sx(0)}" cy="${sy(0)}" r="30"/>
+      <path class="locmap__mark"
+            d="M${sx(0)} ${(+sy(0) - 17).toFixed(1)} l13 17 l-13 17 l-13 -17 Z"/>
+      <text class="locmap__label" x="${(+sx(0) + 32).toFixed(1)}" y="${(+sy(0) + 9).toFixed(1)}">PARI Residence</text>
+    </a>
+  </svg>
+
+  <figcaption class="locmap__side">
+    <p class="locmap__title">${esc(t.mapSchemeTitle)}</p>
+    <ol class="locmap__legend">
+${legend}
+    </ol>
+    <p class="locmap__note">${esc(t.mapSchemeNote)}</p>
+  </figcaption>
+</figure>`;
+}
+
+/* Ссылка на карту с координатами точки: и метка, и центр — одна и та же точка,
+   поэтому по нажатию человек видит именно её, а не «примерно тот район». */
+const mapLink = (lon, lat) =>
+  `https://yandex.uz/maps/?ll=${lon}%2C${lat}&z=17&pt=${lon}%2C${lat},pm2rdm`;
 
 /* ── список расстояний ── */
 const distanceList = (t) => `<ul class="place__list">
@@ -655,7 +766,7 @@ function home(t, page) {
   const careRadios = h.care.map((c, i) => `    <input class="care__radio" type="radio" name="care" id="care-${i}"${i === 0 ? ' checked' : ''}>`).join('\n');
   const careTabs = h.care.map((c, i) => `      <label class="care__tab" for="care-${i}">${esc(c.title)}</label>`).join('\n');
   const carePanels = h.care.map((c) => `      <article class="care__panel">
-        <figure class="care__shot figure-mask is-in">
+        <figure class="care__shot">
           <img src="/assets/img/${c.img}-sv-900.webp"
                srcset="/assets/img/${c.img}-sv-900.webp 900w, /assets/img/${c.img}-sv-1400.webp 1400w"
                sizes="(min-width:900px) 56vw, 100vw" alt="${esc(c.title)}"
@@ -790,7 +901,7 @@ ${stats}
       <p class="place__addr reveal">${esc(addressLine(t))}</p>
       <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
     </div>
-    ${mapBlock(t, 'map--tall')}
+    ${localMap(t)}
   </div>
 </section>
 
