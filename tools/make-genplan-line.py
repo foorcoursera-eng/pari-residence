@@ -24,6 +24,7 @@ OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 CROP = (0.038, 0.085, 0.915, 0.755)
 
 GOLD = (179, 131, 43)          # 3.1 — фирменное золото
+PAPER = (250, 250, 250)        # 3.1 — светлый фон страницы
 INK_MAX = 190                  # светлее этого считаем фоном
 INK_MIN = 55                   # темнее этого — линия в полную силу
 SAT_MAX = 70                   # цветные заливки газонов и проездов отбрасываем:
@@ -49,13 +50,15 @@ def main():
     sat = im.convert('HSV').getchannel('S')
     alpha = ImageChops.multiply(alpha, sat.point(lambda v: 255 if v < SAT_MAX else 0))
 
+    # Без альфы: чертёж всё равно лежит на сплошном светлом фоне, а
+    # полупрозрачные линии раздували файл впятеро.
     for w in (1600, 2400):
         h = round(alpha.height * w / alpha.width)
         a = alpha.resize((w, h), Image.LANCZOS)
-        out = Image.new('RGBA', (w, h), GOLD + (0,))
-        out.putalpha(a)
+        out = Image.new('RGB', (w, h), PAPER)
+        out.paste(Image.new('RGB', (w, h), GOLD), (0, 0), a)
         name = 'genplan-line-%d.webp' % w
-        out.save(os.path.join(OUT, name), 'WEBP', quality=88, method=6)
+        out.save(os.path.join(OUT, name), 'WEBP', quality=82, method=6)
         print('  %s  %dx%d  %d КБ' % (name, w, h, os.path.getsize(os.path.join(OUT, name)) / 1024))
 
 
