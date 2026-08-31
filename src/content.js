@@ -335,6 +335,7 @@ const ru = {
     conceptReliefAlt: 'Барельеф: Регистан и Париж в едином орнаменте',
     conceptWhisper: 'В восточной традиции PARI — фея, образ лёгкости и почти волшебного очарования.',
 
+    infraNum: '03',
     cineLabel: 'Состав квартала',
     cinePrev: 'Предыдущий раздел',
     cineNext: 'Следующий раздел',
@@ -390,7 +391,7 @@ const ru = {
       { img: 'cine-parking', w: [1280, 1535], h: 1024, cap: 'Подземный паркинг', wide: true },
     ],
 
-    yardNum: '03',
+    yardNum: '06',
     yardEyebrow: 'Двор-парк',
     yardTitle: 'Один гектар двора,<br>в котором нет машин',
     yardText: 'Закрытый двор-парк площадью 1 га: геопластика, водные объекты, многолетние кустарники, '
@@ -403,12 +404,12 @@ const ru = {
       { value: 1, label: 'гектар двора' },
     ],
 
-    placeNum: '04',
+    placeNum: '02',
     placeEyebrow: 'Локация',
     placeTitle: 'Самарканд<br>в шаге отсюда',
     placeReliefAlt: 'Барельеф: девушка на велосипеде у парижского фасада',
 
-    homesNum: '01',
+    homesNum: '05',
     homesEyebrow: 'Квартиры',
     homesTitle: 'От компактных однокомнатных<br>до семейных четырёхкомнатных',
     /* Планировки вынесены в общую ленту главной: раньше они жили только на
@@ -425,7 +426,7 @@ const ru = {
 
     /* Раздел «Архитектурные решения» на главной: заказчик просил показать
        фасады и входные группы вблизи — это то, что продаёт проект. */
-    archNum: '02',
+    archNum: '04',
     archEyebrow: 'Архитектурные решения',
     archTitle: 'Натуральный камень,<br>латунь и лепнина',
     archText: 'Выразительные фасады с натуральным камнем и декоративными элементами, '
@@ -446,6 +447,29 @@ const ru = {
     masterText: 'PARI Residence отмечен золотом у улицы Гуругли. Вокруг — парк, пешеходные бульвары, '
       + 'новые школы, детский сад, городской университет и торговый центр.',
     masterLink: 'Смотреть мастер-план',
+
+    /* ── v4 (31.08.2026) ──
+       Заказчик вернулся к образцу stellarresidence.uz и попросил повторить его
+       подачу целиком. Порядок разделов на главной теперь совпадает с образцом,
+       а цвет и шрифты остаются по гайдбуку PARI. Два раздела образца у нас
+       раньше жили только на внутренних страницах — генплан и паркинг: их
+       тизеры теперь стоят на главной, ровно как в образце. */
+    planNum: '07',
+    planEyebrow: 'Генеральный план',
+    planTitle: 'Выберите корпус<br>на плане квартала',
+    planText: 'Тринадцать корпусов вокруг закрытого двора-парка. На плане видно, '
+      + 'где какой тип корпуса и сколько в нём этажей.',
+    planLink: 'Открыть генплан',
+    planAlt: 'Генеральный план PARI Residence: тринадцать корпусов вокруг двора-парка',
+
+    parkNum: '08',
+    parkEyebrow: 'Паркинг',
+    parkTitle: 'Машины остаются<br>за пределами двора',
+    parkText: 'Подземный и наземный паркинг. Открытая парковка на 148 машино-мест — '
+      + 'по экспликации генерального плана проекта.',
+    parkStat: '148',
+    parkStatLabel: 'мест на открытой парковке',
+    parkAlt: 'Паркинг PARI Residence',
 
     finalEyebrow: 'Отдел продаж',
     finalTitle: 'Очарование,<br>ставшее домом',
@@ -687,6 +711,14 @@ const ru = {
   },
 
   /* ── страница контактов ── */
+  /* Подвал появился в v4: в образце контакты и карта стоят внизу каждой
+     страницы, а у нас их можно было найти только на отдельной. */
+  footer: {
+    route: 'Как добраться',
+    copy: 'Все права защищены',
+    developer: 'Застройщик',
+  },
+
   contacts: {
     h1: 'Отдел продаж PARI Residence в Самарканде',
     lead: 'Приезжайте в отдел продаж — покажем планировки и расскажем об условиях покупки. '
@@ -873,6 +905,7 @@ const uz = {
     conceptReliefAlt: 'Barelyef: Registon va Parij yagona naqshda',
     conceptWhisper: 'Sharq anʼanasida PARI — pari, yengillik va sehrli joziba timsoli.',
 
+    infraNum: '03',
     cineLabel: 'Kvartal tarkibi',
     cinePrev: 'Oldingi boʻlim',
     cineNext: 'Keyingi boʻlim',
@@ -921,7 +954,7 @@ const uz = {
       { img: 'cine-parking', w: [1280, 1535], h: 1024, cap: 'Yer osti avtoturargohi', wide: true },
     ],
 
-    yardNum: '03',
+    yardNum: '06',
     yardEyebrow: 'Hovli-bogʻ',
     yardTitle: 'Bir gektar hovli —<br>mashinalarsiz',
     yardText: '1 gektarlik yopiq hovli-bogʻ: geoplastika, suv havzalari, koʻp yillik butalar, '
@@ -934,12 +967,12 @@ const uz = {
       { value: 1, label: 'gektar hovli' },
     ],
 
-    placeNum: '04',
+    placeNum: '02',
     placeEyebrow: 'Joylashuv',
     placeTitle: 'Samarqand<br>bir qadam narida',
     placeReliefAlt: 'Barelyef: parij fasadi yonida velosipedda ketayotgan qiz',
 
-    homesNum: '01',
+    homesNum: '05',
     homesEyebrow: 'Xonadonlar',
     homesTitle: 'Ixcham bir xonalidan<br>oilaviy toʻrt xonaligacha',
     homesPreview: ['f1-2721', 'f1-3981', 'f2-4169', 'f2-6708', 'f3-8531', 'f4-8911'],
@@ -952,7 +985,7 @@ const uz = {
     homesLink: 'Barcha tarhlar',
     homesAlt: 'PARI Residence kirish guruhi: guruch va tabiiy toshli lobbi',
 
-    archNum: '02',
+    archNum: '04',
     archEyebrow: 'Arxitektura yechimlari',
     archTitle: 'Tabiiy tosh,<br>guruch va ganch',
     archText: 'Tabiiy tosh va bezak elementlari bilan ishlangan taʼsirchan fasadlar, dizayner '
@@ -971,6 +1004,24 @@ const uz = {
     masterText: 'PARI Residence Goʻroʻgʻli koʻchasi yonida oltin rangda belgilangan. Atrofda park, '
       + 'piyodalar bulvarlari, yangi maktablar, bogʻcha, shahar universiteti va savdo markazi.',
     masterLink: 'Bosh rejani koʻrish',
+
+    /* v4: bosh sahifa boʻlimlari namuna tartibida (stellarresidence.uz). */
+    planNum: '07',
+    planEyebrow: 'Bosh reja',
+    planTitle: 'Kvartal rejasida<br>blokni tanlang',
+    planText: 'Yopiq hovli-bogʻ atrofida oʻn uch blok. Rejada qaysi blok qaysi turga '
+      + 'tegishli va nechta qavatdan iboratligi koʻrinadi.',
+    planLink: 'Bosh rejani ochish',
+    planAlt: 'PARI Residence bosh rejasi: hovli-bogʻ atrofida oʻn uch blok',
+
+    parkNum: '08',
+    parkEyebrow: 'Avtoturargoh',
+    parkTitle: 'Avtomobillar hovlidan<br>tashqarida qoladi',
+    parkText: 'Yer osti va yer usti avtoturargohi. Ochiq avtoturargoh 148 mashina oʻrniga '
+      + 'moʻljallangan — loyiha bosh rejasi eksplikatsiyasi boʻyicha.',
+    parkStat: '148',
+    parkStatLabel: 'ochiq avtoturargohdagi oʻrin',
+    parkAlt: 'PARI Residence avtoturargohi',
 
     finalEyebrow: 'Savdo boʻlimi',
     finalTitle: 'Uyga aylangan<br>joziba',
@@ -1196,6 +1247,12 @@ const uz = {
       + 'bulvarlari, kafelar, sport obyektlari, bogʻchalar, maktablar va poliklinika koʻzda tutilgan; '
       + 'yaqin atrofda yangi universitet qurilmoqda.',
     mapTitle: 'Savdo boʻlimi xaritada',
+  },
+
+  footer: {
+    route: 'Qanday yetib borish mumkin',
+    copy: 'Barcha huquqlar himoyalangan',
+    developer: 'Quruvchi',
   },
 
   contacts: {

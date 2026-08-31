@@ -406,10 +406,11 @@ function rail(t) {
   const h = t.home;
   const items = [
     ['#about', h.aboutEyebrow],
-    ['#architecture', h.archEyebrow],
-    ['#yard', h.yardEyebrow],
-    ['#homes', h.homesEyebrow],
     ['#place', h.placeEyebrow],
+    ['#infra', h.cineEyebrow],
+    ['#architecture', h.archEyebrow],
+    ['#homes', h.homesEyebrow],
+    ['#genplan', h.planEyebrow],
     ['#call', h.finalEyebrow],
   ];
   return `<nav class="rail" data-rail aria-label="${esc(t.ui.sections)}">
@@ -456,6 +457,58 @@ ym(${a.metrika},'init',{ssr:true,webvisor:true,clickmap:true,accurateTrackBounce
 }
 
 /* ══════════════ каркас страницы ══════════════ */
+/* ── подвал ──
+   Появился в v4: в образце контакты, режим работы и копирайт стоят внизу
+   каждой страницы, а у нас их можно было найти только на отдельной. Карту
+   в подвал не ставим — она уже есть на главной, локации и контактах, и
+   второй виджет на странице означал бы лишние запросы к Яндексу. */
+function footer(t) {
+  const c = t.contacts;
+  const f = t.footer;
+  const hours = t.lang === 'ru' ? site.hours.ru : site.hours.uz;
+  const route = `https://yandex.uz/maps/?pt=${site.geo.lon},${site.geo.lat}&z=17&l=map`;
+  const items = navItems(t)
+    .map(([href, label]) => `      <a href="${href}">${esc(label)}</a>`).join('\n');
+
+  return `<footer class="footer">
+  <div class="footer__inner">
+    <h2 class="display footer__title">${esc(t.nav.contacts)}</h2>
+
+    <dl class="footer__grid">
+      <div class="footer__item">
+        <dt>${esc(c.phoneLabel)}</dt>
+        <dd><a href="tel:${site.phone.tel}" data-track="phone_click">${site.phone.intl}</a></dd>
+      </div>
+      <div class="footer__item">
+        <dt>${esc(c.addressLabel)}</dt>
+        <dd>${esc(addressLine(t))}<br>
+          <a class="footer__route" href="${route}" target="_blank" rel="noopener noreferrer">${esc(f.route)}</a>
+        </dd>
+      </div>
+      <div class="footer__item">
+        <dt>${esc(c.hoursLabel)}</dt>
+        <dd>${esc(hours)}</dd>
+      </div>
+      <div class="footer__item">
+        <dt>${esc(c.socialLabel)}</dt>
+        <dd class="footer__social">
+          <a href="${site.telegram}" target="_blank" rel="noopener noreferrer" data-track="telegram_click">Telegram</a>
+          <a href="${site.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>
+        </dd>
+      </div>
+    </dl>
+
+    <nav class="footer__nav" aria-label="${esc(t.ui.navLabel)}">
+${items}
+    </nav>
+
+    <p class="footer__legal">${esc(t.ui.legal)}</p>
+    <p class="footer__copy">© ${new Date().getFullYear()} ${site.brand} · ${esc(f.developer)} — ${esc(site.developer.name)} · ${esc(f.copy)}</p>
+  </div>
+</footer>`;
+}
+
+
 function shell(t, page) {
   const canonical = url(page.path);
   const alt = url(swap(page.path));
@@ -502,6 +555,8 @@ ${page.body}
 
 </main>
 
+${footer(t)}
+
 <!-- телефон под рукой на всей длине страницы: на узких экранах панель
      показывается, как только первый экран уходит вверх (класс на body ставит скрипт) -->
 ${dock(t, page)}
@@ -534,11 +589,18 @@ ${dock(t, page)}
 }
 
 /* ══════════════ главная ══════════════
-   Порядок разделов: титул → квартиры → кинолента → двор-парк → локация → заявка. */
+   v4 (31.08.2026). Порядок разделов повторяет образец, который прислал
+   заказчик — stellarresidence.uz: титул, о проекте с крупными цифрами,
+   локация с картой, состав квартала лентой, тёмная полоса, архитектура,
+   район, квартиры, двор, генплан, паркинг, застройщик, заявка, подвал.
+   Цвет и шрифты при этом остаются по гайдбуку PARI: роль их бирюзы играет
+   золото, заголовки набраны Tenor Sans (§4.1), текст — Cygre (§4.2). */
 function home(t, page) {
   const h = t.home;
-  /* Слайд раздела: кадр во весь экран, заголовок и абзац поверх него. */
-  const cine = h.cine.map((c) => {
+  /* Слайд раздела: кадр во весь экран, заголовок и абзац поверх него.
+     Паркинг из ленты убран — с v4 у него отдельный раздел ниже, как в образце. */
+  const cineItems = h.cine.filter((c) => c.img !== 'cine-parking');
+  const cine = cineItems.map((c) => {
     const max = c.w[c.w.length - 1];
     const set = c.w.map((w) => `/assets/img/${c.img}-${w}.webp ${w}w`).join(', ');
     return `      <figure class="frame">
@@ -557,7 +619,6 @@ function home(t, page) {
         <span>${esc(x.label)}</span>
       </li>`).join('\n');
 
-  /* Планировки стоят на главной целиком: подбор без выбора смысла не имеет. */
   /* На главной показываем шесть планировок, а не весь каталог: тридцать три
      чертежа превращали страницу в свалку картинок, и заказчик справедливо на
      это пожаловался. Отбор по комнатности и площади живёт на странице квартир —
@@ -578,6 +639,7 @@ function home(t, page) {
   const apartmentsHref = `${p}/apartments/`;
   const locationHref = `${p}/location/`;
   const projectHref = `${p}/project/`;
+  const genplanHref = `${p}/genplan/`;
 
   page.body = `<!-- ══════════════ 1 · ТИТУЛ ══════════════
      Страница открывается на белом: логотип прорисовывается штрихом, кадр
@@ -621,9 +683,10 @@ function home(t, page) {
   </div>
 </section>
 
-<!-- ══════════════ 2 · О ПРОЕКТЕ ══════════════
-     Одна мысль на экран и крупные показатели: цифры досчитываются,
-     когда раздел выходит на экран. -->
+<!-- ══════════════ 01 · О ПРОЕКТЕ ══════════════
+     Как в образце: заголовок в две строки, узкая колонка текста рядом
+     и крупные показатели под ней. Цифры досчитываются, когда раздел
+     выходит на экран. -->
 <section class="about" id="about">
   <span class="side-tag" aria-hidden="true">${esc(h.aboutEyebrow)}</span>
   <div class="about__inner">
@@ -659,21 +722,48 @@ ${stats}
   </div>
 </section>
 
-<!-- ══════════════ 3 · АРХИТЕКТУРА ══════════════ -->
-<section class="arch" id="architecture">
-  <div class="arch__head">
-    <p class="eyebrow reveal"><span class="num">${h.archNum}</span> ${esc(h.archEyebrow)}</p>
-    <h2 class="display" data-lines>${h.archTitle}</h2>
-    <p class="arch__text reveal">${esc(h.archText)}</p>
-  </div>
-  <div class="gallery__grid">
-${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
+<!-- ══════════════ 02 · ЛОКАЦИЯ ══════════════
+     В образце локация идёт сразу за разделом о проекте: сначала «что это»,
+     потом «где это». -->
+<section class="place" id="place">
+  <div class="place__inner">
+    <div>
+      <p class="eyebrow reveal"><span class="num">${h.placeNum}</span> ${esc(h.placeEyebrow)}</p>
+      <h2 class="display" data-lines>${h.placeTitle}</h2>
+      ${distanceList(t)}
+      <p class="place__addr reveal">${esc(addressLine(t))}</p>
+      <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
+    </div>
+    ${mapBlock(t, 'map--tall')}
   </div>
 </section>
 
-<!-- ══════════════ 4 · ФИЛЬМ ══════════════
+<!-- ══════════════ 03 · СОСТАВ КВАРТАЛА ══════════════
+     Лента разделов: двор, торговая галерея, входные группы, вид с высоты. -->
+<section class="cine" id="infra" data-cine aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
+  <div class="cine__head">
+    <p class="eyebrow eyebrow--light reveal"><span class="num">${h.infraNum}</span> ${esc(h.cineEyebrow)}</p>
+    <h2 class="display display--light" data-lines>${h.cineTitle}</h2>
+  </div>
+
+  <div class="cine__stage">
+    <div class="cine__track">
+${cine}
+    </div>
+
+    <button class="cine__arrow cine__arrow--prev" type="button" data-cine-prev aria-label="${esc(h.cinePrev)}"></button>
+    <button class="cine__arrow cine__arrow--next" type="button" data-cine-next aria-label="${esc(h.cineNext)}"></button>
+
+    <div class="cine__dots" role="tablist" aria-label="${esc(h.cineLabel)}">
+${cineItems.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}" type="button" role="tab" data-cine-go="${i}" aria-label="${esc(c.title)}"${i === 0 ? ' aria-selected="true"' : ''}><i></i></button>`).join('\n')}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ ФИЛЬМ ══════════════
      Единственная тёмная полоса на странице: имиджевый ролик идёт петлёй
-     без звука. Не грузится при экономии трафика и на медленной сети. -->
+     без звука. В образце ровно здесь стоит чёрная вставка — между составом
+     комплекса и архитектурой. Не грузится при экономии трафика. -->
 <section class="film" id="film">
   <video class="film__video" id="heroVideo" muted loop playsinline
          preload="none" aria-hidden="true" tabindex="-1"
@@ -690,45 +780,32 @@ ${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
   </div>
 </section>
 
-<!-- ══════════════ 5 · ДВОР-ПАРК ══════════════ -->
-<section class="split" id="yard">
-  <div class="split__media figure-mask">
-    <img src="/assets/img/yard-1920.webp"
-         srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
-         sizes="(min-width:900px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
-         width="1920" height="1071" loading="lazy" decoding="async">
+<!-- ══════════════ 04 · АРХИТЕКТУРА ══════════════ -->
+<section class="arch" id="architecture">
+  <div class="arch__head">
+    <p class="eyebrow reveal"><span class="num">${h.archNum}</span> ${esc(h.archEyebrow)}</p>
+    <h2 class="display" data-lines>${h.archTitle}</h2>
+    <p class="arch__text reveal">${esc(h.archText)}</p>
   </div>
-  <div class="split__panel">
-    <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
-    <h2 class="display" data-lines>${h.yardTitle}</h2>
-    <p class="split__text reveal">${esc(h.yardText)}</p>
+  <div class="gallery__grid">
+${shotGrid(h.arch, '(min-width:900px) 58vw, 100vw')}
   </div>
 </section>
 
-<!-- ══════════════ КИНОЛЕНТА ══════════════ -->
-<section class="cine" data-cine aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
-  <div class="cine__head">
-    <p class="eyebrow eyebrow--light reveal">${esc(h.cineEyebrow)}</p>
-    <h2 class="display display--light" data-lines>${h.cineTitle}</h2>
-  </div>
-
-  <div class="cine__stage">
-    <div class="cine__track">
-${cine}
-    </div>
-
-    <button class="cine__arrow cine__arrow--prev" type="button" data-cine-prev aria-label="${esc(h.cinePrev)}"></button>
-    <button class="cine__arrow cine__arrow--next" type="button" data-cine-next aria-label="${esc(h.cineNext)}"></button>
-
-    <div class="cine__dots" role="tablist" aria-label="${esc(h.cineLabel)}">
-${h.cine.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}" type="button" role="tab" data-cine-go="${i}" aria-label="${esc(c.title)}"${i === 0 ? ' aria-selected="true"' : ''}><i></i></button>`).join('\n')}
-    </div>
+<!-- ══════════════ РАЙОН «ЗАЛИНИЯ» ══════════════
+     Место образца, где короткий разворот с одной картинкой и одной мыслью
+     разделяет архитектуру и квартиры. -->
+<section class="district" id="district">
+  <div class="district__inner">
+    <p class="eyebrow reveal">${esc(h.masterEyebrow)}</p>
+    <h2 class="display" data-lines>${h.masterTitle}</h2>
+    <p class="district__text reveal">${esc(h.masterText)}</p>
+    ${masterplan(t)}
+    <a class="link-call reveal" href="${locationHref}">${esc(h.masterLink)}</a>
   </div>
 </section>
 
-<!-- ══════════════ 6 · КВАРТИРЫ И ПОДБОР ══════════════
-     Отбор по комнатности и площади стоит прямо на главной: до отдельной
-     страницы доходят не все, а выбрать квартиру человек хочет сразу. -->
+<!-- ══════════════ 05 · КВАРТИРЫ ══════════════ -->
 <section class="homes" id="homes">
   <div class="homes__inner">
     <p class="eyebrow reveal"><span class="num">${h.homesNum}</span> ${esc(h.homesEyebrow)}</p>
@@ -750,32 +827,63 @@ ${plans}
   </div>
 </section>
 
-<!-- ══════════════ 7 · ЛОКАЦИЯ ══════════════ -->
-<section class="place" id="place">
-  <div class="place__inner">
-    <div>
-      <p class="eyebrow reveal"><span class="num">${h.placeNum}</span> ${esc(h.placeEyebrow)}</p>
-      <h2 class="display" data-lines>${h.placeTitle}</h2>
-      ${distanceList(t)}
-      <p class="place__addr reveal">${esc(addressLine(t))}</p>
-      <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
-    </div>
-    ${mapBlock(t, 'map--tall')}
+<!-- ══════════════ 06 · ДВОР-ПАРК ══════════════ -->
+<section class="split" id="yard">
+  <div class="split__media figure-mask">
+    <img src="/assets/img/yard-1920.webp"
+         srcset="/assets/img/yard-1080.webp 1080w, /assets/img/yard-1920.webp 1920w"
+         sizes="(min-width:900px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
+         width="1920" height="1071" loading="lazy" decoding="async">
+  </div>
+  <div class="split__panel">
+    <p class="eyebrow reveal"><span class="num">${h.yardNum}</span> ${esc(h.yardEyebrow)}</p>
+    <h2 class="display" data-lines>${h.yardTitle}</h2>
+    <p class="split__text reveal">${esc(h.yardText)}</p>
   </div>
 </section>
 
-<!-- ══════════════ МАСТЕР-ПЛАН РАЙОНА ══════════════ -->
-<section class="district" id="district">
-  <div class="district__inner">
-    <p class="eyebrow reveal">${esc(h.masterEyebrow)}</p>
-    <h2 class="display" data-lines>${h.masterTitle}</h2>
-    <p class="district__text reveal">${esc(h.masterText)}</p>
-    ${masterplan(t)}
-    <a class="link-call reveal" href="${locationHref}">${esc(h.masterLink)}</a>
+<!-- ══════════════ 07 · ГЕНПЛАН ══════════════
+     В образце выбор квартиры начинается с плана квартала: чертёж во всю
+     ширину и ссылка на интерактивный план. У нас план уже интерактивный —
+     тизер ведёт прямо на него. -->
+<section class="plan-teaser" id="genplan">
+  <div class="band-head">
+    <p class="eyebrow reveal"><span class="num">${h.planNum}</span> ${esc(h.planEyebrow)}</p>
+    <h2 class="display" data-lines>${h.planTitle}</h2>
+    <p class="band-head__text reveal">${esc(h.planText)}</p>
+    <a class="pill reveal" href="${genplanHref}" data-track="genplan_block">${esc(h.planLink)}</a>
+  </div>
+  <a class="plan-teaser__art reveal" href="${genplanHref}" tabindex="-1" aria-hidden="true">
+    <img src="/assets/img/genplan-line-1600.webp"
+         srcset="/assets/img/genplan-line-1600.webp 1600w, /assets/img/genplan-line-2400.webp 2400w"
+         sizes="(min-width:900px) 64vw, 100vw" alt="${esc(h.planAlt)}"
+         width="2400" height="1297" loading="lazy" decoding="async">
+  </a>
+</section>
+
+<!-- ══════════════ 08 · ПАРКИНГ ══════════════
+     Отдельный раздел, как в образце: кадр с одной стороны, цифра с другой. -->
+<section class="parking" id="parking">
+  <figure class="parking__media figure-mask">
+    <img src="/assets/img/cine-parking-1280.webp"
+         srcset="/assets/img/cine-parking-1280.webp 1280w, /assets/img/cine-parking-1535.webp 1535w"
+         sizes="(min-width:900px) 48vw, 100vw" alt="${esc(h.parkAlt)}"
+         width="1535" height="1024" loading="lazy" decoding="async">
+  </figure>
+  <div class="parking__panel">
+    <p class="eyebrow reveal"><span class="num">${h.parkNum}</span> ${esc(h.parkEyebrow)}</p>
+    <h2 class="display" data-lines>${h.parkTitle}</h2>
+    <p class="parking__text reveal">${esc(h.parkText)}</p>
+    <ul class="figures figures--pair">
+      <li class="figures__item">
+        <b data-count="${h.parkStat}">${h.parkStat}</b>
+        <span>${esc(h.parkStatLabel)}</span>
+      </li>
+    </ul>
   </div>
 </section>
 
-<!-- ══════════════ 8 · КТО СТРОИТ ══════════════ -->
+<!-- ══════════════ КТО СТРОИТ ══════════════ -->
 <section class="maker" id="maker">
   <div class="maker__inner">
     <p class="eyebrow reveal">${esc(h.makerEyebrow)}</p>
@@ -793,7 +901,6 @@ ${leadSection(t, {})}
 ${rail(t)}`;
   return page;
 }
-
 
 
 /* ══════════════ выбор квартиры ══════════════
