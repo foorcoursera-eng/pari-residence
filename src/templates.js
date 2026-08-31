@@ -899,6 +899,11 @@ function genplan(t, page) {
     <p class="page__lead">${esc(g.lead)}</p>
   </div>
 
+  <div class="gp__views" role="group" aria-label="${esc(g.hint)}">
+    <button class="pick is-on" type="button" data-gp-view="plan" aria-pressed="true">${esc(g.viewPlan)}</button>
+    <button class="pick" type="button" data-gp-view="aerial" aria-pressed="false">${esc(g.viewAerial)}</button>
+  </div>
+
   <div class="gp">
     <figure class="gp__map" data-genplan>
       <!-- На телефоне чертёж шире экрана и прокручивается вбок: иначе корпуса
@@ -914,6 +919,13 @@ function genplan(t, page) {
 ${zones}
       </svg>
       </div>
+
+      <!-- Вид с высоты — тот же квартал, только с натуры. Кликабельные корпуса
+           оставлены на чертеже: на перспективном снимке ряды застройки
+           перекрывают друг друга, и границы блоков пришлось бы угадывать. -->
+      <img class="gp__aerial" src="/assets/img/hero-aerial-1920.webp"
+           alt="${esc(g.aerialAlt)}" width="1920" height="1080" loading="lazy" decoding="async" hidden>
+
       <p class="gp__swipe" aria-hidden="true">${esc(g.swipe)}</p>
     </figure>
 

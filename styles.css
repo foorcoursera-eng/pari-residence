@@ -1787,3 +1787,12 @@ body.has-callbar .opening__foot{opacity:0;pointer-events:none}
 .floor__note{margin:8px 0 4px;font-size:13px;color:var(--ink-3);max-width:52ch}
 /* Без этого карточка видна всегда: display:grid перебивает атрибут hidden. */
 .floor__card[hidden]{display:none}
+
+
+/* переключатель вида генплана: точный чертёж или вид с высоты */
+.gp__views{display:flex;gap:8px;width:var(--measure);margin:clamp(18px,3vh,28px) auto 0}
+.gp__aerial{display:block;width:100%;height:auto}
+.gp__aerial[hidden]{display:none}
+.gp__map.is-aerial .gp__frame{display:none}
+.gp__map.is-aerial{overflow:visible}
+.gp__map.is-aerial .gp__swipe{display:none}

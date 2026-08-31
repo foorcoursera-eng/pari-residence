@@ -1074,6 +1074,25 @@
       if (push) { track('genplan_block', { type: z.dataset.type, floors: z.dataset.floors }); }
     };
 
+    /* переключатель «чертёж / с высоты» */
+    var gpViews = document.querySelectorAll('[data-gp-view]');
+    var gpAerial = gp.querySelector('.gp__aerial');
+    if (gpViews.length && gpAerial) {
+      [].forEach.call(gpViews, function (b) {
+        b.addEventListener('click', function () {
+          var aerial = b.dataset.gpView === 'aerial';
+          [].forEach.call(gpViews, function (o) {
+            var on = o === b;
+            o.classList.toggle('is-on', on);
+            o.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          gp.classList.toggle('is-aerial', aerial);
+          gpAerial.hidden = !aerial;
+          track('genplan_view', { view: b.dataset.gpView });
+        });
+      });
+    }
+
     gpZones.forEach(function (z) {
       z.addEventListener('click', function () { gpPick(z, true); });
       z.addEventListener('mouseenter', function () { gpPick(z, false); });
