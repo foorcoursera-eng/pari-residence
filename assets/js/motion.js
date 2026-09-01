@@ -111,16 +111,24 @@
      У кадров ход длиннее, чем у текста: фотография поднимается заметно, как
      в образце, а подписи и абзацы только подступают. Плитки в ленте галереи
      выходят по очереди — иначе они, стоя рядом, вспыхивают все разом. */
-  gsap.utils.toArray('.reveal').forEach(function (el) {
-    var photo = !!el.querySelector('img') || el.tagName === 'IMG';
-    var row = el.parentElement && el.parentElement.classList.contains('tiles');
-    var step = row ? [].indexOf.call(el.parentElement.children, el) : 0;
-    gsap.from(el, {
-      opacity: 0, y: photo ? 48 : 26, duration: photo ? 1.25 : 1.1, ease: EASE,
-      delay: Math.min(step, 4) * 0.12,
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+  /* Одно наблюдение на все блоки, а не свой ScrollTrigger на каждый: на
+     главной таких блоков под сотню, и раньше страница заводила больше сотни
+     триггеров. Пришедшие в кадр одной пачкой выходят со сдвигом — соседние
+     плитки не вспыхивают разом. */
+  var isPhoto = function (el) { return !!el.querySelector('img') || el.tagName === 'IMG'; };
+  var reveals = gsap.utils.toArray('.reveal');
+  if (reveals.length) {
+    gsap.set(reveals, { opacity: 0, y: function (i, el) { return isPhoto(el) ? 48 : 26; } });
+    ScrollTrigger.batch(reveals, {
+      start: 'top 88%', once: true,
+      onEnter: function (batch) {
+        gsap.to(batch, {
+          opacity: 1, y: 0, ease: EASE, stagger: 0.09,
+          duration: function (i, el) { return isPhoto(el) ? 1.25 : 1.1; },
+        });
+      },
     });
-  });
+  }
 
   /* ── 4 · кадры выезжают из-под маски ── */
   gsap.utils.toArray('.figure-mask').forEach(function (el) {

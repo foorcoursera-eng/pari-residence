@@ -110,7 +110,7 @@ function pagesFor(t) {
   const preloadHome = '<link rel="preload" as="image" href="/assets/img/opening-shot-1920.webp"'
     + ' imagesrcset="/assets/img/opening-shot-1280.webp 1280w, /assets/img/opening-shot-1920.webp 1920w,'
     + ' /assets/img/opening-shot-2560.webp 2560w"'
-    + ' imagesizes="(min-width:900px) 62vw, 100vw" fetchpriority="high">';
+    + ' imagesizes="100vw" fetchpriority="high">';
 
   return [
     {
@@ -219,6 +219,23 @@ ${urls.map((u) => `  <url>
 `);
   }
 
+  /* Иконка в корне и манифест: за favicon.ico браузеры и превью ссылок ходят
+     по умолчанию, без разметки — именно поэтому в мессенджерах вместо марки
+     показывался серый глобус. */
+  fs.copyFileSync(path.join(root, 'assets', 'img', 'favicon.ico'), path.join(dist, 'favicon.ico'));
+  write('site.webmanifest', JSON.stringify({
+    name: site.brand,
+    short_name: 'PARI',
+    lang: 'ru',
+    start_url: '/',
+    background_color: '#FAFAFA',
+    theme_color: '#B3832B',
+    icons: [
+      { src: '/assets/img/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: '/assets/img/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+  }, null, 2));
+
   write('robots.txt', `User-agent: *
 Allow: /
 Disallow: /api/
@@ -228,6 +245,26 @@ Sitemap: ${T.url('/sitemap.xml')}
 
   /* статические файлы */
   copyDir(path.join(root, 'assets'), path.join(dist, 'assets'));
+
+  /* Контуры букв для письма пером: в исходнике лежат пять фраз, а на страницах
+     используется только та, что помечена data-write. Лишние съедали 97 КБ из
+     128 на каждом открытии главной — в сборку кладём ровно нужные. */
+  const penUsed = new Set();
+  written.filter((w) => w.endsWith('.html')).forEach((w) => {
+    const html = fs.readFileSync(path.join(dist, w.replace(/^\//, '')), 'utf8');
+    (html.match(/data-write="([^"]+)"/g) || []).forEach((m) => penUsed.add(m.slice(12, -1)));
+  });
+  ['ru', 'uz'].forEach((lang) => {
+    const file = path.join(dist, 'assets', 'pen', lang + '.json');
+    if (!fs.existsSync(file)) { return; }
+    const all = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const keep = {};
+    Object.keys(all).forEach((k) => { if (penUsed.has(k)) { keep[k] = all[k]; } });
+    const before = fs.statSync(file).size;
+    fs.writeFileSync(file, JSON.stringify(keep));
+    console.log('  перо ' + lang + ': ' + Math.round(before / 1024) + ' -> '
+      + Math.round(fs.statSync(file).size / 1024) + ' КБ, фраз ' + Object.keys(keep).length);
+  });
 
   /* Реальный состав квартир для подбора. Пишем после копирования ассетов,
      иначе файл затрётся. Отдаём массивом массивов: имена полей у 1186 записей

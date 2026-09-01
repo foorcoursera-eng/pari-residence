@@ -920,7 +920,14 @@
     var btn = form.querySelector('[data-submit]');
     var btnText = btn.textContent;
     var opened = false;
-    var mark = function (el, bad) { el.closest('.field').classList.toggle('invalid', bad); };
+    /* Рамку ставим и полю, и его состоянию для скринридера: сообщение
+       «проверьте отмеченные поля» без aria-invalid для незрячего человека
+       ничего не значит. */
+    var mark = function (el, bad) {
+      var box = el.closest('.field') || el.closest('label') || el.parentNode;
+      if (box && box.classList) { box.classList.toggle('invalid', bad); }
+      if (bad) { el.setAttribute('aria-invalid', 'true'); } else { el.removeAttribute('aria-invalid'); }
+    };
 
     form.addEventListener('focusin', function () {
       if (!opened) { opened = true; track('lead_form_open', { page: location.pathname }); }
@@ -940,11 +947,17 @@
 
       var nameOk = form.elements.name.value.trim().length >= 2;
       var phoneOk = form.elements.phone.value.replace(/\D/g, '').length >= 9;
+      /* Согласие раньше молча блокировало отправку: поля были в порядке,
+         подпись просила проверить отмеченные — а отмечено ничего не было. */
+      var consentOk = form.elements.consent.checked;
       mark(form.elements.name, !nameOk);
       mark(form.elements.phone, !phoneOk);
-      if (!nameOk || !phoneOk || !form.elements.consent.checked) {
+      mark(form.elements.consent, !consentOk);
+      if (!nameOk || !phoneOk || !consentOk) {
         statusEl.textContent = phrase.bad;
         statusEl.classList.add('err');
+        var first = !nameOk ? form.elements.name : (!phoneOk ? form.elements.phone : form.elements.consent);
+        try { first.focus({ preventScroll: false }); } catch (err) { first.focus(); }
         track('lead_error', { reason: 'validation' });
         return;
       }

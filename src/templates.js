@@ -66,7 +66,7 @@ function splash() {
   return `<div class="splash" id="splash" aria-hidden="true">
   <div class="splash__mark">
     <img src="/assets/img/brand-frame.png" alt="" width="640" height="616">
-    <img class="splash__logo" src="/assets/img/pari-logo-vector.png" alt="" width="1872" height="1031">
+    <img class="splash__logo" src="/assets/img/pari-logo-400.webp" alt="" width="400" height="220">
   </div>
 </div>
 `;
@@ -109,7 +109,8 @@ function header(t, path) {
   return `<header class="bar${inner ? ' is-solid' : ''}" id="bar">
   <span class="bar__progress" aria-hidden="true"></span>
   <a class="bar__logo" href="${t.lang === 'ru' ? '/' : '/uz/'}" aria-label="${site.brand}">
-    <img src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="96" height="32">
+    <!-- Лёгкая копия марки: полноразмерный PNG весил 53 КБ ради 96 px в шапке. -->
+    <img src="/assets/img/pari-logo-400.webp" alt="${site.brand}" width="96" height="32">
   </a>
 
   <nav class="bar__nav" aria-label="${esc(t.ui.navLabel)}">
@@ -220,7 +221,7 @@ function leadSection(t, opts) {
     <div class="final__left">
       <div class="medallion reveal">
         <img class="medallion__frame" src="/assets/img/brand-frame.png" alt="" width="640" height="616" loading="lazy" decoding="async">
-        <img class="medallion__logo" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="1872" height="1031" loading="lazy" decoding="async">
+        <img class="medallion__logo" src="/assets/img/pari-logo-400.webp" alt="${site.brand}" width="400" height="220" loading="lazy" decoding="async">
       </div>
       <p class="eyebrow reveal">${esc(o.eyebrow || t.home.finalEyebrow)}</p>
       <${o.h || 'h2'} class="display reveal">${o.title || t.home.finalTitle}</${o.h || 'h2'}>
@@ -666,7 +667,14 @@ function shell(t, page) {
 <meta property="og:locale" content="${t.locale}">
 <meta property="og:locale:alternate" content="${t.altLocale}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23B3832B'/%3E%3Cpath d='M9 24V13a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4h-6' fill='none' stroke='%23FAFAFA' stroke-width='1.8'/%3E%3C/svg%3E">
+<!-- Иконки собраны из настоящего логотипа (tools/make-icons.py). Раньше здесь
+     стоял только инлайновый SVG с самодельной буквой: вкладка его показывала,
+     а превью ссылок в мессенджерах и поиске — нет, там оставался серый глобус.
+     ICO лежит в корне: за ним ходят по умолчанию, без разметки. -->
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 ${page.preload || ''}<link rel="stylesheet" href="/styles.css?v=${page.v}">
 ${ld}
 ${analytics()}</head>
@@ -774,8 +782,11 @@ function catalogRow(t, x, i) {
         </button>
         <div class="m-cat__meta">
           <span class="m-cat__no">${String(i + 1).padStart(2, '0')}</span>
-          <h3 class="m-cat__rooms">${esc(rooms)}</h3>
-          <p class="m-cat__area">${x.area}<span>${t.ui.sqm}</span></p>
+          <!-- Заголовком строки идёт площадь: она и набрана крупнее всего, и
+               различает строки между собой, тогда как «2-комнатная» в каталоге
+               повторялась несколько раз подряд. -->
+          <h3 class="m-cat__area">${x.area}<span>${t.ui.sqm}</span></h3>
+          <p class="m-cat__rooms">${esc(rooms)}</p>
           <p class="m-cat__block">${esc(blocks)}</p>
           <span class="m-cat__link">${esc(t.home.catalogView)}</span>
         </div>
@@ -1533,6 +1544,16 @@ function genplan(t, page) {
            role="group" aria-label="${esc(g.hint)}">
 ${zones}
       </svg>
+
+      <!-- Подписи корпусов лежат разметкой, а не в SVG: слой зон растянут
+           неравномерно (preserveAspectRatio="none"), и текст в нём поплыл бы.
+           Тип и этажность — с листа «Генеральный план М1:500» из альбома. -->
+      <div class="gp__tags" aria-hidden="true">
+${blocks.map((b) => `        <span class="gp__tag" data-tag="${b.id}"
+              style="left:${(b.x + b.w / 2).toFixed(2)}%;top:${(b.y + b.h / 2).toFixed(2)}%">
+          <b>${esc(b.type)}</b><i>${b.floors}</i>
+        </span>`).join('\n')}
+      </div>
       </div>
 
       <!-- Вид с высоты — тот же квартал, только с натуры. Кликабельные корпуса

@@ -251,15 +251,11 @@ const ru = {
   meta: {
     home: {
       title: 'PARI Residence — квартиры премиум-класса в Самарканде',
-      description: 'PARI Residence — жилой квартал премиум-класса в Самарканде на улице Гуругли: '
-        + 'закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 27 до 95 м². '
-        + 'Узнайте актуальные условия в отделе продаж.',
+      description: 'Жилой квартал премиум-класса в Самарканде на улице Гуругли: закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 27 до 95 м².',
     },
     project: {
       title: 'О проекте PARI Residence — архитектура и благоустройство',
-      description: 'Жилой квартал PARI Residence в Самарканде: архитектура SAFRONOVA PROJECT, '
-        + 'фасады из натурального камня, дизайнерские входные группы, двор-парк 1 Га '
-        + 'без машин и подземный паркинг.',
+      description: 'Квартал PARI Residence в Самарканде: архитектура SAFRONOVA PROJECT, фасады из натурального камня, двор-парк 1 Га без машин, паркинг.',
     },
     select: {
       title: 'Выбор квартиры в PARI Residence — планы этажей',
@@ -273,9 +269,7 @@ const ru = {
     },
     apartments: {
       title: 'Квартиры в Самарканде — PARI Residence',
-      description: 'Планировки квартир в жилом квартале PARI Residence в Самарканде: одно-, двух-, '
-        + 'трёх- и четырёхкомнатные площадью от 27 до 95 м². На каждом плане — расположение '
-        + 'квартиры на этаже и в комплексе.',
+      description: 'Планировки квартир PARI Residence в Самарканде: одно-, двух-, трёх- и четырёхкомнатные от 27 до 95 м², 33 плана с местом на этаже.',
     },
     location: {
       title: 'Расположение — PARI Residence в Самарканде',
@@ -1020,15 +1014,11 @@ const uz = {
   meta: {
     home: {
       title: 'PARI Residence — Samarqandda premium-klass xonadonlar',
-      description: 'PARI Residence — Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass turar-joy majmuasi: '
-        + '1 gektarlik mashinasiz yopiq hovli-bogʻ, 13 blok, 27–95 m² xonadonlar. '
-        + 'Shartlarni savdo boʻlimidan aniqlang.',
+      description: 'Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass turar-joy majmuasi: 1 gektarlik mashinasiz hovli-bogʻ, 13 blok, 27–95 m² xonadonlar.',
     },
     project: {
       title: 'PARI Residence loyihasi — arxitektura va obodonlashtirish',
-      description: 'Samarqanddagi PARI Residence turar-joy kvartali: SAFRONOVA PROJECT arxitekturasi, '
-        + 'tabiiy toshli fasadlar, dizayner kirish guruhlari, 1 gektarlik mashinasiz hovli-bogʻ '
-        + 'va yer osti avtoturargohi.',
+      description: 'PARI Residence kvartali: SAFRONOVA PROJECT arxitekturasi, tabiiy toshli fasadlar, 1 gektarlik mashinasiz hovli-bogʻ, yer osti avtoturargohi.',
     },
     select: {
       title: 'PARI Residence xonadon tanlash — qavat rejalari',
@@ -1042,9 +1032,7 @@ const uz = {
     },
     apartments: {
       title: 'Samarqandda xonadonlar — PARI Residence',
-      description: 'Samarqanddagi PARI Residence kvartalidagi xonadon tarhlari: bir, ikki, uch va '
-        + 'toʻrt xonali, maydoni 27–95 m². Har bir tarhda xonadonning qavatdagi va majmuadagi '
-        + 'oʻrni koʻrsatilgan.',
+      description: 'PARI Residence xonadon tarhlari: bir, ikki, uch va toʻrt xonali, 27–95 m², qavatdagi oʻrni koʻrsatilgan 33 ta reja.',
     },
     location: {
       title: 'Joylashuvi — Samarqanddagi PARI Residence',
