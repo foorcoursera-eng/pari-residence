@@ -228,6 +228,10 @@ Sitemap: ${T.url('/sitemap.xml')}
      по умолчанию, без разметки. Инлайнового SVG им мало — data-URI такие
      сборщики превью не читают, и в карточке остаётся серый глобус. */
   fs.copyFileSync(path.join(root, 'assets', 'img', 'favicon.ico'), path.join(dist, 'favicon.ico'));
+  /* Часть сборщиков превью и iOS стучатся за /apple-touch-icon.png в корень,
+     не читая разметку. Без файла там был 404 и подстановка чужой заглушки. */
+  fs.copyFileSync(path.join(root, 'assets', 'img', 'apple-touch-icon.png'),
+    path.join(dist, 'apple-touch-icon.png'));
   write('site.webmanifest', JSON.stringify({
     name: 'PARI Residence',
     short_name: 'PARI',
