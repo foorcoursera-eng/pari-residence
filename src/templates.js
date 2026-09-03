@@ -484,7 +484,14 @@ function shell(t, page) {
 <meta property="og:locale" content="${t.locale}">
 <meta property="og:locale:alternate" content="${t.altLocale}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23B3832B'/%3E%3Cpath d='M9 24V13a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4h-6' fill='none' stroke='%23FAFAFA' stroke-width='1.8'/%3E%3C/svg%3E">
+<!-- Иконки собраны из настоящего логотипа (tools/make-icons.py). Раньше здесь
+     стоял только инлайновый SVG с самодельной буквой: вкладка его показывала,
+     а превью ссылок в мессенджерах и поиске — нет, там оставался серый глобус.
+     ICO лежит в корне: за ним ходят по умолчанию, без разметки. -->
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 ${page.preload || ''}<link rel="stylesheet" href="/styles.css?v=${page.v}">
 ${ld}
 ${analytics()}</head>

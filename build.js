@@ -224,6 +224,23 @@ Disallow: /api/
 Sitemap: ${T.url('/sitemap.xml')}
 `);
 
+  /* Иконка в корне и манифест: за favicon.ico браузеры и превью ссылок ходят
+     по умолчанию, без разметки. Инлайнового SVG им мало — data-URI такие
+     сборщики превью не читают, и в карточке остаётся серый глобус. */
+  fs.copyFileSync(path.join(root, 'assets', 'img', 'favicon.ico'), path.join(dist, 'favicon.ico'));
+  write('site.webmanifest', JSON.stringify({
+    name: 'PARI Residence',
+    short_name: 'PARI',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#FAFAFA',
+    theme_color: '#B3832B',
+    icons: [
+      { src: '/assets/img/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: '/assets/img/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+  }, null, 2) + '\n');
+
   /* статические файлы */
   copyDir(path.join(root, 'assets'), path.join(dist, 'assets'));
   ['styles.css', 'script.js'].forEach((f) => fs.copyFileSync(path.join(root, f), path.join(dist, f)));
