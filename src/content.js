@@ -849,6 +849,20 @@ const ru = {
       + 'отведены отдельные технические помещения.',
     entryAlt: 'Входная группа PARI Residence: арка, лепнина и латунная фурнитура',
 
+    /* Рендеры лобби от застройщика: восемь вертикальных кадров, снятых как
+       проход человека — с улицы в лобби и дальше к лифтам. Заказчик просил
+       показать входные группы вблизи, это продающая часть проекта. */
+    entryGallery: [
+      { img: 'lobby-01', cap: 'Вход с улицы: рифлёное стекло в латунной раме' },
+      { img: 'lobby-02', cap: 'Лобби: гостиная зона и знак дома' },
+      { img: 'lobby-03', cap: 'Знак PARI на лепном панно с подсветкой' },
+      { img: 'lobby-04', cap: 'Зона ожидания с мягкой мебелью' },
+      { img: 'lobby-05', cap: 'Почтовые ящики и место для колясок' },
+      { img: 'lobby-06', cap: 'Отдельное помещение для колясок и самокатов' },
+      { img: 'lobby-07', cap: 'Лифтовой холл' },
+      { img: 'lobby-08', cap: 'Указатель «Лобби, 1 этаж»' },
+    ],
+
     yardNum: '03',
     yardTitle: 'Благоустройство',
     yardText: 'Впервые в Самарканде в PARI Residence будет реализован закрытый двор без машин '
@@ -1537,6 +1551,17 @@ const uz = {
       + 'mebel va tinch musiqali kutish zonalari koʻzda tutilgan, devorlarni panno va suratlar '
       + 'bezaydi. Kolyaska, samokat va velosipedlarni saqlash uchun alohida texnik xonalar bor.',
     entryAlt: 'PARI Residence kirish guruhi: arka, ganch bezak va guruch furnitura',
+
+    entryGallery: [
+      { img: 'lobby-01', cap: 'Koʻchadan kirish: guruch ramkadagi tarashali oyna' },
+      { img: 'lobby-02', cap: 'Lobbi: mehmon zonasi va uy belgisi' },
+      { img: 'lobby-03', cap: 'Yoritilgan ganch pannodagi PARI belgisi' },
+      { img: 'lobby-04', cap: 'Yumshoq mebelli kutish zonasi' },
+      { img: 'lobby-05', cap: 'Pochta qutilari va kolyaskalar joyi' },
+      { img: 'lobby-06', cap: 'Kolyaska va samokatlar uchun alohida xona' },
+      { img: 'lobby-07', cap: 'Lift xolli' },
+      { img: 'lobby-08', cap: '«Lobbi, 1-qavat» koʻrsatkichi' },
+    ],
 
     yardNum: '03',
     yardTitle: 'Obodonlashtirish',

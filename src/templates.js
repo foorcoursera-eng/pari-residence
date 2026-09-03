@@ -293,6 +293,21 @@ function planCard(t, x) {
       </article>`;
 }
 
+/* ── галерея входных групп ──
+   Кадры вертикальные (2871×4105), поэтому не отдаём им широкие версии: в
+   колонке они и так не шире шестисот точек. Порядок кадров — проход человека
+   с улицы к лифтам, подписи идут под кадром, как в журнале. */
+function lobbyGrid(items) {
+  return items.map((g, i) => `      <figure class="lobby__shot reveal">
+        <img src="/assets/img/${g.img}-760.webp"
+             srcset="/assets/img/${g.img}-760.webp 760w, /assets/img/${g.img}-1180.webp 1180w"
+             sizes="(min-width:1100px) 23vw, (min-width:620px) 46vw, 88vw"
+             alt="${esc(g.cap)}" width="760" height="1087"
+             loading="lazy" decoding="async">
+        <figcaption><i>${String(i + 1).padStart(2, '0')}</i>${esc(g.cap)}</figcaption>
+      </figure>`).join('\n');
+}
+
 /* ── ряд кадров: один крупный, остальные обычные ── */
 function shotGrid(items, sizes) {
   return items.map((g) => `    <figure class="shot${g.big ? ' shot--big' : ''}${g.wide ? ' shot--wide' : ''} reveal">
@@ -1722,6 +1737,16 @@ ${shotGrid(j.archGallery, '(min-width:900px) 58vw, 100vw')}
     <p class="eyebrow reveal"><span class="num">${j.entryNum}</span></p>
     <h2 class="display" data-lines>${esc(j.entryTitle)}</h2>
     <p class="split__text reveal">${esc(j.entryText)}</p>
+  </div>
+</section>
+
+<!-- ══════════════ ЛОББИ ВБЛИЗИ ══════════════ -->
+<section class="lobby" aria-labelledby="lobby-h">
+  <div class="page__inner">
+    <h3 class="lobby__h" id="lobby-h">${esc(j.entryTitle)}</h3>
+  </div>
+  <div class="lobby__grid">
+${lobbyGrid(j.entryGallery)}
   </div>
 </section>
 
