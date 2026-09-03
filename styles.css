@@ -657,8 +657,12 @@ main:focus{outline:none}
   position:relative;display:block;width:100%;padding:clamp(18px,2.4vw,30px);
   border:0;background:#fff;cursor:zoom-in;
 }
+/* Высота была задана в vh, и чертёж упирался в неё раньше, чем в ширину
+   колонки: план 900×1288 рисовался на 239 px и не читался — заказчик это
+   заметил. Держим пропорцию самого узкого листа, тогда чертёж занимает всю
+   ширину карточки, а карточки в ряду остаются одной высоты. */
 .plan__view img{
-  width:100%;height:clamp(300px,38vh,400px);object-fit:contain;
+  width:100%;height:auto;aspect-ratio:.7;object-fit:contain;
   transition:transform .5s cubic-bezier(.22,.61,.36,1);
 }
 .plan__view:hover img{transform:scale(1.03)}
