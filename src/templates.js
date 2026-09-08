@@ -337,6 +337,9 @@ const ROOM_GROUPS = [
   { key: '4', slug: '4-room' },
 ];
 
+/* Сколько листов планировок печатаем на странице комнатности. */
+const PLANS_SHOWN = 4;
+
 let statsCache = null;
 const roomStats = () => (statsCache || (statsCache = flats.stats()));
 
@@ -2067,11 +2070,13 @@ ${leadSection(t, { formId: 'faq', h: 'h2', title: esc(f.ctaTitle), text: f.ctaTe
 }
 
 /* ══════════════ квартиры по комнатности ══════════════
-   Ключевое здесь — таблица «Где в квартале». До неё весь состав квартала жил
-   в flats.json и появлялся только после того, как отработает скрипт: робот
-   видел страницу подбора без единой площади. Теперь настоящие цифры —
-   сколько квартир, каких площадей, на каких этажах, в каком подъезде —
-   лежат в разметке, и их читают и поисковик, и человек с выключенным JS. */
+   Настоящие цифры — сколько квартир, каких площадей, на каких этажах — лежат
+   в разметке, а не только в flats.json: их читают и поисковик, и человек с
+   выключенным JS. Но лежат сводкой, а не поштучно. Раньше здесь стояла
+   таблица «Где в квартале» с разбивкой по всем тринадцати подъездам, и рядом
+   печаталось, из какой выгрузки она взята. Заказчик это снял: покупателю не
+   нужно видеть шахматку целиком и знать, откуда она, а тринадцать строк плюс
+   два десятка чертежей превращали страницу в бесконечную ленту. */
 function roomsPage(t, page) {
   const r = t.rooms;
   const g = page.group;
@@ -2080,27 +2085,38 @@ function roomsPage(t, page) {
 
   /* Листы планировок этой комнатности. Студии в альбоме отдельной группой не
      идут — их чертежи лежат среди однокомнатных, поэтому здесь их не будет,
-     и вместо пустого места печатается честная строка. */
-  const plans = g.key === 's' ? [] : t.plans.items.filter((x) => String(x.rooms) === g.key);
+     и вместо пустого места печатается честная строка.
+
+     Показываем не больше четырёх: двухкомнатных листов двадцать четыре, и
+     страница из них не кончалась. Четыре — это ровно два ряда крупных
+     карточек, дальше человек идёт в подбор или звонит. */
+  const plans = (g.key === 's' ? [] : t.plans.items.filter((x) => String(x.rooms) === g.key))
+    .slice(0, PLANS_SHOWN);
   const plansBlock = plans.length
     ? `<p class="page__text">${esc(r.plansLead)}</p>
-    <div class="plans">
+    <div class="plans plans--few">
 ${plans.map((x) => planCard(t, x)).join('\n')}
     </div>`
     : `<p class="page__text">${esc(r.plansNone)}</p>`;
 
-  const rows = g.entrances.map((e) => `        <tr>
-          <td class="num">${e.ent}</td>
-          <td class="num">${e.count}</td>
-          <td class="num">${e.areaFrom === e.areaTo ? area(e.areaFrom) : area(e.areaFrom) + '–' + area(e.areaTo)}</td>
-          <td class="num">${e.floorFrom === e.floorTo ? e.floorFrom : e.floorFrom + '–' + e.floorTo}</td>
-        </tr>`).join('\n');
-
-  /* Ссылки на соседние комнатности: и человеку, и роботу нужен переход
-     между группами, иначе каждая страница остаётся тупиком. */
-  const others = roomGroups().filter((x) => x.key !== g.key)
-    .map((x) => `<a href="${p}/apartments/${x.slug}/">${esc(r.groups[x.key].short)}</a>`)
-    .join('<i aria-hidden="true">·</i>');
+  /* Маленький каталог по комнатности — тот же блок, что на /apartments/.
+     Раньше здесь лежала строчка текстовых ссылок; после того как со страницы
+     ушли таблица и два десятка чертежей, переход к соседним комнатностям
+     должен быть виден, а не теряться подписью внизу. Текущая группа остаётся
+     в ряду, но без ссылки: ряд не должен менять длину от страницы к странице,
+     иначе человек не понимает, где он и сколько всего вариантов. */
+  const others = roomGroups().map((x) => {
+    const inner = `<b>${esc(r.groups[x.key].short)}</b>
+        <i>${x.count}</i>
+        <span>${x.areaFrom === x.areaTo ? area(x.areaFrom) : area(x.areaFrom) + '–' + area(x.areaTo)} ${esc(t.ui.sqm)}</span>`;
+    return x.key === g.key
+      ? `      <span class="rooms-nav__item is-current" aria-current="page">
+        ${inner}
+      </span>`
+      : `      <a class="rooms-nav__item" href="${p}/apartments/${x.slug}/">
+        ${inner}
+      </a>`;
+  }).join('\n');
 
   page.body = `<section class="page">
   <div class="page__inner">
@@ -2126,32 +2142,14 @@ ${plans.map((x) => planCard(t, x)).join('\n')}
 
   <div class="page">
   <div class="page__inner">
-    <h2 class="page__h2 reveal">${esc(r.spreadTitle)}</h2>
-    <p class="page__text">${esc(r.spreadLead)}</p>
-    <div class="tw">
-      <table class="tbl">
-        <thead><tr>
-          <th>${esc(r.colEntrance)}</th><th>${esc(r.colCount)}</th>
-          <th>${esc(r.colArea)}</th><th>${esc(r.colFloors)}</th>
-        </tr></thead>
-        <tbody>
-${rows}
-        </tbody>
-        <tfoot><tr>
-          <td>${esc(r.totalWord)}</td><td class="num">${f.countN}</td>
-          <td class="num">${f.areaFrom}–${f.areaTo}</td>
-          <td class="num">${f.floorFrom}–${f.floorTo}</td>
-        </tr></tfoot>
-      </table>
-    </div>
-    <p class="plans__note">${esc(flats.source)}</p>
-
     <h3 class="rf__h3">${esc(r.pickTitle)}</h3>
     <p>${esc(r.pickText)}</p>
     <p class="rf__cta"><a class="pill" href="${p}/select/#plan">${esc(r.pickCta)}</a></p>
 
-    <h3 class="rf__h3">${esc(r.otherTitle)}</h3>
-    <nav class="rf__other" aria-label="${esc(r.otherTitle)}">${others}</nav>
+    <h3 class="rf__h3">${esc(r.byRooms)}</h3>
+    <nav class="rooms-nav" aria-label="${esc(r.byRooms)}">
+${others}
+    </nav>
   </div>
   </div>
 </section>

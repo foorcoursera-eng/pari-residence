@@ -475,8 +475,9 @@ Sitemap: ${T.url('/sitemap.xml')}
   const list = flats.expand();
   const areas = list.map((f) => f.area);
   const floors = list.map((f) => f.floor);
+  /* Откуда взята выгрузка, в файл не пишем: flats.json открыт всем, а имя
+     CRM и номер дома в ней — внутренняя кухня застройщика. */
   write(path.join('assets', 'data', 'flats.json'), JSON.stringify({
-    source: flats.source,
     total: list.length,
     areaFrom: Math.min.apply(null, areas),
     areaTo: Math.max.apply(null, areas),

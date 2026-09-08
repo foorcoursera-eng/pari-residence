@@ -1005,14 +1005,10 @@ const ru = {
     plansLead: 'Чертежи с рабочих листов застройщика. Нажмите, чтобы открыть лист '
       + 'целиком: экспликация по комнатам, роза инсоляции и расположение на этаже.',
 
-    spreadTitle: 'Где в квартале',
-    spreadLead: 'Распределение по подъездам — из шахматки отдела продаж. '
-      + 'Наличие конкретной квартиры меняется каждый день, уточняйте по телефону.',
     colEntrance: 'Подъезд',
     colCount: 'Квартир',
     colArea: 'Площадь, м²',
     colFloors: 'Этажи',
-    totalWord: 'Всего',
 
     termsTitle: 'Условия покупки',
     byRooms: 'Квартиры по комнатности',
@@ -1020,7 +1016,6 @@ const ru = {
     pickText: 'В подборе видно каждую квартиру: подъезд, этаж, номер и площадь. '
       + 'Оттуда же открывается план этажа с её контуром.',
     pickCta: 'Перейти к подбору',
-    otherTitle: 'Другие квартиры',
 
     /* Названия групп: именительный для заголовка, родительный множественный
        для фразы «{count} двухкомнатных». */
@@ -1920,14 +1915,10 @@ const uz = {
     plansLead: 'Quruvchining ish varaqlaridagi chizmalar. Varaqni toʻliq ochish uchun '
       + 'bosing: xonalar eksplikatsiyasi, insolyatsiya atirguli va qavatdagi joylashuvi.',
 
-    spreadTitle: 'Kvartalda qayerda',
-    spreadLead: 'Podyezdlar boʻyicha taqsimot — savdo boʻlimi shaxmatkasidan. '
-      + 'Aniq xonadonning mavjudligi har kuni oʻzgaradi, telefon orqali aniqlashtiring.',
     colEntrance: 'Podyezd',
     colCount: 'Xonadon',
     colArea: 'Maydoni, m²',
     colFloors: 'Qavatlar',
-    totalWord: 'Jami',
 
     termsTitle: 'Sotib olish shartlari',
     byRooms: 'Xonalar soni boʻyicha xonadonlar',
@@ -1935,7 +1926,6 @@ const uz = {
     pickText: 'Tanlovda har bir xonadon koʻrinadi: podyezd, qavat, raqam va maydon. '
       + 'Oʻsha yerdan uning konturi bilan qavat rejasi ochiladi.',
     pickCta: 'Tanlovga oʻtish',
-    otherTitle: 'Boshqa xonadonlar',
 
     groups: {
       s: { title: 'Studiya xonadonlar', short: 'Studiyalar', forms: ['ta studiya'] },

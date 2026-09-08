@@ -643,50 +643,91 @@ main:focus{outline:none}
   @view-transition{navigation:none}
 }
 
-/* ══════════════ карточки планировок ══════════════ */
+/* ══════════════ карточки планировок ══════════════
+   На странице комнатности их теперь четыре, а не два десятка, и место можно
+   тратить щедро: лист лежит на кремовой подложке с тенью, как настоящий
+   чертёж на столе, а не прижат к краю белой плитки. Сетка держит две колонки
+   даже на широком экране — четыре карточки складываются в два ровных ряда. */
 .plans{
   width:var(--measure);margin:clamp(30px,5vh,50px) auto 0;
-  display:grid;grid-template-columns:minmax(0,1fr);gap:1px;background:var(--hair);
+  display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(14px,1.8vw,24px);
 }
-/* Планировок много: карточка живёт своей высотой, чертёж не мельчится */
 .plan[hidden]{display:none}
-.plan{margin:0;background:#fff;display:flex;flex-direction:column;scroll-margin-top:96px}
-/* Чертежи приходят с белым фоном рабочего листа — карточка тоже белая,
-   иначе план читается как наклеенная заплатка. */
+.plan{
+  margin:0;background:var(--ivory);display:flex;flex-direction:column;
+  scroll-margin-top:96px;border:1px solid transparent;
+  transition:border-color .4s ease,box-shadow .4s ease,transform .4s cubic-bezier(.22,.61,.36,1);
+}
+.plan:hover{
+  border-color:var(--hair);transform:translateY(-3px);
+  box-shadow:0 18px 40px -28px rgba(0,0,0,.45);
+}
+/* Чертежи приходят с белым фоном рабочего листа: белое оставляем самому
+   листу, а вокруг — кремовое поле, тогда план читается как вложенный лист. */
 .plan__view{
   position:relative;display:block;width:100%;padding:clamp(18px,2.4vw,30px);
-  border:0;background:#fff;cursor:zoom-in;
+  border:0;background:transparent;cursor:zoom-in;
+}
+.plan__view::before{
+  content:'';position:absolute;inset:clamp(18px,2.4vw,30px);
+  background:#fff;box-shadow:0 10px 30px -22px rgba(0,0,0,.55);
 }
 /* Высота была задана в vh, и чертёж упирался в неё раньше, чем в ширину
    колонки: план 900×1288 рисовался на 239 px и не читался — заказчик это
    заметил. Держим пропорцию самого узкого листа, тогда чертёж занимает всю
    ширину карточки, а карточки в ряду остаются одной высоты. */
 .plan__view img{
-  width:100%;height:auto;aspect-ratio:.7;object-fit:contain;
+  position:relative;width:100%;height:auto;aspect-ratio:.72;object-fit:contain;
   transition:transform .5s cubic-bezier(.22,.61,.36,1);
 }
-.plan__view:hover img{transform:scale(1.03)}
+.plan:hover .plan__view img{transform:scale(1.04)}
+/* Подсказка «увеличить» держится бледной всегда: раньше она появлялась
+   только на наведении, и на телефоне о ней никто не узнавал. */
 .plan__zoom{
-  position:absolute;left:50%;bottom:14px;translate:-50% 0;
-  padding:8px 14px;background:rgba(250,250,250,.92);border:1px solid var(--hair);
-  font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
+  position:absolute;left:50%;bottom:clamp(26px,3vw,40px);translate:-50% 0;
+  padding:9px 16px;background:rgba(255,255,255,.94);border:1px solid var(--hair);
+  font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
   opacity:0;transition:opacity .35s ease;pointer-events:none;
 }
-.plan__view:hover .plan__zoom,.plan__view:focus-visible .plan__zoom{opacity:1}
+.plan:hover .plan__zoom,.plan__view:focus-visible .plan__zoom{opacity:1}
+/* На крупных карточках плашку вынесли с чертежа в строку с площадью и держим
+   видимой всегда: поверх листа она накрывала то нижнюю подпись, то названия
+   комнат, а спрятанная под наведение не существует для телефона. В каталоге
+   карточка втрое уже — там плашка не встаёт рядом с площадью и остаётся
+   прежней, поверх листа по наведению. На телефоне рядом с площадью её тоже не
+   поставить: карточка 295 px, плашка 194 — они наезжают друг на друга,
+   поэтому ниже 640 всё как было. */
+@media (min-width:640px){
+  .plans--few .plan__zoom{
+    left:auto;right:clamp(18px,2.4vw,30px);bottom:-52px;translate:none;opacity:.72;
+  }
+}
 
 .plan__meta{
-  padding:0 clamp(18px,2.4vw,30px) clamp(20px,2.6vw,30px);
-  display:grid;gap:6px;border-top:1px solid var(--hair);padding-top:18px;margin-top:auto;
+  padding:18px clamp(18px,2.4vw,30px) clamp(20px,2.6vw,30px);
+  display:grid;gap:4px;margin-top:auto;position:relative;
 }
-.plan__area{margin:0;font-family:var(--display);font-size:clamp(24px,2.6vw,32px);line-height:1;color:var(--ink)}
-.plan__area span{font-size:.5em;letter-spacing:.04em}
+/* Золотая линейка не во всю ширину, а короткой засечкой под площадью —
+   ряд карточек не превращается в лестницу из полос. */
+.plan__meta::before{
+  content:'';position:absolute;top:0;left:clamp(18px,2.4vw,30px);
+  width:38px;height:1px;background:var(--gold);
+}
+.plan__area{
+  margin:0;font-family:var(--display);font-size:clamp(28px,3vw,38px);
+  line-height:1;color:var(--ink);
+}
+.plan__area span{font-size:.42em;letter-spacing:.04em;color:var(--ink-3)}
 .plan__rooms{margin:0;font-size:13px;color:var(--ink-2)}
 .plan__blocks{margin:0;font-size:12px;color:var(--ink-3)}
 .plan__meta .link-call{margin-top:8px;font-size:14px}
 .plans__note{margin:clamp(26px,4vh,38px) 0 0;font-size:13px;color:var(--ink-3);max-width:60ch}
 
 @media (min-width:640px){ .plans{grid-template-columns:repeat(2,minmax(0,1fr))} }
-@media (min-width:1040px){ .plans{grid-template-columns:repeat(3,minmax(0,1fr))} }
+/* Каталог на /apartments/ остаётся трёхколоночным: там карточек три десятка
+   и фильтр, а две колонки растянули бы страницу вдвое. --few — это четыре
+   листа на странице комнатности, им нужен размер. */
+@media (min-width:1040px){ .plans:not(.plans--few){grid-template-columns:repeat(3,minmax(0,1fr))} }
 
 /* ══════════════ отбор планировок по комнатности ══════════════ */
 .picks{display:flex;flex-wrap:wrap;gap:8px;margin:clamp(22px,3.4vh,32px) 0 0}
@@ -897,6 +938,14 @@ body.is-locked .viewer{overflow:visible}
 }
 .rooms-nav__item:hover i{color:var(--gold)}
 .rooms-nav__item span{font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* На странице комнатности этот же ряд служит каталогом, и своя группа стоит
+   в нём без ссылки — иначе непонятно, где ты. Одной заливки мало: на
+   наведении соседи красятся так же, поэтому текущую держит золотая линейка. */
+.rooms-nav__item.is-current{position:relative;background:var(--milk);cursor:default}
+.rooms-nav__item.is-current::before{
+  content:'';position:absolute;left:0;right:0;top:0;height:2px;background:var(--gold);
+}
+.rooms-nav__item.is-current i{color:var(--gold)}
 
 /* ---------- квартиры по комнатности и рассрочка ----------
    Таблица состава — не оформление, а сам товар: до неё весь состав дома жил
@@ -926,10 +975,6 @@ body.is-locked .viewer{overflow:visible}
 }
 .rf__h3 + p{margin:12px 0 0;max-width:64ch;color:var(--ink-2)}
 .rf__cta{margin:18px 0 0}
-.rf__other{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 12px;margin:14px 0 0}
-.rf__other a{color:var(--ink-2);border-bottom:1px solid var(--hair)}
-.rf__other a:hover{color:var(--gold);border-bottom-color:var(--gold)}
-.rf__other i{color:var(--ink-3);font-style:normal}
 .rf__how{margin:22px 0 0;padding-left:1.3em;max-width:66ch;color:var(--ink-2)}
 .rf__how li{margin-top:12px;padding-left:.3em;line-height:1.7}
 .rf__how li::marker{color:var(--gold);font-size:.85em}
