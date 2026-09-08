@@ -21,6 +21,12 @@ const patch = `
   /* высоты во вьюпортных единицах при съёмке длинным окном ломают вёрстку */
   .hero, .hero__inner { min-height: 900px !important; }
   .split__media { min-height: 460px !important; }
+  /* первый экран занимает окно целиком: при съёмке длинным окном svh
+     превращается в четыре пустых экрана подряд */
+  .m-hero { height: 880px !important; min-height: 0 !important; }
+  .m-final { min-height: 720px !important; }
+  .m-full img { height: 460px !important; }
+  .m-full--tall img { height: 560px !important; }
   /* заголовки, написанные «пером», показываем в конечном состоянии — иначе в кадре пусто */
   .pen path { animation: none !important; stroke-dashoffset: 0 !important; fill: currentColor !important; stroke-opacity: 0 !important; }
 

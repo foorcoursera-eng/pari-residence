@@ -5,7 +5,7 @@
 
   var bar = document.getElementById('bar');
   var hero = document.querySelector('.hero');
-  var firstScreen = document.querySelector('.hero, .opening');
+  var firstScreen = document.querySelector('.hero, .m-hero');
   var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
@@ -128,9 +128,34 @@
     if (el) { track(el.getAttribute('data-track'), { page: location.pathname }); }
   });
 
+  /* ══════════════ глубина прокрутки ══════════════
+     Страница длинная и ведётся главами: без этого события нельзя понять,
+     до какой главы люди вообще доходят. Каждый порог отправляется один раз,
+     обработчик снимается сам, когда пройдены все. */
+  (function () {
+    var marks = [25, 50, 75, 100];
+    var seen = 0;
+    var onScroll = function () {
+      var doc = document.documentElement;
+      var full = doc.scrollHeight - innerHeight;
+      if (full <= 0) { return; }
+      var pct = ((pageYOffset / full) * 100);
+      while (seen < marks.length && pct >= marks[seen]) {
+        track('scroll_depth', { percent: marks[seen], page: location.pathname });
+        seen += 1;
+      }
+      if (seen >= marks.length) { removeEventListener('scroll', onScroll); }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+  }());
+
   /* ══════════════ шапка вне главной ══════════════
-     На внутренних страницах нет первого экрана, поэтому шапка нужна сразу. */
-  if (!hero && bar) { bar.classList.add('is-solid'); }
+     На внутренних страницах нет первого экрана, поэтому шапка нужна сразу.
+     Проверяем именно первый экран, а не старый класс .hero: после v3 главная
+     открывается разделом .opening, условие переставало срабатывать — и на
+     главной шапка стояла плотной прямо поверх титульного кадра, дублируя
+     кнопку звонка, которая и так лежит в кадре. */
+  if (!firstScreen && bar) { bar.classList.add('is-solid'); }
 
   /* ══════════════ карта ══════════════
      Виджет Яндекса подключается сам, когда карта подходит к экрану: заранее
@@ -503,7 +528,7 @@
       var now = (window.scrollY || window.pageYOffset) > limit;
       if (now === past) { return; }
       past = now;
-      if (bar && hero) { bar.classList.toggle('is-solid', now); }
+      if (bar && firstScreen) { bar.classList.toggle('is-solid', now); }
       /* шапка уходит при движении вниз и возвращается при движении вверх:
          так на длинной странице она не закрывает кадры */
       if (bar) {
@@ -895,7 +920,14 @@
     var btn = form.querySelector('[data-submit]');
     var btnText = btn.textContent;
     var opened = false;
-    var mark = function (el, bad) { el.closest('.field').classList.toggle('invalid', bad); };
+    /* Рамку ставим и полю, и его состоянию для скринридера: сообщение
+       «проверьте отмеченные поля» без aria-invalid для незрячего человека
+       ничего не значит. */
+    var mark = function (el, bad) {
+      var box = el.closest('.field') || el.closest('label') || el.parentNode;
+      if (box && box.classList) { box.classList.toggle('invalid', bad); }
+      if (bad) { el.setAttribute('aria-invalid', 'true'); } else { el.removeAttribute('aria-invalid'); }
+    };
 
     form.addEventListener('focusin', function () {
       if (!opened) { opened = true; track('lead_form_open', { page: location.pathname }); }
@@ -915,11 +947,17 @@
 
       var nameOk = form.elements.name.value.trim().length >= 2;
       var phoneOk = form.elements.phone.value.replace(/\D/g, '').length >= 9;
+      /* Согласие раньше молча блокировало отправку: поля были в порядке,
+         подпись просила проверить отмеченные — а отмечено ничего не было. */
+      var consentOk = form.elements.consent.checked;
       mark(form.elements.name, !nameOk);
       mark(form.elements.phone, !phoneOk);
-      if (!nameOk || !phoneOk || !form.elements.consent.checked) {
+      mark(form.elements.consent, !consentOk);
+      if (!nameOk || !phoneOk || !consentOk) {
         statusEl.textContent = phrase.bad;
         statusEl.classList.add('err');
+        var first = !nameOk ? form.elements.name : (!phoneOk ? form.elements.phone : form.elements.consent);
+        try { first.focus({ preventScroll: false }); } catch (err) { first.focus(); }
         track('lead_error', { reason: 'validation' });
         return;
       }
@@ -957,6 +995,12 @@
   /* ══════════════ выбор квартиры ══════════════
      Подъезд → этаж → план этажа. Контуры квартир приходят по одному файлу
      на подъезд, поэтому страница не тянет схемы всех 156 этажей сразу. */
+  /* Подбор и план этажа — два разных блока страницы, но подбор должен уметь
+     открыть найденную квартиру на плане. Мост между ними — эти две
+     переменные: их заполняет блок плана, а пользуется блок подбора. */
+  var openFlat = null;
+  var flatInfo = null;                      /* «подъезд-номер» → [комнат, площадь, студия] */
+
   var chooser = document.querySelector('[data-chooser]');
   var stage = document.querySelector('[data-floor-stage]');
   if (chooser && stage) {
@@ -967,6 +1011,7 @@
     var flatCard = document.querySelector('[data-floor-card]');
     var flatNum = document.querySelector('[data-flat-num]');
     var flatWhere = document.querySelector('[data-flat-where]');
+    var flatArea = document.querySelector('[data-flat-area]');
     var capText = floorCap ? floorCap.textContent : '';
     var cache = {};
     var current = { podil: null, floor: null };
@@ -978,6 +1023,17 @@
       if (flatWhere) {
         flatWhere.textContent = chooser.dataset.entranceWord + ' ' + podil
           + ' · ' + floor + ' ' + chooser.dataset.floorWord;
+      }
+      /* Площадь и комнатность приходят из выгрузки состава квартир. Пока она
+         не загрузилась, карточка просто показывает номер — как раньше. */
+      if (flatArea) {
+        var info = flatInfo && flatInfo[podil + '-' + num];
+        if (info) {
+          flatArea.hidden = false;
+          flatArea.textContent = info.label;
+        } else {
+          flatArea.hidden = true;
+        }
       }
       track('flat_pick', { podil: podil, floor: floor, num: num });
     };
@@ -1007,7 +1063,7 @@
       drawFloor(cache[current.podil], floor);
     };
 
-    var loadEntrance = function (podil, floors) {
+    var loadEntrance = function (podil, floors, then) {
       var show = function (data) {
         cache[podil] = data;
         current.podil = podil;
@@ -1016,12 +1072,35 @@
             + f + '" aria-pressed="' + (i === 0) + '">' + f + '</button>';
         }).join('');
         drawFloor(data, floors[0]);
+        if (then) { then(); }
       };
       if (cache[podil]) { show(cache[podil]); return; }
       fetch('/assets/floors/p' + podil + '.json')
         .then(function (r) { return r.json(); })
         .then(show)
         .catch(function () { if (floorCap) { floorCap.textContent = capText; } });
+    };
+
+    /* Открыть конкретную квартиру: переключить подъезд, этаж, подсветить
+       контур и подвести страницу к плану. Этим пользуется блок подбора. */
+    openFlat = function (podil, floor, num) {
+      var btn = chooser.querySelector('[data-entrance="' + podil + '"]');
+      if (!btn) { return; }
+      [].forEach.call(btn.parentNode.children, function (o) {
+        var on = o === btn;
+        o.classList.toggle('is-on', on);
+        o.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      var finish = function () {
+        pickFloor(floor);
+        var p = flatsSvg.querySelector('path[data-num="' + num + '"]');
+        if (p) {
+          [].forEach.call(flatsSvg.children, function (o) { o.classList.toggle('is-on', o === p); });
+          say(podil, floor, num);
+        }
+        stage.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' });
+      };
+      loadEntrance(podil, btn.dataset.floors.split(',').map(Number), finish);
     };
 
     chooser.addEventListener('click', function (e) {
@@ -1037,7 +1116,13 @@
         return;
       }
       var f = e.target.closest('[data-floor]');
-      if (f) { pickFloor(+f.dataset.floor); }
+      if (f) {
+        pickFloor(+f.dataset.floor);
+        /* Единственное звено цепочки «подъезд → этаж → квартира», по которому
+           не было события: в отчёте выходил разрыв между выбором подъезда и
+           выбором квартиры, и не было видно, где люди останавливаются. */
+        track('floor_pick', { podil: current.podil, floor: +f.dataset.floor });
+      }
     });
 
     flatsSvg.addEventListener('click', function (e) {
@@ -1049,6 +1134,174 @@
 
     var first = chooser.querySelector('[data-entrance]');
     if (first) { loadEntrance(+first.dataset.entrance, first.dataset.floors.split(',').map(Number)); }
+  }
+
+  /* ══════════════ подбор квартиры ══════════════
+     Фильтр идёт по выгрузке состава: 1186 квартир, у каждой подъезд, этаж,
+     номер, комнатность и площадь. Файл тянем один раз и лениво — до него
+     страница уже полностью работает планом этажа.
+
+     Студии в выгрузке помечены отдельно, хотя формально они однокомнатные:
+     поэтому «1 комната» и «студия» не пересекаются, и суммы сходятся. */
+  var flBox = document.querySelector('[data-flats]');
+  if (flBox) {
+    var flResults = document.querySelector('[data-results]');
+    var flEmpty = document.querySelector('[data-empty]');
+    var flMore = document.querySelector('[data-more]');
+    var flFound = flBox.querySelector('[data-found]');
+    var outFloor = flBox.querySelector('[data-out-floor]');
+    var outArea = flBox.querySelector('[data-out-area]');
+    var drawn = {};
+    try { drawn = JSON.parse(flBox.dataset.drawn || '{}'); } catch (e) {}
+    var roomWords = (flBox.dataset.wordRooms || '').split('|');
+    var W = flBox.dataset;
+    var PAGE = 48;
+
+    var items = [];
+    var matched = [];
+    var shown = PAGE;
+    var pick = { rooms: '', ent: '' };
+
+    var ranges = {};
+    [].forEach.call(flBox.querySelectorAll('[data-range]'), function (box) {
+      ranges[box.dataset.range] = {
+        lo: box.querySelector('[data-lo]'),
+        hi: box.querySelector('[data-hi]'),
+        fill: box.querySelector('.fl__track i'),
+      };
+    });
+
+    var num = function (v) { return String(v).replace('.', ','); };
+
+    /* Ползунки ходят парой и не перепрыгивают друг друга. */
+    var clampRange = function (r) {
+      var lo = +r.lo.value, hi = +r.hi.value;
+      if (lo > hi) { if (document.activeElement === r.lo) { r.hi.value = lo; } else { r.lo.value = hi; } }
+      if (r.fill) {
+        var min = +r.lo.min, max = +r.lo.max, span = max - min;
+        r.fill.style.left = ((+r.lo.value - min) / span * 100) + '%';
+        r.fill.style.right = ((max - +r.hi.value) / span * 100) + '%';
+      }
+    };
+
+    var label = function (f) {
+      var rooms = f[5] ? W.wordStudio : roomWords[f[3]];
+      return num(f[4]) + ' ' + W.wordSqm + ' · ' + rooms;
+    };
+
+    var render = function () {
+      var list = matched.slice(0, shown);
+      flResults.innerHTML = list.map(function (f) {
+        var floors = drawn[f[0]] || [];
+        var has = floors.indexOf(f[1]) !== -1;
+        var rooms = f[5] ? W.wordStudio : roomWords[f[3]];
+        return '<' + (has ? 'button' : 'div') + ' class="fl__item' + (has ? '' : ' is-flat') + '"'
+          + (has ? ' type="button" data-go="' + f[0] + ',' + f[1] + ',' + f[2] + '"' : '')
+          + '><span class="fl__a">' + num(f[4]) + '<i>' + W.wordSqm + '</i></span>'
+          + '<span class="fl__r">' + rooms + '</span>'
+          + '<span class="fl__w">' + W.wordEntrance + ' ' + f[0] + ' · ' + f[1] + ' ' + W.wordFloor
+          + ' · ' + W.wordFlat + ' ' + f[2] + '</span>'
+          + '<span class="fl__g">' + (has ? W.wordGo : W.wordNoplan) + '</span>'
+          + '</' + (has ? 'button' : 'div') + '>';
+      }).join('');
+      if (flEmpty) { flEmpty.hidden = matched.length > 0; }
+      if (flMore) { flMore.hidden = matched.length <= shown; }
+    };
+
+    var apply = function () {
+      var fr = ranges.floor, ar = ranges.area;
+      var fLo = +fr.lo.value, fHi = +fr.hi.value, aLo = +ar.lo.value, aHi = +ar.hi.value;
+      if (outFloor) { outFloor.textContent = fLo + ' – ' + fHi; }
+      if (outArea) { outArea.textContent = aLo + ' – ' + aHi; }
+      matched = items.filter(function (f) {
+        if (pick.ent && +pick.ent !== f[0]) { return false; }
+        if (pick.rooms === 's' && !f[5]) { return false; }
+        if (pick.rooms && pick.rooms !== 's' && (+pick.rooms !== f[3] || f[5])) { return false; }
+        if (f[1] < fLo || f[1] > fHi) { return false; }
+        if (f[4] < aLo || f[4] > aHi) { return false; }
+        return true;
+      });
+      shown = PAGE;
+      if (flFound) { flFound.textContent = matched.length; }
+      render();
+    };
+
+    var setPick = function (group, key, value) {
+      pick[key] = value;
+      [].forEach.call(group.children, function (o) {
+        var on = o.dataset[key === 'rooms' ? 'rooms' : 'ent'] === value;
+        o.classList.toggle('is-on', on);
+        o.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      apply();
+      track('apartment_filter', { rooms: pick.rooms || 'all', entrance: pick.ent || 'all',
+        found: matched.length });
+    };
+
+    flBox.addEventListener('click', function (e) {
+      var r = e.target.closest('[data-rooms]');
+      if (r) { setPick(r.parentNode, 'rooms', r.dataset.rooms); return; }
+      var en = e.target.closest('[data-ent]');
+      if (en) { setPick(en.parentNode, 'ent', en.dataset.ent); return; }
+      if (e.target.closest('[data-reset]')) {
+        pick = { rooms: '', ent: '' };
+        [].forEach.call(flBox.querySelectorAll('[data-rooms],[data-ent]'), function (o) {
+          var on = o.dataset.rooms === '' || o.dataset.ent === '';
+          o.classList.toggle('is-on', on);
+          o.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        Object.keys(ranges).forEach(function (k) {
+          ranges[k].lo.value = ranges[k].lo.min;
+          ranges[k].hi.value = ranges[k].hi.max;
+          clampRange(ranges[k]);
+        });
+        apply();
+      }
+    });
+
+    flBox.addEventListener('input', function (e) {
+      var box = e.target.closest('[data-range]');
+      if (!box) { return; }
+      clampRange(ranges[box.dataset.range]);
+      apply();
+    });
+
+    if (flMore) {
+      flMore.addEventListener('click', function () { shown += PAGE; render(); });
+    }
+
+    if (flResults) {
+      flResults.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-go]');
+        if (!b || !openFlat) { return; }
+        var p = b.dataset.go.split(',').map(Number);
+        track('apartment_select', { podil: p[0], floor: p[1], num: p[2] });
+        openFlat(p[0], p[1], p[2]);
+      });
+    }
+
+    /* Файл состава грузим, когда подбор подходит к экрану: на телефоне он не
+       должен соревноваться за канал с чертежом этажа. */
+    var loadFlats = function () {
+      fetch(flBox.dataset.src)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          items = d.items || [];
+          flatInfo = {};
+          items.forEach(function (f) { flatInfo[f[0] + '-' + f[2]] = { label: label(f) }; });
+          Object.keys(ranges).forEach(function (k) { clampRange(ranges[k]); });
+          apply();
+        })
+        .catch(function () {
+          if (flBox.parentNode) { flBox.parentNode.removeChild(flBox); }
+        });
+    };
+    if ('IntersectionObserver' in window) {
+      var flSeen = new IntersectionObserver(function (es) {
+        if (es.some(function (x) { return x.isIntersecting; })) { flSeen.disconnect(); loadFlats(); }
+      }, { rootMargin: '400px' });
+      flSeen.observe(flBox);
+    } else { loadFlats(); }
   }
 
   /* ══════════════ генеральный план ══════════════
@@ -1154,4 +1407,75 @@
     });
   }, { rootMargin: '0px 0px -12% 0px' });
   items.forEach(function (el) { io.observe(el); });
+})();
+
+/* ══════════════ калькулятор рассрочки ══════════════
+   Рассрочка беспроцентная, поэтому считать здесь нечего сложнее деления:
+   остаток стоимости делится на срок. Аннуитет был бы враньём — процента нет.
+   Разметка уже приходит с осмысленными числами, скрипт только пересчитывает
+   их при движении ползунков; если он не отработает, страница остаётся
+   с корректным примером, а не с нулями. */
+(function () {
+  var box = document.querySelector('[data-calc]');
+  if (!box) { return; }
+
+  var mln = box.dataset.mln || '';
+  var q = function (sel) { return box.querySelector(sel); };
+  var area = q('[data-calc-area]');
+  var rate = q('[data-calc-rate]');
+  var down = q('[data-calc-down]');
+  var term = q('[data-calc-term]');
+
+  var outDown = q('[data-calc-down-out]');
+  var outTerm = q('[data-calc-term-out]');
+  var outCost = q('[data-calc-cost]');
+  var outDownSum = q('[data-calc-downsum]');
+  var outRest = q('[data-calc-rest]');
+  var outMonth = q('[data-calc-month]');
+
+  /* Суммы в миллионах сумов: «469,4 млн сум» читается, «469 350 000» — нет.
+     Разряды разделяем узким пробелом, дробную часть держим одну и только
+     там, где она что-то значит. */
+  var money = function (v) {
+    var n = Math.round(v * 10) / 10;
+    var str = (n >= 100 ? String(Math.round(n)) : String(n).replace('.', ','));
+    return str.replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' ' + mln;
+  };
+
+  var num = function (el, fallback) {
+    var v = parseFloat(String(el.value).replace(',', '.'));
+    return isFinite(v) && v > 0 ? v : fallback;
+  };
+
+  var recalc = function () {
+    var cost = num(area, 67) * num(rate, 10);
+    var pct = Math.min(100, Math.max(0, parseFloat(down.value) || 0));
+    var months = Math.max(1, parseInt(term.value, 10) || 1);
+    var first = cost * pct / 100;
+    var rest = cost - first;
+
+    if (outDown) { outDown.textContent = pct + '%'; }
+    if (outTerm) { outTerm.textContent = months; }
+    outCost.textContent = money(cost);
+    outDownSum.textContent = money(first);
+    outRest.textContent = money(rest);
+    outMonth.textContent = money(rest / months);
+  };
+
+  [area, rate, down, term].forEach(function (el) {
+    if (!el) { return; }
+    el.addEventListener('input', recalc);
+    el.addEventListener('change', recalc);
+  });
+
+  /* Событие шлём один раз за посещение и только когда человек действительно
+     трогал ползунки: иначе в отчёте окажется каждый, кто просто пролистал. */
+  var sent = false;
+  box.addEventListener('input', function () {
+    if (sent) { return; }
+    sent = true;
+    if (window.pariTrack) { window.pariTrack('view_installment', { tool: 'calculator' }); }
+  }, { once: false });
+
+  recalc();
 })();

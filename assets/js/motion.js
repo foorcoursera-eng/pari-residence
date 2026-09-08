@@ -56,68 +56,34 @@
     });
   }
 
-  /* ── 1 · первый экран: кадр квартала раскрывается ──
-     Раздел вдвое выше окна, сцена внутри липкая: пока идёт прокрутка, рамка
-     со снимком растёт до полного экрана, а логотип со слоганом растворяется.
-     Без GSAP кадр просто остаётся в рамке — первый экран не ломается. */
-  var lead = document.querySelector('.opening');
+  /* ── 1 · первый экран ──
+     Кадр рекламной кампании: снимок медленно въезжает при загрузке и так же
+     медленно отъезжает, когда экран уходит вверх. Наезд и отъезд повешены на
+     разные узлы — обёртку и саму картинку, — иначе две шкалы дерутся за
+     одно свойство. Без GSAP кадр просто стоит на месте. */
+  var lead = document.querySelector('.m-hero');
   if (lead) {
-    var frame = lead.querySelector('[data-open-frame]');
+    var media = lead.querySelector('.m-hero__media');
+    var shot = lead.querySelector('.m-hero__shot');
     var head = lead.querySelector('[data-open-head]');
-    var narrow = function () { return innerWidth <= 700; };
 
-    if (frame) {
-      gsap.fromTo(frame,
-        {
-          /* На телефоне кадр во всю ширину и вдвое выше: в узкой рамке чертёж
-             не читается. Значения обязаны совпадать с CSS — здесь они
-             попадают в инлайновый стиль и перебивают таблицу стилей. */
-          width: function () { return narrow() ? '100%' : '66%'; },
-          height: function () { return Math.round(innerHeight * (narrow() ? 0.50 : 0.42)); },
-        },
-        {
-          width: '100%',
-          height: function () { return innerHeight; },
-          ease: 'none',
-          scrollTrigger: {
-            trigger: lead, start: 'top top', end: 'bottom bottom',
-            scrub: 0.5, invalidateOnRefresh: true,
-          },
-        });
+    if (media) {
+      gsap.fromTo(media, { scale: 1.1 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
     }
-
-    /* Одна шкала прокрутки ведёт весь первый экран: рамка раскрывается,
-       чертёж уходит, снимок проявляется и добирает цвет. Считаем всё в одном
-       обработчике — так этапы гарантированно совпадают по фазе. */
-    var plan = frame && frame.querySelector('.opening__plan');
-    var shot = frame && frame.querySelector('.opening__shot');
-    if (plan || shot) {
-      var seg = function (p, a, b) {
-        var v = (p - a) / (b - a);
-        return v < 0 ? 0 : v > 1 ? 1 : v;
-      };
-      ScrollTrigger.create({
-        trigger: lead, start: 'top top', end: 'bottom bottom',
-        scrub: 0.5, invalidateOnRefresh: true,
-        onUpdate: function (self) {
-          var p = self.progress;
-          /* Слои показывают один и тот же кадр, поэтому меняются они в одном
-             окне и внахлёст: линия тает, краска проступает — рисунок
-             раскрашивается на месте, без подмены ракурса. */
-          var mix = seg(p, 0.24, 0.62);
-          if (plan) { plan.style.opacity = (1 - mix).toFixed(3); }
-          if (shot) { shot.style.opacity = mix.toFixed(3); }
-          frame.classList.toggle('is-photo', mix > 0.55);
+    if (shot) {
+      gsap.to(shot, {
+        scale: 1.09, ease: 'none',
+        scrollTrigger: {
+          trigger: lead, start: 'top top', end: 'bottom top',
+          scrub: 0.6, invalidateOnRefresh: true,
         },
       });
     }
-
     if (head) {
       gsap.to(head, {
-        opacity: 0, y: -34, ease: 'none',
+        opacity: 0, y: -42, ease: 'none',
         scrollTrigger: {
-          trigger: lead, start: 'top top',
-          end: function () { return '+=' + innerHeight * 0.55; },
+          trigger: lead, start: 'top top', end: 'bottom top',
           scrub: 0.5, invalidateOnRefresh: true,
         },
       });
@@ -141,13 +107,28 @@
     });
   });
 
-  /* ── 3 · блоки проявляются по мере подхода ── */
-  gsap.utils.toArray('.reveal').forEach(function (el) {
-    gsap.from(el, {
-      opacity: 0, y: 26, duration: 1.1, ease: EASE,
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+  /* ── 3 · блоки проявляются по мере подхода ──
+     У кадров ход длиннее, чем у текста: фотография поднимается заметно, как
+     в образце, а подписи и абзацы только подступают. Плитки в ленте галереи
+     выходят по очереди — иначе они, стоя рядом, вспыхивают все разом. */
+  /* Одно наблюдение на все блоки, а не свой ScrollTrigger на каждый: на
+     главной таких блоков под сотню, и раньше страница заводила больше сотни
+     триггеров. Пришедшие в кадр одной пачкой выходят со сдвигом — соседние
+     плитки не вспыхивают разом. */
+  var isPhoto = function (el) { return !!el.querySelector('img') || el.tagName === 'IMG'; };
+  var reveals = gsap.utils.toArray('.reveal');
+  if (reveals.length) {
+    gsap.set(reveals, { opacity: 0, y: function (i, el) { return isPhoto(el) ? 48 : 26; } });
+    ScrollTrigger.batch(reveals, {
+      start: 'top 88%', once: true,
+      onEnter: function (batch) {
+        gsap.to(batch, {
+          opacity: 1, y: 0, ease: EASE, stagger: 0.09,
+          duration: function (i, el) { return isPhoto(el) ? 1.25 : 1.1; },
+        });
+      },
     });
-  });
+  }
 
   /* ── 4 · кадры выезжают из-под маски ── */
   gsap.utils.toArray('.figure-mask').forEach(function (el) {
@@ -160,13 +141,22 @@
 
   /* ── 5 · фотографии дышат при прокрутке ──
      Картинка внутри своей рамки едет медленнее страницы. */
+  /* Параллакс ставим после загрузки: пока картинки не пришли, высоты рамок
+     ещё не окончательные, и ScrollTrigger со scrub изредка падает при
+     создании. Это украшение, оно не имеет права ронять остальное движение —
+     отсюда и защита, и отложенный запуск. */
   var parallax = function (selector, amount) {
-    gsap.utils.toArray(selector).forEach(function (img) {
-      gsap.fromTo(img, { yPercent: -amount }, {
-        yPercent: amount, ease: 'none',
-        scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+    var run = function () {
+      gsap.utils.toArray(selector).forEach(function (img) {
+        try {
+          gsap.fromTo(img, { yPercent: -amount }, {
+            yPercent: amount, ease: 'none',
+            scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+          });
+        } catch (e) { /* без параллакса кадр просто стоит на месте */ }
       });
-    });
+    };
+    if (document.readyState === 'complete') { run(); } else { addEventListener('load', run); }
   };
   /* На телефоне пина и инерции нет, поэтому параллакс — единственное, что даёт
      кадрам глубину. Амплитуду там уменьшаем: экран узкий, сдвиг заметнее. */
@@ -278,9 +268,9 @@
      Надстрочник, затем письмо логотипа (его ведёт script.js), затем фраза и кнопка. */
   if (lead) {
     /* Кнопку звонка сюда не берём: её прозрачностью управляет класс на body
-       (пока человек на первом экране — она в рамке, дальше её роль берёт пара
+       (пока человек на первом экране — она в кадре, дальше её роль берёт пара
        кнопок в углу). Инлайновое значение от GSAP этот класс перебило бы. */
-    var order = [lead.querySelector('.opening__eyebrow'), lead.querySelector('.opening__sub')].filter(Boolean);
+    var order = [lead.querySelector('.m-hero__place'), lead.querySelector('.m-hero__sub')].filter(Boolean);
     gsap.fromTo(order, { opacity: 0, y: 18 },
       { opacity: 1, y: 0, duration: 1.2, ease: EASE, stagger: 0.45, delay: 0.3 });
   }
@@ -288,7 +278,7 @@
   /* ── 11 · кнопка звонка тянется к курсору ──
      Смещение крошечное: жест должен считываться, а не бросаться в глаза. */
   if (wide && window.matchMedia('(hover:hover)').matches) {
-    document.querySelectorAll('.cta, .btn-gold, .btn--call').forEach(function (btn) {
+    document.querySelectorAll('.cta, .btn-gold, .btn--call, .pill, .m-hero__call').forEach(function (btn) {
       var pull = gsap.quickTo(btn, 'x', { duration: 0.5, ease: 'power3.out' });
       var lift = gsap.quickTo(btn, 'y', { duration: 0.5, ease: 'power3.out' });
       btn.addEventListener('pointermove', function (e) {
@@ -355,3 +345,4 @@
     document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
   }
 })();
+

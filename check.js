@@ -92,6 +92,51 @@ pages.forEach((file) => {
   const dup = ids.filter((v, i) => ids.indexOf(v) !== i);
   if (dup.length) { problems.push(`${page}: дублируются id: ${[...new Set(dup)].join(', ')}`); }
 
+  /* ── микроразметка: разбирается ли она вообще ──
+     Сломанный JSON-LD не виден глазом: страница выглядит целой, а поисковик
+     просто молча пропускает блок. */
+  const ld = [];
+  (html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || []).forEach((block) => {
+    const body = block.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, '');
+    try { ld.push(JSON.parse(body)); } catch (e) {
+      problems.push(`${page}: микроразметка не разбирается — ${e.message}`);
+    }
+  });
+
+  /* Ответы в FAQPage обязаны совпадать с напечатанными на странице: расхождение
+     видимого текста и разметки — прямое нарушение правил и Google, и Яндекса,
+     и самый частый способ получить ручные санкции за разметку. */
+  const faq = ld.find((o) => o['@type'] === 'FAQPage');
+  if (faq) {
+    /* Сначала выбрасываем сами блоки script — иначе сравниваем разметку
+       с ней же самой, и проверка проходит всегда. */
+    const text = html.replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&laquo;|&raquo;/g, '"')
+      .replace(/\s+/g, ' ');
+    faq.mainEntity.forEach((q) => {
+      /* Сверяем ответ целиком, а не первые слова: подмена обычно и сидит
+         в середине — там, где на страницу попадает одно, а в разметку другое. */
+      const answer = q.acceptedAnswer.text.replace(/\s+/g, ' ').trim();
+      if (text.indexOf(answer) === -1) {
+        problems.push(`${page}: ответ FAQPage не совпадает с текстом страницы — «${answer.slice(0, 50)}…»`);
+      }
+    });
+  }
+
+  /* ── превью ссылки ──
+     WebP в og:image Telegram и ВКонтакте не разворачивают: вместо кадра
+     приходит пустой прямоугольник. Для Узбекистана это заметная потеря. */
+  const og = (html.match(/<meta property="og:image" content="([^"]*)"/) || [])[1] || '';
+  if (!og) { problems.push(`${page}: нет og:image`); }
+  else if (/\.webp($|\?)/i.test(og)) { problems.push(`${page}: og:image в WebP — превью не покажут`); }
+
+  /* ── запасной путь без JavaScript ──
+     .reveal держит контент на opacity:0, пока его не покажет скрипт. Без
+     правила в <noscript> одна ошибка в скриптах гасит всю страницу. */
+  if (!/<noscript><style>[\s\S]*?\.reveal/.test(html)) {
+    problems.push(`${page}: нет правила .reveal в <noscript> — без JS страница пустая`);
+  }
+
   /* ── служебные остатки ── */
   if (/_audit|_tmp|TODO:/.test(html)) { problems.push(`${page}: в разметке остались служебные пометки`); }
 });
@@ -109,6 +154,19 @@ const sitemap = fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
   const target = p.endsWith('/') ? p + 'index.html' : p;
   if (!exists(target)) { problems.push(`sitemap: адрес не существует — ${loc}`); }
 });
+if (!/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/.test(sitemap)) {
+  problems.push('sitemap: нет lastmod — Яндекс не поймёт, что переобходить');
+}
+['ru', 'uz', 'x-default'].forEach((h) => {
+  if (sitemap.indexOf(`hreflang="${h}"`) === -1) { problems.push(`sitemap: нет hreflang="${h}"`); }
+});
+
+/* robots.txt: карта сайта и незакрытые ассеты */
+const robots = fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8');
+if (robots.indexOf('Sitemap:') === -1) { problems.push('robots.txt: нет ссылки на карту сайта'); }
+if (/Disallow:\s*\/(assets|styles|script)/.test(robots)) {
+  problems.push('robots.txt: закрыты ассеты — робот не отрисует страницу');
+}
 
 console.log(`Проверено страниц: ${pages.length}, файлов: ${files.length}`);
 if (notes.length) {
