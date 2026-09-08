@@ -1116,7 +1116,13 @@
         return;
       }
       var f = e.target.closest('[data-floor]');
-      if (f) { pickFloor(+f.dataset.floor); }
+      if (f) {
+        pickFloor(+f.dataset.floor);
+        /* Единственное звено цепочки «подъезд → этаж → квартира», по которому
+           не было события: в отчёте выходил разрыв между выбором подъезда и
+           выбором квартиры, и не было видно, где люди останавливаются. */
+        track('floor_pick', { podil: current.podil, floor: +f.dataset.floor });
+      }
     });
 
     flatsSvg.addEventListener('click', function (e) {
@@ -1401,4 +1407,75 @@
     });
   }, { rootMargin: '0px 0px -12% 0px' });
   items.forEach(function (el) { io.observe(el); });
+})();
+
+/* ══════════════ калькулятор рассрочки ══════════════
+   Рассрочка беспроцентная, поэтому считать здесь нечего сложнее деления:
+   остаток стоимости делится на срок. Аннуитет был бы враньём — процента нет.
+   Разметка уже приходит с осмысленными числами, скрипт только пересчитывает
+   их при движении ползунков; если он не отработает, страница остаётся
+   с корректным примером, а не с нулями. */
+(function () {
+  var box = document.querySelector('[data-calc]');
+  if (!box) { return; }
+
+  var mln = box.dataset.mln || '';
+  var q = function (sel) { return box.querySelector(sel); };
+  var area = q('[data-calc-area]');
+  var rate = q('[data-calc-rate]');
+  var down = q('[data-calc-down]');
+  var term = q('[data-calc-term]');
+
+  var outDown = q('[data-calc-down-out]');
+  var outTerm = q('[data-calc-term-out]');
+  var outCost = q('[data-calc-cost]');
+  var outDownSum = q('[data-calc-downsum]');
+  var outRest = q('[data-calc-rest]');
+  var outMonth = q('[data-calc-month]');
+
+  /* Суммы в миллионах сумов: «469,4 млн сум» читается, «469 350 000» — нет.
+     Разряды разделяем узким пробелом, дробную часть держим одну и только
+     там, где она что-то значит. */
+  var money = function (v) {
+    var n = Math.round(v * 10) / 10;
+    var str = (n >= 100 ? String(Math.round(n)) : String(n).replace('.', ','));
+    return str.replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' ' + mln;
+  };
+
+  var num = function (el, fallback) {
+    var v = parseFloat(String(el.value).replace(',', '.'));
+    return isFinite(v) && v > 0 ? v : fallback;
+  };
+
+  var recalc = function () {
+    var cost = num(area, 67) * num(rate, 10);
+    var pct = Math.min(100, Math.max(0, parseFloat(down.value) || 0));
+    var months = Math.max(1, parseInt(term.value, 10) || 1);
+    var first = cost * pct / 100;
+    var rest = cost - first;
+
+    if (outDown) { outDown.textContent = pct + '%'; }
+    if (outTerm) { outTerm.textContent = months; }
+    outCost.textContent = money(cost);
+    outDownSum.textContent = money(first);
+    outRest.textContent = money(rest);
+    outMonth.textContent = money(rest / months);
+  };
+
+  [area, rate, down, term].forEach(function (el) {
+    if (!el) { return; }
+    el.addEventListener('input', recalc);
+    el.addEventListener('change', recalc);
+  });
+
+  /* Событие шлём один раз за посещение и только когда человек действительно
+     трогал ползунки: иначе в отчёте окажется каждый, кто просто пролистал. */
+  var sent = false;
+  box.addEventListener('input', function () {
+    if (sent) { return; }
+    sent = true;
+    if (window.pariTrack) { window.pariTrack('view_installment', { tool: 'calculator' }); }
+  }, { once: false });
+
+  recalc();
 })();

@@ -39,11 +39,15 @@ const orgLd = (t) => ({
   url: T.url('/'),
   logo: T.url('/assets/img/pari-logo-vector.png'),
   telephone: site.phone.intl,
-  sameAs: [site.instagram],
+  /* sameAs — это подтверждение, что за маркой стоит один и тот же субъект.
+     Пропущенный Telegram здесь заметен: в Узбекистане именно он основной
+     канал связи проекта, и без ссылки поисковик не связывает канал с сайтом. */
+  sameAs: [site.instagram, site.telegram].concat(site.maps2gis ? [site.maps2gis] : []),
   address: {
     '@type': 'PostalAddress',
     streetAddress: t.lang === 'ru' ? site.address.street : site.address.streetUz,
     addressLocality: t.lang === 'ru' ? site.address.city : site.address.cityUz,
+    addressRegion: t.lang === 'ru' ? 'Самаркандская область' : 'Samarqand viloyati',
     addressCountry: site.address.country,
   },
 });
@@ -69,9 +73,31 @@ const complexLd = (t) => ({
   telephone: site.phone.intl,
   address: orgLd(t).address,
   geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lon },
+  numberOfBedrooms: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 4 },
+  floorSize: {
+    '@type': 'QuantitativeValue',
+    minValue: site.facts.areaFrom, maxValue: site.facts.areaTo, unitCode: 'MTK',
+  },
   amenityFeature: [
     { '@type': 'LocationFeatureSpecification', name: t.home.yardEyebrow, value: true },
   ],
+  /* Цена подтверждена владельцем: 10 млн сум за квадратный метр, без скидок.
+     Отдаём её как цену за единицу площади (unitCode MTK — квадратный метр),
+     а не как стоимость квартиры: второе было бы неправдой. */
+  ...(site.price.confirmed && site.price.perSqm ? {
+    makesOffer: {
+      '@type': 'Offer',
+      availability: 'https://schema.org/InStock',
+      seller: { '@id': T.url('/#organization') },
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: site.price.from * 1000000,
+        priceCurrency: 'UZS',
+        unitCode: 'MTK',
+        valueAddedTaxIncluded: true,
+      },
+    },
+  } : {}),
 });
 
 /* Контакты: LocalBusiness-подтип. Часы работы попадают в разметку только
@@ -86,9 +112,98 @@ const agentLd = (t) => {
     telephone: site.phone.intl,
     address: orgLd(t).address,
     geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lon },
+    /* Ссылка на ту же точку в Яндекс Картах, что открывается на странице.
+       Для локального поиска это связка «сайт ↔ карточка на карте»: без неё
+       обе сущности живут порознь. */
+    hasMap: `https://yandex.uz/maps/?pt=${site.geo.lon},${site.geo.lat}&z=17&l=map`,
+    areaServed: {
+      '@type': 'City',
+      name: t.lang === 'ru' ? site.address.city : site.address.cityUz,
+    },
     parentOrganization: { '@id': T.url('/#organization') },
   };
   if (site.hours.confirmed && site.hours.schema) { o.openingHours = site.hours.schema; }
+  /* priceRange у LocalBusiness — не число, а разряд цены. Ставим его только
+     из подтверждённой цены и в валюте страны. */
+  if (site.price.confirmed) {
+    const isRu = t.lang === 'ru';
+    o.priceRange = `${isRu ? 'от ' : ''}${site.price.from} ${isRu ? site.price.unit : site.price.unitUz}/м²`;
+    o.currenciesAccepted = 'UZS';
+  }
+  return o;
+};
+
+
+/* Вопросы и ответы. Берём ровно те пары, что напечатаны на странице
+   (T.faqPairs), — расхождение видимого текста и разметки запрещено правилами
+   и Google, и Яндекса. */
+const faqLd = (t) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': T.url((t.lang === 'ru' ? '' : '/uz') + '/faq/#faq'),
+  inLanguage: t.lang,
+  mainEntity: T.faqPairs(t).map((x) => ({
+    '@type': 'Question',
+    name: x.q,
+    acceptedAnswer: { '@type': 'Answer', text: x.a },
+  })),
+});
+
+/* Одна страница — одна сущность. Без этого узла у страницы нет ни языка,
+   ни принадлежности к сайту, ни описания: разметка описывала только сайт
+   целиком и организацию. AI-поиск и Яндекс собирают ответ именно отсюда. */
+const pageLd = (t, page) => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  '@id': T.url(page.path) + '#webpage',
+  url: T.url(page.path),
+  name: page.title,
+  description: page.description,
+  inLanguage: t.lang,
+  isPartOf: { '@id': T.url('/#website') },
+  about: { '@id': T.url('/#organization') },
+  primaryImageOfPage: T.url('/assets/img/og-cover.jpg'),
+});
+
+/* Квартиры группы. Отдаём именно то, что подтверждено шахматкой: комнатность,
+   диапазон площадей и число квартир. Цена идёт за квадратный метр — стоимость
+   конкретной квартиры зависит от этажа и площади, и выдавать её за фиксированную
+   было бы неправдой. Отзывов и рейтингов здесь нет: их у проекта не существует. */
+const roomsLd = (t, page) => {
+  const g = page.group;
+  const f = T.roomFacts(t, g);
+  const o = {
+    '@context': 'https://schema.org',
+    '@type': 'Apartment',
+    '@id': T.url(page.path) + '#apartment',
+    name: f.title,
+    url: T.url(page.path),
+    description: page.description,
+    numberOfRooms: g.studio ? 1 : g.rooms,
+    floorSize: {
+      '@type': 'QuantitativeValue',
+      minValue: g.areaFrom, maxValue: g.areaTo, unitCode: 'MTK',
+    },
+    floorLevel: `${g.floorFrom}-${g.floorTo}`,
+    containedInPlace: { '@id': T.url('/#organization') },
+    address: orgLd(t).address,
+    geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lon },
+  };
+  if (site.price.confirmed && site.price.perSqm) {
+    o.offers = {
+      '@type': 'Offer',
+      availability: 'https://schema.org/InStock',
+      seller: { '@id': T.url('/#organization') },
+      eligibleQuantity: { '@type': 'QuantitativeValue', value: g.count, unitText: 'apartments' },
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: site.price.from * 1000000,
+        priceCurrency: 'UZS',
+        unitCode: 'MTK',
+        valueAddedTaxIncluded: true,
+      },
+    };
+  }
   return o;
 };
 
@@ -100,6 +215,39 @@ const crumbsLd = (t, items) => ({
 });
 
 /* ---------- описание страниц ---------- */
+/* Страницы по комнатности. Строятся из настоящего состава дома: группа
+   попадает на сайт, только если такие квартиры в шахматке есть. Заголовок и
+   описание собираются из тех же цифр, что и текст страницы. */
+function roomPagesFor(t) {
+  const p = t.lang === 'ru' ? '' : '/uz';
+  return T.roomGroups().map((g) => {
+    const f = T.roomFacts(t, g);
+    const page = {
+      key: 'rooms-' + g.slug,
+      group: g,
+      path: `${p}/apartments/${g.slug}/`,
+      render: T.roomsPage,
+      title: T.esc(fillMeta(t.meta.rooms.title, f)),
+      description: T.esc(fillMeta(t.meta.rooms.description, f)),
+      sitemap: { priority: '0.8', changefreq: 'monthly' },
+    };
+    /* esc() выше нужен только для длины — в разметку title попадает
+       через shell(), который экранирует сам. Возвращаем чистый текст. */
+    page.title = fillMeta(t.meta.rooms.title, f);
+    page.description = fillMeta(t.meta.rooms.description, f);
+    page.jsonld = [
+      crumbsLd(t, [
+        { name: t.nav.apartments, path: `${p}/apartments/` },
+        { name: f.short, path: page.path },
+      ]),
+      roomsLd(t, page),
+    ];
+    return page;
+  });
+}
+
+const fillMeta = (text, f) => String(text).replace(/\{(\w+)\}/g, (m, k) => (k in f ? f[k] : m));
+
 function pagesFor(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   const home = `${p}/` || '/';
@@ -140,6 +288,12 @@ function pagesFor(t) {
       sitemap: { priority: '0.9', changefreq: 'monthly' },
     },
     {
+      key: 'instal', path: `${p}/installment/`, render: T.installment,
+      title: t.meta.instal.title, description: t.meta.instal.description,
+      jsonld: [crumbsLd(t, [{ name: t.nav.instal, path: `${p}/installment/` }])],
+      sitemap: { priority: '0.9', changefreq: 'monthly' },
+    },
+    {
       key: 'genplan', path: `${p}/genplan/`, render: T.genplan,
       title: t.meta.genplan.title, description: t.meta.genplan.description,
       jsonld: [crumbsLd(t, [{ name: t.nav.genplan, path: `${p}/genplan/` }])],
@@ -150,6 +304,12 @@ function pagesFor(t) {
       title: t.meta.location.title, description: t.meta.location.description,
       jsonld: [crumbsLd(t, [{ name: t.nav.location, path: `${p}/location/` }])],
       sitemap: { priority: '0.8', changefreq: 'monthly' },
+    },
+    {
+      key: 'faq', path: `${p}/faq/`, render: T.faq,
+      title: t.meta.faq.title, description: t.meta.faq.description,
+      jsonld: [crumbsLd(t, [{ name: t.nav.faq, path: `${p}/faq/` }]), faqLd(t)],
+      sitemap: { priority: '0.7', changefreq: 'monthly' },
     },
     {
       key: 'contacts', path: `${p}/contacts/`, render: T.contacts,
@@ -175,8 +335,9 @@ function build() {
   const urls = [];
 
   [ru, uz].forEach((t) => {
-    pagesFor(t).forEach((page) => {
+    pagesFor(t).concat(roomPagesFor(t)).forEach((page) => {
       page.v = v;
+      page.jsonld = [pageLd(t, page)].concat(page.jsonld || []);
       const filled = page.render(t, page);
       const html = T.shell(t, filled);
       const rel = page.path === '/' ? 'index.html' : page.path.replace(/^\//, '') + 'index.html';
@@ -194,12 +355,19 @@ function build() {
   });
 
   /* карта сайта: только канонические индексируемые адреса */
+  /* Дата последнего изменения. Яндекс опирается на неё при выборе, что
+     переобходить в первую очередь, и без неё считает карту неинформативной.
+     Берём дату сборки: страницы генерируются целиком при каждом деплое,
+     более точной величины у статики просто нет. */
+  const lastmod = new Date().toISOString().slice(0, 10);
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.map((u) => `  <url>
     <loc>${u.loc}</loc>
-    <xhtml:link rel="alternate" hreflang="${u.lang === 'ru' ? 'uz' : 'ru'}" href="${u.alt}"/>
-    <xhtml:link rel="alternate" hreflang="${u.lang}" href="${u.loc}"/>
+    <lastmod>${lastmod}</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="${u.lang === 'ru' ? u.loc : u.alt}"/>
+    <xhtml:link rel="alternate" hreflang="uz" href="${u.lang === 'uz' ? u.loc : u.alt}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${u.lang === 'ru' ? u.loc : u.alt}"/>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
   </url>`).join('\n')}
@@ -236,9 +404,23 @@ ${urls.map((u) => `  <url>
     ],
   }, null, 2));
 
+  /* robots.txt.
+     Отдельный блок для Яндекса нужен не ради «Allow» — его смысл в Clean-param:
+     без этой директивы каждая ссылка с utm-метками из рассылки или рекламы
+     заводится как отдельная страница, и обе версии конкурируют друг с другом.
+     Google то же самое решает через canonical, Яндекс — только так.
+     CSS, скрипты и картинки не закрыты сознательно: закрытые ассеты не дают
+     ни одному из роботов отрисовать страницу и оценить её мобильную версию. */
+  const cleanParams = 'utm_source&utm_medium&utm_campaign&utm_term&utm_content'
+    + '&yclid&gclid&fbclid&from&_openstat';
   write('robots.txt', `User-agent: *
 Allow: /
 Disallow: /api/
+
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Clean-param: ${cleanParams} /
 
 Sitemap: ${T.url('/sitemap.xml')}
 `);

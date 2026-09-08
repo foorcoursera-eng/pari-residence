@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { site, blocks } = require('./content');
+const flats = require('./flats');
 const LOGO = require('./logo-parts.json');
 
 /* ── размеры картинки прямо из файла ──
@@ -86,6 +87,12 @@ function langSwitch(t, path, extraClass) {
 }
 
 /* ── пункты меню ── */
+/* ── разделы в меню ──
+   Три списка, а не один. В шапке помещается семь пунктов: восьмой начинает
+   переноситься на вторую строку и ломает ряд, поэтому «Вопросы» из неё убраны —
+   в полном меню и в подвале они остались. В подвале лежат вообще все адреса,
+   включая страницы по комнатности: так у каждой страницы есть входящая ссылка
+   с любой другой, и роботу не приходится искать их через карту сайта. */
 function navItems(t) {
   const p = t.lang === 'ru' ? '' : '/uz';
   return [
@@ -93,9 +100,24 @@ function navItems(t) {
     [`${p}/apartments/`, t.nav.apartments],
     [`${p}/genplan/`, t.nav.genplan],
     [`${p}/select/`, t.nav.select],
+    [`${p}/installment/`, t.nav.instal],
     [`${p}/location/`, t.nav.location],
     [`${p}/contacts/`, t.nav.contacts],
   ];
+}
+
+function menuItems(t) {
+  const p = t.lang === 'ru' ? '' : '/uz';
+  const all = navItems(t);
+  all.splice(all.length - 1, 0, [`${p}/faq/`, t.nav.faq]);
+  return all;
+}
+
+function footerItems(t) {
+  const p = t.lang === 'ru' ? '' : '/uz';
+  return menuItems(t).concat(
+    roomGroups().map((g) => [`${p}/apartments/${g.slug}/`, t.rooms.groups[g.key].short]),
+  );
 }
 
 function header(t, path) {
@@ -129,7 +151,7 @@ ${items}
 }
 
 function mobileMenu(t, path) {
-  const items = navItems(t).map(([href, label], i) => `        <a class="menu__link" href="${href}">
+  const items = menuItems(t).map(([href, label], i) => `        <a class="menu__link" href="${href}">
           <i>${String(i + 1).padStart(2, '0')}</i><span>${esc(label)}</span>
         </a>`).join('\n');
   return `<div class="menu" id="menu" hidden>
@@ -238,6 +260,137 @@ function leadSection(t, opts) {
   </div>
   <p class="final__legal">${esc(t.ui.legal)}</p>
 </section>`;
+}
+
+
+/* ── подстановка фактов в тексты ──
+   Ответы в разделе «Вопросы и ответы» написаны с плейсхолдерами вида {price}.
+   Так цена, срок рассрочки и сроки очередей живут ровно в одном месте (site
+   в content.js): поправили там — поменялось и в ответе, и в микроразметке.
+   Возвращается чистый текст без разметки: его же отдаём в JSON-LD. */
+function facts(t) {
+  const ru = t.lang === 'ru';
+  const stage = (n) => {
+    const x = site.stages.find((v) => v.no === n);
+    return ru
+      ? `${romans[x.quarter]} квартал ${x.year} года`
+      : `${x.year}-yil ${romans[x.quarter]} chorak`;
+  };
+  const months = instalmentMonths();
+  return {
+    price: `${site.price.from} ${ru ? site.price.unit : site.price.unitUz}`,
+    months: ru ? `${months} ${plural(months, ['месяцев', 'месяц', 'месяца'])}` : `${months} oy`,
+    developer: site.developer.name,
+    bank: site.bank.name,
+    architect: site.architect.name,
+    apartments: String(site.facts.apartments),
+    blocks: String(site.facts.blocks),
+    areaFrom: String(site.facts.areaFrom),
+    areaTo: String(site.facts.areaTo),
+    plans: String(t.plans.items.length),
+    plansWord: ru
+      ? `${t.plans.items.length} ${plural(t.plans.items.length, ['планировок', 'планировка', 'планировки'])}`
+      : `${t.plans.items.length} ta tarh`,
+    street: ru ? site.address.street : site.address.streetUz,
+    stage1: stage(1),
+    stage2: stage(2),
+    address: addressLine(t),
+    phone: site.phone.intl,
+    hours: (ru ? site.hours.ru : site.hours.uz).toLowerCase(),
+    buildStage: ru ? site.build.stage : site.build.stageUz,
+    buildAsOf: ru ? site.build.asOf : site.build.asOfUz,
+  };
+}
+
+/* «36 месяцев», но «22 месяца» — иначе ответ читается как машинный перевод */
+function plural(n, forms) {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) { return forms[0]; }
+  if (b > 1 && b < 5) { return forms[2]; }
+  if (b === 1) { return forms[1]; }
+  return forms[0];
+}
+
+const fill = (text, f) => String(text).replace(/\{(\w+)\}/g, (m, k) => (k in f ? f[k] : m));
+
+/* Пары «вопрос — ответ» с уже подставленными фактами. Один источник и для
+   разметки страницы, и для FAQPage: расхождение между тем, что видит человек,
+   и тем, что читает поисковик, — прямое нарушение правил обеих систем. */
+function faqPairs(t) {
+  const f = facts(t);
+  return t.faq.items.map((x) => ({ q: fill(x.q, f), a: fill(x.a, f) }));
+}
+
+
+/* ── группы по комнатности ──
+   Порядок и адреса заданы здесь один раз: по ним строятся страницы, меню
+   внутри раздела «Квартиры», карта сайта и хлебные крошки. Слаг латиницей
+   и одинаков в обоих языках — так ссылку можно печатать и диктовать.
+   Группа попадает на сайт, только если в шахматке есть хоть одна такая
+   квартира: пустых страниц под запрос не делаем. */
+const ROOM_GROUPS = [
+  { key: 's', slug: 'studio' },
+  { key: '1', slug: '1-room' },
+  { key: '2', slug: '2-room' },
+  { key: '3', slug: '3-room' },
+  { key: '4', slug: '4-room' },
+];
+
+let statsCache = null;
+const roomStats = () => (statsCache || (statsCache = flats.stats()));
+
+function roomGroups() {
+  const st = roomStats();
+  return ROOM_GROUPS.filter((g) => st[g.key] && st[g.key].count)
+    .map((g) => Object.assign({}, g, st[g.key]));
+}
+
+/* Площадь в текст: в данных 41.69, на странице 41,69 — как на чертежах. */
+const area = (n) => String(n.toFixed(2)).replace('.', ',');
+
+/* Подстановки для страницы комнатности. */
+function roomFacts(t, g) {
+  const r = t.rooms;
+  const ru = t.lang === 'ru';
+  const n = g.entrances.length;
+  const ents = fill(r.entIn[ru ? plIndex(n) : 0], { n: String(n) });
+  return {
+    title: r.groups[g.key].title,
+    /* Та же подпись со строчной буквы: в узбекском заголовке она стоит после
+       «Samarqandda», и «Samarqandda Toʻrt xonali» читается как опечатка. */
+    titleLc: r.groups[g.key].title.charAt(0).toLowerCase() + r.groups[g.key].title.slice(1),
+    short: r.groups[g.key].short,
+    count: `${g.count} ${r.groups[g.key].forms[ru ? plIndex(g.count) : 0]}`,
+    countN: String(g.count),
+    areaFrom: area(g.areaFrom),
+    areaTo: area(g.areaTo),
+    /* У четырёхкомнатных площадь одна на все 71 квартиру — «от 89,11 до 89,11»
+       выглядит как ошибка, поэтому диапазон схлопывается в одно число. */
+    areaSpan: g.areaFrom === g.areaTo
+      ? `${area(g.areaFrom)} ${t.ui.sqm}`
+      : (ru ? `от ${area(g.areaFrom)} до ${area(g.areaTo)} ${t.ui.sqm}`
+            : `${area(g.areaFrom)}–${area(g.areaTo)} ${t.ui.sqm}`),
+    floorSpan: g.floorFrom === g.floorTo ? String(g.floorFrom)
+      : (ru ? `с ${g.floorFrom}-го по ${g.floorTo}-й` : `${g.floorFrom}–${g.floorTo}`),
+    floorFrom: String(g.floorFrom),
+    floorTo: String(g.floorTo),
+    entrances: ents,
+    price: `${site.price.from} ${ru ? site.price.unit : site.price.unitUz}`,
+    months: ru
+      ? `${instalmentMonths()} ${plural(instalmentMonths(), ['месяцев', 'месяц', 'месяца'])}`
+      : `${instalmentMonths()} oy`,
+  };
+}
+
+/* Индекс формы во множественном числе: 0 — «подъездов», 1 — «подъезд», 2 — «подъезда» */
+function plIndex(n) {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) { return 0; }
+  if (b > 1 && b < 5) { return 2; }
+  if (b === 1) { return 1; }
+  return 0;
 }
 
 /* ── хлебные крошки ── */
@@ -609,7 +762,7 @@ function footer(t) {
   const f = t.footer;
   const hours = t.lang === 'ru' ? site.hours.ru : site.hours.uz;
   const route = `https://yandex.uz/maps/?pt=${site.geo.lon},${site.geo.lat}&z=17&l=map`;
-  const items = navItems(t)
+  const items = footerItems(t)
     .map(([href, label]) => `      <a href="${href}">${esc(label)}</a>`).join('\n');
 
   return `<footer class="footer">
@@ -675,13 +828,22 @@ function shell(t, page) {
 <meta property="og:url" content="${canonical}">
 <meta property="og:title" content="${esc(page.title)}">
 <meta property="og:description" content="${esc(page.description)}">
-<!-- Картинка для соцсетей — тот же кадр, что человек видит первым на сайте. -->
-<meta property="og:image" content="${url('/assets/img/opening-shot-1920.webp')}">
-<meta property="og:image:width" content="1920">
-<meta property="og:image:height" content="1072">
+<!-- Картинка для соцсетей — тот же кадр, что человек видит первым на сайте,
+     но в JPEG и ровно 1200×630. WebP здесь не годится: Telegram и ВКонтакте
+     его в превью не разворачивают, а в Узбекистане ссылку чаще всего
+     пересылают именно в Telegram — вместо кадра выходил пустой прямоугольник.
+     Файл собирает tools/make-og.py из opening-shot. -->
+<meta property="og:image" content="${url('/assets/img/og-cover.jpg')}">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(page.title)}">
 <meta property="og:locale" content="${t.locale}">
 <meta property="og:locale:alternate" content="${t.altLocale}">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(page.title)}">
+<meta name="twitter:description" content="${esc(page.description)}">
+<meta name="twitter:image" content="${url('/assets/img/og-cover.jpg')}">
 <!-- Иконки собраны из настоящего логотипа (tools/make-icons.py). Раньше здесь
      стоял только инлайновый SVG с самодельной буквой: вкладка его показывала,
      а превью ссылок в мессенджерах и поиске — нет, там оставался серый глобус.
@@ -690,7 +852,21 @@ function shell(t, page) {
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<!-- Шрифт основного текста. Без этой строки браузер узнаёт о нём только
+     после разбора styles.css — лишний круг запроса ровно на том шрифте,
+     которым набрана вся страница. Начертания заголовков не предзагружаем:
+     они разбиты по unicode-range, и какой из наборов понадобится, заранее
+     не известно. -->
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/cygre-regular.woff2" crossorigin>
 ${page.preload || ''}<link rel="stylesheet" href="/styles.css?v=${page.v}">
+<!-- Без JavaScript страница остаётся читаемой. Появление блоков по скроллу
+     держится на классе, который ставит скрипт; до этого .reveal стоит
+     opacity:0, и при отключённом или сломавшемся JS почти весь текст
+     страницы невидим. Google исполняет скрипты, Яндекс — далеко не всегда,
+     поэтому запасной путь нужен именно здесь, в разметке. -->
+<noscript><style>.reveal{opacity:1!important;transform:none!important}
+[data-lines] .line>span{opacity:1!important;transform:none!important}
+.splash{display:none!important}</style></noscript>
 ${ld}
 ${analytics()}</head>
 <body${page.bodyClass ? ` class="${page.bodyClass}"` : ''}>
@@ -1609,6 +1785,7 @@ ${leadSection(t, { formId: 'genplan', title: t.cta.primary, text: t.contacts.vis
 
 /* ══════════════ квартиры ══════════════ */
 function apartments(t, page) {
+  const BR = String.fromCharCode(10);
   const a = t.apartments;
   const p = t.plans;
 
@@ -1620,6 +1797,18 @@ function apartments(t, page) {
     <h1 class="display" data-lines>${esc(a.h1)}</h1>
     <p class="page__lead">${esc(a.lead)}</p>
     <p class="page__price">${esc(a.priceLine)}<span>${esc(t.ui.priceNote)}</span></p>
+
+    <!-- Разбор по комнатности. Каждая ссылка ведёт на страницу, где написано,
+         сколько таких квартир, каких площадей и в каких подъездах — это и есть
+         ответ на запрос «двухкомнатная в Самарканде». Отсюда же роботу видно
+         все пять адресов. -->
+    <nav class="rooms-nav" aria-label="${esc(t.rooms.byRooms)}">
+${roomGroups().map((g) => `      <a class="rooms-nav__item" href="${t.lang === 'ru' ? '' : '/uz'}/apartments/${g.slug}/">
+        <b>${esc(t.rooms.groups[g.key].short)}</b>
+        <i>${g.count}</i>
+        <span>${g.areaFrom === g.areaTo ? area(g.areaFrom) : area(g.areaFrom) + '–' + area(g.areaTo)} ${esc(t.ui.sqm)}</span>
+      </a>`).join(BR)}
+    </nav>
   </div>
 
   <div class="page__inner">
@@ -1841,6 +2030,236 @@ ${leadSection(t, { formId: 'contacts', h: 'h2', title: esc(c.visitTitle), text: 
   return page;
 }
 
+/* ══════════════ вопросы и ответы ══════════════
+   Разметка details/summary: раскрывается без единой строки скрипта, а текст
+   ответа лежит в HTML целиком — и робот, и человек без JavaScript читают его
+   одинаково. Первый вопрос открыт, чтобы раздел не выглядел пустым. */
+function faq(t, page) {
+  const f = t.faq;
+  const pairs = faqPairs(t);
+  const items = pairs.map((x, i) => `      <details class="faq__item reveal"${i === 0 ? ' open' : ''}>
+        <summary class="faq__q"><h2>${esc(x.q)}</h2></summary>
+        <div class="faq__a"><p>${esc(x.a)}</p></div>
+      </details>`).join('\n');
+
+  const p = t.lang === 'ru' ? '' : '/uz';
+  page.body = `<section class="page">
+  <div class="page__inner">
+    ${breadcrumbs(t, [[page.path, t.nav.faq]])}
+    <h1 class="display" data-lines>${esc(f.h1)}</h1>
+    <p class="page__lead">${esc(f.lead)}</p>
+
+    <div class="faq">
+${items}
+    </div>
+
+    <p class="faq__more reveal">${esc(f.more)}
+      <a href="${p}/apartments/">${esc(f.links.apartments)}</a>,
+      <a href="${p}/select/">${esc(f.links.select)}</a>,
+      <a href="${p}/genplan/">${esc(f.links.genplan)}</a>,
+      <a href="${p}/location/">${esc(f.links.location)}</a>.
+    </p>
+  </div>
+</section>
+
+${leadSection(t, { formId: 'faq', h: 'h2', title: esc(f.ctaTitle), text: f.ctaText, eyebrow: t.nav.faq })}`;
+  return page;
+}
+
+/* ══════════════ квартиры по комнатности ══════════════
+   Ключевое здесь — таблица «Где в квартале». До неё весь состав квартала жил
+   в flats.json и появлялся только после того, как отработает скрипт: робот
+   видел страницу подбора без единой площади. Теперь настоящие цифры —
+   сколько квартир, каких площадей, на каких этажах, в каком подъезде —
+   лежат в разметке, и их читают и поисковик, и человек с выключенным JS. */
+function roomsPage(t, page) {
+  const r = t.rooms;
+  const g = page.group;
+  const f = roomFacts(t, g);
+  const p = t.lang === 'ru' ? '' : '/uz';
+
+  /* Листы планировок этой комнатности. Студии в альбоме отдельной группой не
+     идут — их чертежи лежат среди однокомнатных, поэтому здесь их не будет,
+     и вместо пустого места печатается честная строка. */
+  const plans = g.key === 's' ? [] : t.plans.items.filter((x) => String(x.rooms) === g.key);
+  const plansBlock = plans.length
+    ? `<p class="page__text">${esc(r.plansLead)}</p>
+    <div class="plans">
+${plans.map((x) => planCard(t, x)).join('\n')}
+    </div>`
+    : `<p class="page__text">${esc(r.plansNone)}</p>`;
+
+  const rows = g.entrances.map((e) => `        <tr>
+          <td class="num">${e.ent}</td>
+          <td class="num">${e.count}</td>
+          <td class="num">${e.areaFrom === e.areaTo ? area(e.areaFrom) : area(e.areaFrom) + '–' + area(e.areaTo)}</td>
+          <td class="num">${e.floorFrom === e.floorTo ? e.floorFrom : e.floorFrom + '–' + e.floorTo}</td>
+        </tr>`).join('\n');
+
+  /* Ссылки на соседние комнатности: и человеку, и роботу нужен переход
+     между группами, иначе каждая страница остаётся тупиком. */
+  const others = roomGroups().filter((x) => x.key !== g.key)
+    .map((x) => `<a href="${p}/apartments/${x.slug}/">${esc(r.groups[x.key].short)}</a>`)
+    .join('<i aria-hidden="true">·</i>');
+
+  page.body = `<section class="page">
+  <div class="page__inner">
+    ${breadcrumbs(t, [[`${p}/apartments/`, t.nav.apartments], [page.path, f.short]])}
+    <h1 class="display" data-lines>${esc(fill(r.h1, f))}</h1>
+    <p class="page__lead">${esc(fill(r.lead, f))}</p>
+    <p class="page__text">${esc(fill(r.leadPrice, f))}</p>
+
+    <dl class="rf">
+      <div><dt>${esc(r.colCount)}</dt><dd>${f.countN}</dd></div>
+      <div><dt>${esc(r.colArea)}</dt><dd>${g.areaFrom === g.areaTo ? f.areaFrom : f.areaFrom + '–' + f.areaTo}</dd></div>
+      <div><dt>${esc(r.colFloors)}</dt><dd>${g.floorFrom === g.floorTo ? f.floorFrom : f.floorFrom + '–' + f.floorTo}</dd></div>
+      <div><dt>${esc(r.colEntrance)}</dt><dd>${g.entrances.length}</dd></div>
+    </dl>
+  </div>
+
+  <div class="page">
+  <div class="page__inner">
+    <h2 class="page__h2 reveal">${esc(r.plansTitle)}</h2>
+    ${plansBlock}
+  </div>
+  </div>
+
+  <div class="page">
+  <div class="page__inner">
+    <h2 class="page__h2 reveal">${esc(r.spreadTitle)}</h2>
+    <p class="page__text">${esc(r.spreadLead)}</p>
+    <div class="tw">
+      <table class="tbl">
+        <thead><tr>
+          <th>${esc(r.colEntrance)}</th><th>${esc(r.colCount)}</th>
+          <th>${esc(r.colArea)}</th><th>${esc(r.colFloors)}</th>
+        </tr></thead>
+        <tbody>
+${rows}
+        </tbody>
+        <tfoot><tr>
+          <td>${esc(r.totalWord)}</td><td class="num">${f.countN}</td>
+          <td class="num">${f.areaFrom}–${f.areaTo}</td>
+          <td class="num">${f.floorFrom}–${f.floorTo}</td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <p class="plans__note">${esc(flats.source)}</p>
+
+    <h3 class="rf__h3">${esc(r.pickTitle)}</h3>
+    <p>${esc(r.pickText)}</p>
+    <p class="rf__cta"><a class="pill" href="${p}/select/#plan">${esc(r.pickCta)}</a></p>
+
+    <h3 class="rf__h3">${esc(r.otherTitle)}</h3>
+    <nav class="rf__other" aria-label="${esc(r.otherTitle)}">${others}</nav>
+  </div>
+  </div>
+</section>
+
+${leadSection(t, { formId: 'rooms-' + g.slug, h: 'h2', title: t.cta.primary,
+  text: t.contacts.visitText, eyebrow: f.short })}`;
+  return page;
+}
+
+/* ══════════════ рассрочка ══════════════
+   Условия подтверждены владельцем: беспроцентно, до сдачи первой очереди,
+   максимум 36 месяцев. Калькулятор считает по формуле «остаток делим на
+   срок» — это ровно то, чем беспроцентная рассрочка и является; никакой
+   аннуитет здесь не при чём. Рядом стоит оговорка, что это не оферта. */
+function installment(t, page) {
+  const n = t.instal;
+  const p = t.lang === 'ru' ? '' : '/uz';
+  const ru = t.lang === 'ru';
+  const months = instalmentMonths();
+  const st = site.stages.find((x) => x.no === site.instalment.untilStage);
+  const f = {
+    months: ru ? `${months} ${plural(months, ['месяцев', 'месяц', 'месяца'])}` : `${months} oy`,
+    price: `${site.price.from} ${ru ? site.price.unit : site.price.unitUz}`,
+    stage1: ru ? `${romans[st.quarter]} квартал ${st.year} года` : `${st.year}-yil ${romans[st.quarter]} chorak`,
+    developer: site.developer.name,
+    bank: site.bank.name,
+  };
+
+  const facts = n.facts.map((x) => `      <div class="rf__cell">
+        <dt>${esc(x.k)}</dt>
+        <dd>${esc(fill(x.v, f))}</dd>
+        <p>${esc(x.note)}</p>
+      </div>`).join('\n');
+
+  const how = n.how.map((x) => `      <li>${esc(fill(x, f))}</li>`).join('\n');
+
+  page.body = `<section class="page">
+  <div class="page__inner">
+    ${breadcrumbs(t, [[page.path, t.nav.instal]])}
+    <h1 class="display" data-lines>${esc(n.h1)}</h1>
+    <p class="page__lead">${esc(n.lead)}</p>
+
+    <h2 class="rf__h3">${esc(n.factsTitle)}</h2>
+    <dl class="rf rf--wide">
+${facts}
+    </dl>
+  </div>
+
+  <div class="page">
+  <div class="page__inner">
+    <h2 class="page__h2 reveal">${esc(n.howTitle)}</h2>
+    <ol class="rf__how">
+${how}
+    </ol>
+  </div>
+  </div>
+
+  <!-- ══════════════ калькулятор ══════════════
+       Значения по умолчанию — настоящие: средняя двухкомнатная и цена,
+       подтверждённая владельцем. Поэтому в первом кадре виден осмысленный
+       расчёт, а не нули; и он же остаётся, если скрипт не отработает. -->
+  <div class="page">
+  <div class="page__inner">
+    <h2 class="page__h2 reveal">${esc(n.calcTitle)}</h2>
+    <p class="page__text">${esc(n.calcLead)}</p>
+
+    <div class="calc" data-calc data-mln="${esc(n.mln)}" data-max="${site.instalment.maxMonths}"
+         data-now="${months}">
+      <div class="calc__in">
+        <label class="calc__f">
+          <span>${esc(n.calcArea)}</span>
+          <input type="number" data-calc-area value="67" min="27" max="96" step="0.01" inputmode="decimal">
+        </label>
+        <label class="calc__f">
+          <span>${esc(n.calcPrice)}</span>
+          <input type="number" data-calc-rate value="${site.price.from}" min="1" max="99" step="0.1" inputmode="decimal">
+        </label>
+        <label class="calc__f">
+          <span>${esc(n.calcDown)} <b data-calc-down-out>30%</b></span>
+          <input type="range" data-calc-down min="0" max="90" step="5" value="30">
+        </label>
+        <label class="calc__f">
+          <span>${esc(n.calcTerm)} <b data-calc-term-out>${months}</b></span>
+          <input type="range" data-calc-term min="1" max="${months}" step="1" value="${months}">
+        </label>
+      </div>
+
+      <dl class="calc__out">
+        <div><dt>${esc(n.calcOutCost)}</dt><dd data-calc-cost>670 ${esc(n.mln)}</dd></div>
+        <div><dt>${esc(n.calcOutDown)}</dt><dd data-calc-downsum>201 ${esc(n.mln)}</dd></div>
+        <div><dt>${esc(n.calcOutRest)}</dt><dd data-calc-rest>469 ${esc(n.mln)}</dd></div>
+        <div class="calc__hero"><dt>${esc(n.calcOutMonth)}</dt><dd data-calc-month>13 ${esc(n.mln)}</dd></div>
+      </dl>
+    </div>
+    <p class="plans__note">${esc(n.calcNote)}</p>
+
+    <h3 class="rf__h3">${esc(n.pickTitle)}</h3>
+    <p>${esc(n.pickText)}</p>
+    <p class="rf__cta"><a class="pill" href="${p}/select/#plan">${esc(t.rooms.pickCta)}</a></p>
+  </div>
+  </div>
+</section>
+
+${leadSection(t, { formId: 'instal', h: 'h2', title: t.cta.primary,
+  text: t.contacts.visitText, eyebrow: t.nav.instal })}`;
+  return page;
+}
+
 /* ══════════════ 404 ══════════════ */
 function notFound(t, page, alt) {
   const n = t.notFound;
@@ -1875,4 +2294,5 @@ if (location.pathname.indexOf('/uz/') === 0) {
   return page;
 }
 
-module.exports = { shell, home, project, apartments, genplan, select, location, contacts, notFound, swap, url, esc };
+module.exports = { shell, home, project, apartments, genplan, select, location, faq, contacts,
+  roomsPage, installment, roomGroups, roomFacts, notFound, faqPairs, facts, swap, url, esc };

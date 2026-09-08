@@ -165,8 +165,61 @@ function expand() {
   return items;
 }
 
+/* ── сводка по составу ──
+   Нужна для страниц по комнатности и для таблицы состава на «Выборе квартиры».
+   Считается из тех же 1186 записей, что и подбор, поэтому цифра на странице
+   не может разойтись с цифрой в фильтре. Ключ группы: 's' — студии, дальше
+   число комнат; студии в CRM помечены однокомнатными, но покупатель ищет их
+   отдельно, поэтому и здесь они отдельная группа. */
+function stats() {
+  const items = expand();
+  const groups = {};
+
+  items.forEach((f) => {
+    const key = f.studio ? 's' : String(f.rooms);
+    const g = groups[key] || (groups[key] = {
+      key,
+      rooms: f.rooms,
+      studio: f.studio,
+      count: 0,
+      areaFrom: Infinity, areaTo: -Infinity,
+      floorFrom: Infinity, floorTo: -Infinity,
+      areas: new Set(),
+      byEntrance: {},
+    });
+
+    g.count += 1;
+    g.areaFrom = Math.min(g.areaFrom, f.area);
+    g.areaTo = Math.max(g.areaTo, f.area);
+    g.floorFrom = Math.min(g.floorFrom, f.floor);
+    g.floorTo = Math.max(g.floorTo, f.floor);
+    g.areas.add(f.area);
+
+    const e = g.byEntrance[f.ent] || (g.byEntrance[f.ent] = {
+      ent: f.ent, count: 0,
+      areaFrom: Infinity, areaTo: -Infinity,
+      floorFrom: Infinity, floorTo: -Infinity,
+    });
+    e.count += 1;
+    e.areaFrom = Math.min(e.areaFrom, f.area);
+    e.areaTo = Math.max(e.areaTo, f.area);
+    e.floorFrom = Math.min(e.floorFrom, f.floor);
+    e.floorTo = Math.max(e.floorTo, f.floor);
+  });
+
+  Object.keys(groups).forEach((k) => {
+    const g = groups[k];
+    g.areas = Array.from(g.areas).sort((a, b) => a - b);
+    g.entrances = Object.keys(g.byEntrance).map(Number).sort((a, b) => a - b)
+      .map((n) => g.byEntrance[n]);
+  });
+
+  return groups;
+}
+
 module.exports = {
   source: 'Шахматка MacroCRM, дом #5694443 «PARI», выгрузка 01.09.2026',
   entrances,
   expand,
+  stats,
 };

@@ -57,6 +57,15 @@ const site = {
      на который она подтверждена. Обновлять здесь — цифра сама попадёт на сайт. */
   build: { stage: 'Котлован', stageUz: 'Kotlovan', asOf: 'август 2026', asOfUz: '2026-yil avgust' },
   instagram: 'https://www.instagram.com/pari_residence/',
+  /* Карточка в 2ГИС. Найдена 07.09.2026: организация там уже заведена (не нами),
+     точка стоит верно — 66.93999, 39.685869, это 53 м от офиса продаж, — телефон
+     и категория «Застройщики» совпадают. Ссылки на сайт в карточке нет, владелец
+     её не подтверждал (висит кнопка «Это моя компания»).
+     В sameAs она нужна затем же, зачем Instagram и Telegram: связать сайт и
+     карточку в один субъект, иначе поисковик считает их разными.
+     ВНИМАНИЕ: адрес в карточке — «Улица Гуругли, 6/1», индекс 140102, а на сайте
+     «улица Гуругли, 1». Одно из двух неверно, см. README. */
+  maps2gis: 'https://2gis.uz/samarkand/firm/70000001117257081',
   // Подтверждено владельцем 26.08.2026. WhatsApp у отдела продаж нет.
   telegram: 'https://t.me/pari_residence',
   // Заставка при первом заходе (медальон, уезжающий вверх). Выключается одной строкой:
@@ -212,7 +221,9 @@ const ru = {
     apartments: 'Квартиры',
     genplan: 'Генплан',
     select: 'Выбор квартиры',
+    instal: 'Рассрочка',
     location: 'Локация',
+    faq: 'Вопросы',
     contacts: 'Контакты',
   },
 
@@ -247,39 +258,73 @@ const ru = {
     okLate: 'Спасибо! Отдел продаж работает с 9:00 до 20:00 — перезвоним в ближайшее рабочее время.',
   },
 
-  /* ── метаданные страниц: уникальные, без перечисления ключевых слов ── */
+  /* ── метаданные страниц ──
+     Правило: заголовок отвечает на запрос, с которым человек пришёл, и
+     называет проект. Слова «новостройка», «купить квартиру», «от застройщика»,
+     «рассрочка» стоят здесь не для веса, а потому что именно ими люди в
+     Самарканде описывают то, что ищут, — и потому что всё это правда о
+     проекте. Перечислений ключей подряд нет ни в одном поле. */
   meta: {
     home: {
-      title: 'PARI Residence — квартиры премиум-класса в Самарканде',
-      description: 'Жилой квартал премиум-класса в Самарканде на улице Гуругли: закрытый двор-парк 1 Га без машин, 13 блоков, квартиры от 27 до 95 м².',
+      title: 'ЖК PARI Residence — новостройка в Самарканде, купить квартиру',
+      description: 'Новостройка премиум-класса в Самарканде на улице Гуругли: 13 блоков, '
+        + '1202 квартиры от 27 до 95 м², двор-парк 1 Га без машин. Квартиры от застройщика, '
+        + 'рассрочка 0% до 36 месяцев.',
     },
     project: {
-      title: 'О проекте PARI Residence — архитектура и благоустройство',
-      description: 'Квартал PARI Residence в Самарканде: архитектура SAFRONOVA PROJECT, фасады из натурального камня, двор-парк 1 Га без машин, паркинг.',
+      title: 'О проекте PARI Residence — новостройка премиум-класса в Самарканде',
+      description: 'ЖК PARI Residence в новом районе Залиния, Самарканд: архитектура '
+        + 'SAFRONOVA PROJECT, фасады из натурального камня, двор-парк 1 Га без машин, '
+        + 'подземный паркинг, застройщик FD MARAKANDA.',
     },
     select: {
-      title: 'Выбор квартиры в PARI Residence — планы этажей',
-      description: 'Планы всех этажей PARI Residence: тринадцать подъездов, этажи с третьего '
-        + 'по шестнадцатый, расположение каждой квартиры на этаже.',
+      title: 'Выбрать квартиру в PARI Residence — планы этажей новостройки',
+      description: 'Планы всех этажей ЖК PARI Residence в Самарканде: тринадцать подъездов, '
+        + 'этажи с третьего по шестнадцатый, расположение каждой квартиры на этаже. '
+        + 'Подберите квартиру по комнатности и площади.',
     },
     genplan: {
-      title: 'Генеральный план PARI Residence — 13 корпусов в Самарканде',
-      description: 'Генплан жилого квартала PARI Residence: тринадцать корпусов высотой '
-        + 'от 13 до 16 этажей вокруг закрытого двора-парка площадью один гектар.',
+      title: 'Генплан ЖК PARI Residence — 13 корпусов новостройки в Самарканде',
+      description: 'Генеральный план жилого квартала PARI Residence: тринадцать корпусов '
+        + 'высотой от 13 до 16 этажей вокруг закрытого двора-парка площадью один гектар, '
+        + 'въезды, паркинг и входные группы.',
     },
     apartments: {
-      title: 'Квартиры в Самарканде — PARI Residence',
-      description: 'Планировки квартир PARI Residence в Самарканде: одно-, двух-, трёх- и четырёхкомнатные от 27 до 95 м², 33 плана с местом на этаже.',
+      title: 'Купить квартиру в Самарканде — планировки ЖК PARI Residence',
+      description: '1202 квартиры в новостройке PARI Residence: одно-, двух-, трёх- и '
+        + 'четырёхкомнатные от 27 до 95 м², 33 планировки. Цена от 10 млн сум за м², '
+        + 'рассрочка 0% до 36 месяцев от застройщика.',
     },
     location: {
-      title: 'Расположение — PARI Residence в Самарканде',
-      description: 'PARI Residence расположен в Самарканде на улице Гуругли, 1: 3 минуты до вокзала, '
-        + '15 минут до аэропорта, супермаркеты, школы и торговый центр рядом.',
+      title: 'Где находится PARI Residence — улица Гуругли, Самарканд',
+      description: 'ЖК PARI Residence расположен в Самарканде на улице Гуругли, 1: 3 минуты '
+        + 'до вокзала, 15 минут до аэропорта, супермаркеты, школы и торговый центр рядом. '
+        + 'Карта и маршрут до отдела продаж.',
+    },
+    /* Заголовки страниц по комнатности собираются из настоящих цифр:
+       {title} {short} {countN} {areaFrom} {areaTo} {floorFrom} {floorTo} {price} {months} */
+    rooms: {
+      title: '{title} в Самарканде — ЖК PARI Residence',
+      description: '{count}, {areaSpan}, в новостройке PARI Residence на улице Гуругли, '
+        + 'Самарканд. Этажи {floorSpan}, планировки, цена от {price} за м², рассрочка 0%.',
+    },
+    instal: {
+      title: 'Квартира в рассрочку в Самарканде — PARI Residence, 0% на 36 месяцев',
+      description: 'Беспроцентная рассрочка на квартиру в ЖК PARI Residence: до 36 месяцев '
+        + 'напрямую у застройщика, без банка и переплаты. Условия, расчёт платежа '
+        + 'и цена от {price} за м².',
+    },
+    faq: {
+      title: 'Вопросы и ответы о ЖК PARI Residence — цены, рассрочка, сроки',
+      description: 'Ответы на вопросы о новостройке PARI Residence в Самарканде: где находится, '
+        + 'сколько стоит квартира, есть ли рассрочка и на какой срок, когда сдача, '
+        + 'какие планировки и как посмотреть квартиру.',
     },
     contacts: {
-      title: 'Отдел продаж PARI Residence в Самарканде — контакты',
-      description: 'Отдел продаж PARI Residence: Самарканд, улица Гуругли, 1. Телефон 55 705 05 05. '
-        + 'Запишитесь на визит и получите консультацию по квартирам и условиям покупки.',
+      title: 'Отдел продаж PARI Residence в Самарканде — контакты и адрес',
+      description: 'Отдел продаж ЖК PARI Residence: Самарканд, улица Гуругли, 1, ежедневно '
+        + 'с 9:00 до 20:00. Телефон 55 705 05 05. Запишитесь на визит и узнайте условия '
+        + 'покупки и рассрочки.',
     },
     notFound: {
       title: 'Страница не найдена — PARI Residence',
@@ -673,7 +718,7 @@ const ru = {
      розой инсоляции, расположением на этаже и расположением в комплексе. */
 
   genplan: {
-    h1: 'Генеральный план',
+    h1: 'Генеральный план PARI Residence',
     lead: 'Тринадцать корпусов вокруг закрытого двора-парка. Наведите на корпус, '
       + 'чтобы увидеть его тип и этажность.',
     planAlt: 'Генеральный план PARI Residence в масштабе 1:500',
@@ -700,7 +745,7 @@ const ru = {
   },
 
   select: {
-    h1: 'Выбор квартиры',
+    h1: 'Выбор квартиры в PARI Residence',
     lead: 'Тринадцать подъездов, этажи с третьего по шестнадцатый. Выберите подъезд и этаж — '
       + 'покажем план с расположением квартир.',
     entrance: 'Подъезд',
@@ -760,8 +805,10 @@ const ru = {
   /* ── страница квартир ── */
   apartments: {
     h1: 'Квартиры в PARI Residence',
-    lead: '1202 квартиры в 13 блоках — от однокомнатной до четырёхкомнатной, от 27 до 95 м². '
-      + 'Балконы, кухни-гостиные и закрытый двор-парк без машин.',
+    lead: '1202 квартиры в 13 блоках нового квартала в Самарканде — от однокомнатной '
+      + 'до четырёхкомнатной, от 27 до 95 м². Балконы, кухни-гостиные и закрытый двор-парк '
+      + 'без машин. Цена от 10 млн сум за м², покупка напрямую у застройщика, '
+      + 'беспроцентная рассрочка.',
     priceLine: 'Квартиры от 10 млн сум за м²',
     termsTitle: 'Сроки и условия',
     termsLead: 'Дом строится двумя очередями. Рассрочка беспроцентная и рассчитана до сдачи '
@@ -935,6 +982,198 @@ const ru = {
     developer: 'Застройщик',
   },
 
+  /* ══════════════ страницы по комнатности ══════════════
+     Шесть адресов вида /apartments/2-room/ — по одному на группу из шахматки.
+     Смысл не в SEO-объёме: человек ищет «двухкомнатную в Самарканде», и ему
+     нужна страница, где сразу видно, сколько их, каких площадей, на каких
+     этажах и в каких подъездах. Все цифры считаются из тех же 1186 записей,
+     что и подбор (src/flats.js → stats), поэтому разойтись не могут.
+     Подстановки: {count} {areaFrom} {areaTo} {floorFrom} {floorTo}
+     {entrances} {plans} {price} {months}. */
+  rooms: {
+    /* Заголовок и вводный абзац общие, различаются словом группы. */
+    h1: '{title} в PARI Residence, Самарканд',
+    lead: '{count} — {areaSpan}, этажи {floorSpan}, {entrances}. '
+      + 'Новый квартал бизнес-класса на улице Гуругли: '
+      + 'закрытый двор-парк без машин, подземный паркинг, фасады из натурального камня.',
+    leadPrice: 'Цена от {price} за квадратный метр, покупка напрямую у застройщика, '
+      + 'беспроцентная рассрочка до {months}.',
+
+    plansTitle: 'Планировки',
+    plansNone: 'Отдельных листов планировок для этой группы застройщик пока не '
+      + 'присылал — покажем их в отделе продаж.',
+    plansLead: 'Чертежи с рабочих листов застройщика. Нажмите, чтобы открыть лист '
+      + 'целиком: экспликация по комнатам, роза инсоляции и расположение на этаже.',
+
+    spreadTitle: 'Где в квартале',
+    spreadLead: 'Распределение по подъездам — из шахматки отдела продаж. '
+      + 'Наличие конкретной квартиры меняется каждый день, уточняйте по телефону.',
+    colEntrance: 'Подъезд',
+    colCount: 'Квартир',
+    colArea: 'Площадь, м²',
+    colFloors: 'Этажи',
+    totalWord: 'Всего',
+
+    termsTitle: 'Условия покупки',
+    byRooms: 'Квартиры по комнатности',
+    pickTitle: 'Выбрать конкретную квартиру',
+    pickText: 'В подборе видно каждую квартиру: подъезд, этаж, номер и площадь. '
+      + 'Оттуда же открывается план этажа с её контуром.',
+    pickCta: 'Перейти к подбору',
+    otherTitle: 'Другие квартиры',
+
+    /* Названия групп: именительный для заголовка, родительный множественный
+       для фразы «{count} двухкомнатных». */
+    /* forms — три формы для счёта: «78 студий», «1 студия», «2 студии».
+       Без них выходило «71 четырёхкомнатных квартир», и текст сразу читался
+       как машинный. */
+    groups: {
+      s: { title: 'Квартиры-студии', short: 'Студии',
+        forms: ['студий', 'студия', 'студии'] },
+      1: { title: 'Однокомнатные квартиры', short: '1-комнатные',
+        forms: ['однокомнатных квартир', 'однокомнатная квартира', 'однокомнатные квартиры'] },
+      2: { title: 'Двухкомнатные квартиры', short: '2-комнатные',
+        forms: ['двухкомнатных квартир', 'двухкомнатная квартира', 'двухкомнатные квартиры'] },
+      3: { title: 'Трёхкомнатные квартиры', short: '3-комнатные',
+        forms: ['трёхкомнатных квартир', 'трёхкомнатная квартира', 'трёхкомнатные квартиры'] },
+      4: { title: 'Четырёхкомнатные квартиры', short: '4-комнатные',
+        forms: ['четырёхкомнатных квартир', 'четырёхкомнатная квартира', 'четырёхкомнатные квартиры'] },
+    },
+    entWord: ['подъездов', 'подъезд', 'подъезда'],
+    entIn: ['в {n} подъездах', 'в {n} подъезде', 'в {n} подъездах'],
+    flatWord: ['квартир', 'квартира', 'квартиры'],
+    planWord: ['планировок', 'планировка', 'планировки'],
+  },
+
+  /* ══════════════ рассрочка ══════════════
+     Условия подтверждены владельцем 26.08.2026: беспроцентно, до сдачи первой
+     очереди, максимум 36 месяцев. Всё, чего в этом списке нет — размер первого
+     взноса, ипотека — на страницу не выводится. */
+  instal: {
+    h1: 'Рассрочка на квартиру в PARI Residence',
+    lead: 'Квартиру в квартале можно купить в беспроцентную рассрочку напрямую у '
+      + 'застройщика — без банка, справок о доходах и переплаты.',
+
+    factsTitle: 'Условия',
+    facts: [
+      { k: 'Ставка', v: '0%', note: 'переплаты нет' },
+      { k: 'Максимальный срок', v: '36 месяцев', note: 'до сдачи первой очереди' },
+      { k: 'Доступно сейчас', v: '{months}', note: 'остаток до сдачи' },
+      { k: 'Цена', v: 'от {price}', note: 'за квадратный метр' },
+    ],
+
+    howTitle: 'Как это работает',
+    how: [
+      'Срок рассрочки привязан к сдаче первой очереди — {stage1}. Поэтому '
+        + 'максимум в 36 месяцев доступен не всегда: чем ближе сдача, тем короче '
+        + 'остаток. Сейчас это {months}.',
+      'Рассрочка беспроцентная: сумма договора не растёт от того, что вы платите '
+        + 'её частями. Никакой скрытой надбавки «за рассрочку» в цене нет.',
+      'Договор заключается напрямую с застройщиком {developer}. Банк-партнёр '
+        + 'проекта — {bank}.',
+      'Размер первого взноса и график платежей рассчитывает менеджер под '
+        + 'конкретную квартиру: они зависят от её стоимости и оставшегося срока.',
+    ],
+
+    calcTitle: 'Прикинуть платёж',
+    calcLead: 'Ориентировочный расчёт по формуле «остаток, делённый на срок». '
+      + 'Это не коммерческое предложение и не договор — точные цифры даёт отдел продаж.',
+    calcArea: 'Площадь квартиры, м²',
+    calcPrice: 'Цена за м², млн сум',
+    calcDown: 'Первый взнос',
+    calcTerm: 'Срок, месяцев',
+    calcOutCost: 'Стоимость квартиры',
+    calcOutDown: 'Первый взнос',
+    calcOutRest: 'Остаток в рассрочку',
+    calcOutMonth: 'Платёж в месяц',
+    calcNote: 'Расчёт ориентировочный. Цена за квадратный метр указана без учёта '
+      + 'скидок и может отличаться для конкретной квартиры.',
+    mln: 'млн сум',
+
+    pickTitle: 'Подобрать квартиру',
+    pickText: 'Выберите комнатность, площадь и этаж — и обсудим условия по '
+      + 'конкретной квартире.',
+  },
+
+  /* ── страница «Вопросы и ответы» ──
+     Правило то же, что и везде: сюда попадают только подтверждённые данные.
+     Цифры не дублируются вручную — ответ собирается из site (цена, срок
+     рассрочки, застройщик, сроки очередей), поэтому обновление в одном
+     месте меняет и ответ. Плейсхолдеры: {price} {months} {developer} {bank}
+     {architect} {apartments} {blocks} {areaFrom} {areaTo} {plans} {stage1} {stage2}
+     {address} {phone} {hours} {buildStage} {buildAsOf}. */
+  faq: {
+    h1: 'Вопросы и ответы о PARI Residence',
+    lead: 'Коротко о главном: где находится квартал, сколько стоит квартира, как устроена '
+      + 'рассрочка и когда сдача. Если вопроса здесь нет — позвоните в отдел продаж.',
+    items: [
+      {
+        q: 'Где находится PARI Residence?',
+        a: 'Жилой квартал строится в Самарканде, {street} — в новом районе '
+          + '«Залиния» на месте бывших промышленных территорий. До железнодорожного вокзала '
+          + '3 минуты на машине, до аэропорта — около 15. Отдел продаж работает на площадке.',
+      },
+      {
+        q: 'Сколько стоит квартира в PARI Residence?',
+        a: 'Цена начинается от {price} за квадратный метр. Итоговая стоимость зависит от '
+          + 'этажа, площади и планировки, поэтому актуальный расчёт по конкретной квартире '
+          + 'делает менеджер отдела продаж: {phone}.',
+      },
+      {
+        q: 'Есть ли рассрочка и на какой срок?',
+        a: 'Да, рассрочка беспроцентная и оформляется максимум на 36 месяцев: срок '
+          + 'привязан к сдаче первой очереди, поэтому сейчас доступно {months}, и чем ближе '
+          + 'сдача, тем короче остаток. График платежей и размер первого взноса '
+          + 'уточняйте в отделе продаж.',
+      },
+      {
+        q: 'Кто застройщик PARI Residence?',
+        a: 'Застройщик — {developer}. Архитектура квартала разработана бюро {architect}. '
+          + 'Банк-партнёр проекта — {bank}.',
+      },
+      {
+        q: 'Когда сдача дома?',
+        a: 'Квартал строится двумя очередями. Первая очередь — {stage1}, вторая — {stage2}. '
+          + 'На {buildAsOf} на площадке идёт этап «{buildStage}».',
+      },
+      {
+        q: 'Какие квартиры и планировки есть в продаже?',
+        a: 'Всего в квартале {apartments} квартиры в {blocks} блоках: одно-, двух-, трёх- и '
+          + 'четырёхкомнатные, площадью от {areaFrom} до {areaTo} м². На сайте опубликовано '
+          + '{plansWord}, к каждой показано место квартиры на этаже.',
+      },
+      {
+        q: 'Сколько в квартале корпусов и этажей?',
+        a: 'Тринадцать жилых блоков высотой от 13 до 16 этажей, поставленных по периметру '
+          + 'квартала вокруг закрытого двора. Жильё начинается с третьего этажа.',
+      },
+      {
+        q: 'Что находится во дворе и есть ли паркинг?',
+        a: 'Двор — закрытый парк площадью один гектар, машин внутри нет: 30% территории '
+          + 'занимает озеленение. Для автомобилей предусмотрены подземный и наземный '
+          + 'паркинг, открытая парковка на 148 машино-мест вынесена за периметр двора.',
+      },
+      {
+        q: 'Как посмотреть квартиру и записаться на визит?',
+        a: 'Приезжайте в отдел продаж по адресу {address} — он открыт {hours}. Позвоните '
+          + 'заранее по номеру {phone}, и менеджер оставит для вас время: покажем свободные '
+          + 'квартиры на этажах, планировки в деталях и виды из окон. Заявку можно оставить '
+          + 'и через форму на сайте или в Telegram.',
+      },
+    ],
+    ctaTitle: 'Не нашли свой вопрос?',
+    ctaText: 'Оставьте имя и телефон — менеджер отдела продаж перезвонит и ответит.',
+    /* Подсказка к соседним разделам: человек после ответа обычно идёт смотреть
+       именно их, и поисковику полезно видеть эти переходы естественным текстом. */
+    more: 'Подробнее — в разделах:',
+    links: {
+      apartments: 'планировки квартир',
+      select: 'выбор квартиры по этажам',
+      genplan: 'генплан квартала',
+      location: 'расположение и транспорт',
+    },
+  },
+
   contacts: {
     h1: 'Отдел продаж PARI Residence в Самарканде',
     lead: 'Приезжайте в отдел продаж — покажем планировки и расскажем об условиях покупки. '
@@ -992,7 +1231,9 @@ const uz = {
     apartments: 'Xonadonlar',
     genplan: 'Bosh reja',
     select: 'Xonadon tanlash',
+    instal: 'Boʻlib toʻlash',
     location: 'Joylashuv',
+    faq: 'Savol-javob',
     contacts: 'Aloqa',
   },
 
@@ -1026,37 +1267,68 @@ const uz = {
   },
 
   meta: {
+    /* Sarlavhalarda «kvartira» soʻzi ham bor: Oʻzbekistonda odamlar qidiruvda
+       aynan shunday yozadi, matnlarda esa adabiy «xonadon» qoladi. Ikkalasi
+       ham toʻgʻri, hech qanday soʻz zichligi uchun qoʻshilmagan. */
     home: {
-      title: 'PARI Residence — Samarqandda premium-klass xonadonlar',
-      description: 'Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass turar-joy majmuasi: 1 gektarlik mashinasiz hovli-bogʻ, 13 blok, 27–95 m² xonadonlar.',
+      title: 'PARI Residence — Samarqandda yangi uy, kvartira sotib olish',
+      description: 'Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass yangi turar-joy majmuasi: '
+        + '13 blok, 27–95 m² 1202 xonadon, 1 gektarlik mashinasiz hovli-bogʻ. Quruvchidan '
+        + 'kvartira, 36 oygacha 0% boʻlib toʻlash.',
     },
     project: {
-      title: 'PARI Residence loyihasi — arxitektura va obodonlashtirish',
-      description: 'PARI Residence kvartali: SAFRONOVA PROJECT arxitekturasi, tabiiy toshli fasadlar, 1 gektarlik mashinasiz hovli-bogʻ, yer osti avtoturargohi.',
+      title: 'PARI Residence loyihasi — Samarqandda premium yangi qurilish',
+      description: 'PARI Residence Samarqandning yangi «Zaliniya» mahallasida: SAFRONOVA '
+        + 'PROJECT arxitekturasi, tabiiy toshli fasadlar, 1 gektarlik mashinasiz hovli-bogʻ, '
+        + 'yer osti avtoturargohi. Quruvchi — FD MARAKANDA.',
     },
     select: {
-      title: 'PARI Residence xonadon tanlash — qavat rejalari',
+      title: 'PARI Residence xonadon tanlash — yangi uy qavat rejalari',
       description: 'PARI Residence barcha qavatlari rejalari: oʻn uch podyezd, uchinchidan '
-        + 'oʻn oltinchi qavatgacha, har bir xonadonning qavatdagi joylashuvi.',
+        + 'oʻn oltinchi qavatgacha, har bir xonadonning qavatdagi joylashuvi. Xonalar soni '
+        + 'va maydoni boʻyicha kvartira tanlang.',
     },
     genplan: {
-      title: 'PARI Residence bosh rejasi — Samarqandda 13 blok',
+      title: 'PARI Residence bosh rejasi — Samarqandda 13 blokli majmua',
       description: 'PARI Residence turar-joy kvartalining bosh rejasi: bir gektarlik yopiq '
-        + 'hovli-bogʻ atrofida 13 dan 16 qavatgacha boʻlgan oʻn uch blok.',
+        + 'hovli-bogʻ atrofida 13 dan 16 qavatgacha boʻlgan oʻn uch blok, kirish joylari '
+        + 'va avtoturargoh.',
     },
     apartments: {
-      title: 'Samarqandda xonadonlar — PARI Residence',
-      description: 'PARI Residence xonadon tarhlari: bir, ikki, uch va toʻrt xonali, 27–95 m², qavatdagi oʻrni koʻrsatilgan 33 ta reja.',
+      title: 'Samarqandda kvartira sotib olish — PARI Residence tarhlari',
+      description: 'PARI Residence yangi majmuasidagi 1202 xonadon: bir, ikki, uch va toʻrt '
+        + 'xonali, 27–95 m², 33 ta tarh. Narxi 1 m² uchun 10 mln soʻmdan, quruvchidan '
+        + '36 oygacha 0% boʻlib toʻlash.',
     },
     location: {
-      title: 'Joylashuvi — Samarqanddagi PARI Residence',
-      description: 'PARI Residence Samarqand, Goʻroʻgʻli koʻchasi, 1 manzilida: vokzalgacha 3 daqiqa, '
-        + 'aeroportgacha 15 daqiqa, yaqinida supermarketlar, maktablar va savdo markazi.',
+      title: 'PARI Residence qayerda — Goʻroʻgʻli koʻchasi, Samarqand',
+      description: 'PARI Residence Samarqand, Goʻroʻgʻli koʻchasi, 1 manzilida: vokzalgacha '
+        + '3 daqiqa, aeroportgacha 15 daqiqa, yaqinida supermarketlar, maktablar va savdo '
+        + 'markazi. Xarita va savdo boʻlimigacha yoʻl.',
+    },
+    rooms: {
+      title: 'Samarqandda {titleLc} — PARI Residence',
+      description: 'PARI Residence yangi majmuasida {count}: {areaSpan}, '
+        + '{floorSpan}-qavatlar, tarhlar, narxi 1 m² uchun {price}dan, '
+        + '0% boʻlib toʻlash. Samarqand, Goʻroʻgʻli koʻchasi.',
+    },
+    instal: {
+      title: 'Samarqandda boʻlib toʻlashga kvartira — PARI Residence, 36 oyga 0%',
+      description: 'PARI Residence’da foizsiz boʻlib toʻlash: toʻgʻridan-toʻgʻri quruvchidan '
+        + '36 oygacha, banksiz va ortiqcha toʻlovsiz. Shartlar, toʻlov hisobi va '
+        + '1 m² uchun {price}dan narx.',
+    },
+    faq: {
+      title: 'PARI Residence — savol-javob: narx, boʻlib toʻlash, muddat',
+      description: 'Samarqanddagi PARI Residence haqida savollarga javoblar: qayerda '
+        + 'joylashgan, kvartira qancha turadi, boʻlib toʻlash necha oyga, topshirish muddati '
+        + 'va xonadonni qanday koʻrish mumkin.',
     },
     contacts: {
-      title: 'PARI Residence savdo boʻlimi — Samarqand, aloqa',
-      description: 'PARI Residence savdo boʻlimi: Samarqand, Goʻroʻgʻli koʻchasi, 1. Telefon 55 705 05 05. '
-        + 'Tashrifga yoziling va xonadonlar boʻyicha maslahat oling.',
+      title: 'PARI Residence savdo boʻlimi — Samarqand, manzil va aloqa',
+      description: 'PARI Residence savdo boʻlimi: Samarqand, Goʻroʻgʻli koʻchasi, 1, har kuni '
+        + '9:00–20:00. Telefon 55 705 05 05. Tashrifga yoziling va sotib olish hamda boʻlib '
+        + 'toʻlash shartlarini biling.',
     },
     notFound: {
       title: 'Sahifa topilmadi — PARI Residence',
@@ -1382,7 +1654,7 @@ const uz = {
 
 
   genplan: {
-    h1: 'Bosh reja',
+    h1: 'PARI Residence bosh rejasi',
     lead: 'Yopiq hovli-bogʻ atrofida oʻn uch blok. Blokning turi va qavatlar sonini '
       + 'koʻrish uchun uning ustiga olib boring.',
     planAlt: 'PARI Residence bosh rejasi, masshtab 1:500',
@@ -1409,7 +1681,7 @@ const uz = {
   },
 
   select: {
-    h1: 'Xonadon tanlash',
+    h1: 'PARI Residence’da xonadon tanlash',
     lead: 'Oʻn uch podyezd, uchinchidan oʻn oltinchi qavatgacha. Podyezd va qavatni tanlang — '
       + 'xonadonlar joylashuvi bilan reja koʻrsatamiz.',
     entrance: 'Podyezd',
@@ -1466,8 +1738,10 @@ const uz = {
 
   apartments: {
     h1: 'PARI Residence xonadonlari',
-    lead: 'PARI Residence-da 13 blokda 1202 xonadon: bir xonalidan oilaviy toʻrt xonaligacha. '
-      + 'Maydoni 27–95 m², keng balkonlar va mashinasiz yopiq hovli-bogʻ.',
+    lead: 'Samarqanddagi yangi kvartalning 13 blokida 1202 xonadon: bir xonalidan oilaviy '
+      + 'toʻrt xonaligacha, maydoni 27–95 m², keng balkonlar va mashinasiz yopiq hovli-bogʻ. '
+      + 'Narxi 1 m² uchun 10 mln soʻmdan, xarid toʻgʻridan-toʻgʻri quruvchidan, boʻlib '
+      + 'toʻlash foizsiz.',
     priceLine: 'Xonadonlar 1 m² uchun 10 mln soʻmdan',
     termsTitle: 'Muddatlar va shartlar',
     termsLead: 'Uy ikki navbatda quriladi. Boʻlib toʻlash foizsiz va birinchi navbat '
@@ -1629,6 +1903,173 @@ const uz = {
     route: 'Qanday yetib borish mumkin',
     copy: 'Barcha huquqlar himoyalangan',
     developer: 'Quruvchi',
+  },
+
+  /* ══════════════ xonalar soni boʻyicha sahifalar ══════════════ */
+  rooms: {
+    h1: '{title} PARI Residence’da, Samarqand',
+    lead: '{count} — {areaSpan}, {floorSpan}-qavatlar, {entrances}. '
+      + 'Goʻroʻgʻli koʻchasidagi yangi biznes-klass '
+      + 'kvartal: mashinasiz yopiq hovli-bogʻ, yer osti avtoturargohi, tabiiy toshli fasadlar.',
+    leadPrice: 'Narxi 1 m² uchun {price}dan, xarid toʻgʻridan-toʻgʻri quruvchidan, '
+      + '{months}gacha foizsiz boʻlib toʻlash.',
+
+    plansTitle: 'Tarhlar',
+    plansNone: 'Bu guruh uchun alohida tarh varaqlarini quruvchi hozircha '
+      + 'yubormagan — ularni savdo boʻlimida koʻrsatamiz.',
+    plansLead: 'Quruvchining ish varaqlaridagi chizmalar. Varaqni toʻliq ochish uchun '
+      + 'bosing: xonalar eksplikatsiyasi, insolyatsiya atirguli va qavatdagi joylashuvi.',
+
+    spreadTitle: 'Kvartalda qayerda',
+    spreadLead: 'Podyezdlar boʻyicha taqsimot — savdo boʻlimi shaxmatkasidan. '
+      + 'Aniq xonadonning mavjudligi har kuni oʻzgaradi, telefon orqali aniqlashtiring.',
+    colEntrance: 'Podyezd',
+    colCount: 'Xonadon',
+    colArea: 'Maydoni, m²',
+    colFloors: 'Qavatlar',
+    totalWord: 'Jami',
+
+    termsTitle: 'Sotib olish shartlari',
+    byRooms: 'Xonalar soni boʻyicha xonadonlar',
+    pickTitle: 'Aniq xonadonni tanlash',
+    pickText: 'Tanlovda har bir xonadon koʻrinadi: podyezd, qavat, raqam va maydon. '
+      + 'Oʻsha yerdan uning konturi bilan qavat rejasi ochiladi.',
+    pickCta: 'Tanlovga oʻtish',
+    otherTitle: 'Boshqa xonadonlar',
+
+    groups: {
+      s: { title: 'Studiya xonadonlar', short: 'Studiyalar', forms: ['ta studiya'] },
+      1: { title: 'Bir xonali kvartiralar', short: '1 xonali', forms: ['ta bir xonali xonadon'] },
+      2: { title: 'Ikki xonali kvartiralar', short: '2 xonali', forms: ['ta ikki xonali xonadon'] },
+      3: { title: 'Uch xonali kvartiralar', short: '3 xonali', forms: ['ta uch xonali xonadon'] },
+      4: { title: 'Toʻrt xonali kvartiralar', short: '4 xonali', forms: ['ta toʻrt xonali xonadon'] },
+    },
+    entWord: ['podyezd', 'podyezd', 'podyezd'],
+    entIn: ['{n} ta podyezdda', '{n} ta podyezdda', '{n} ta podyezdda'],
+    flatWord: ['xonadon', 'xonadon', 'xonadon'],
+    planWord: ['tarh', 'tarh', 'tarh'],
+  },
+
+  /* ══════════════ boʻlib toʻlash ══════════════ */
+  instal: {
+    h1: 'PARI Residence’da xonadonni boʻlib toʻlash',
+    lead: 'Kvartaldagi xonadonni toʻgʻridan-toʻgʻri quruvchidan foizsiz boʻlib '
+      + 'toʻlash asosida sotib olish mumkin — banksiz, daromad maʼlumotnomasisiz va '
+      + 'ortiqcha toʻlovsiz.',
+
+    factsTitle: 'Shartlar',
+    facts: [
+      { k: 'Stavka', v: '0%', note: 'ortiqcha toʻlov yoʻq' },
+      { k: 'Eng koʻp muddat', v: '36 oy', note: 'birinchi navbat topshirilgunicha' },
+      { k: 'Hozir mavjud', v: '{months}', note: 'topshirishgacha qolgan muddat' },
+      { k: 'Narxi', v: '{price}dan', note: '1 kvadrat metr uchun' },
+    ],
+
+    howTitle: 'Bu qanday ishlaydi',
+    how: [
+      'Boʻlib toʻlash muddati birinchi navbat topshirilishiga bogʻlangan — {stage1}. '
+        + 'Shuning uchun 36 oylik eng katta muddat har doim ham mavjud emas: topshirish '
+        + 'yaqinlashgani sari qoldiq qisqaradi. Hozir bu {months}.',
+      'Boʻlib toʻlash foizsiz: shartnoma summasi qismlarga boʻlib toʻlaganingiz uchun '
+        + 'oshmaydi. Narxda «boʻlib toʻlash uchun» yashirin ustama yoʻq.',
+      'Shartnoma toʻgʻridan-toʻgʻri {developer} quruvchisi bilan tuziladi. Loyihaning '
+        + 'hamkor banki — {bank}.',
+      'Boshlangʻich toʻlov miqdori va toʻlov jadvalini menejer aniq xonadon uchun '
+        + 'hisoblaydi: ular xonadon qiymati va qolgan muddatga bogʻliq.',
+    ],
+
+    calcTitle: 'Toʻlovni chamalash',
+    calcLead: 'Taxminiy hisob: qoldiq muddatga boʻlinadi. Bu tijorat taklifi ham, '
+      + 'shartnoma ham emas — aniq raqamlarni savdo boʻlimi beradi.',
+    calcArea: 'Xonadon maydoni, m²',
+    calcPrice: '1 m² narxi, mln soʻm',
+    calcDown: 'Boshlangʻich toʻlov',
+    calcTerm: 'Muddat, oy',
+    calcOutCost: 'Xonadon qiymati',
+    calcOutDown: 'Boshlangʻich toʻlov',
+    calcOutRest: 'Boʻlib toʻlash qoldigʻi',
+    calcOutMonth: 'Oylik toʻlov',
+    calcNote: 'Hisob taxminiy. 1 kvadrat metr narxi chegirmalarsiz koʻrsatilgan va '
+      + 'aniq xonadon uchun farq qilishi mumkin.',
+    mln: 'mln soʻm',
+
+    pickTitle: 'Xonadon tanlash',
+    pickText: 'Xonalar sonini, maydonni va qavatni tanlang — aniq xonadon boʻyicha '
+      + 'shartlarni muhokama qilamiz.',
+  },
+
+  /* ── «Savol-javob» sahifasi. Faqat tasdiqlangan maʼlumotlar. ── */
+  faq: {
+    h1: 'PARI Residence haqida savol-javob',
+    lead: 'Eng muhimi qisqacha: majmua qayerda joylashgan, kvartira qancha turadi, boʻlib '
+      + 'toʻlash qanday va topshirish qachon. Savolingiz bu yerda boʻlmasa — savdo '
+      + 'boʻlimiga qoʻngʻiroq qiling.',
+    items: [
+      {
+        q: 'PARI Residence qayerda joylashgan?',
+        a: 'Turar-joy majmuasi Samarqandda, {street} manzilida — sobiq sanoat hududi oʻrnida '
+          + 'paydo boʻlayotgan yangi «Zaliniya» mahallasida quriladi. Temir yoʻl vokzaligacha '
+          + 'mashinada 3 daqiqa, aeroportgacha 15 daqiqacha. Savdo boʻlimi qurilish '
+          + 'maydonchasida ishlaydi.',
+      },
+      {
+        q: 'PARI Residence’da kvartira qancha turadi?',
+        a: 'Narx bir kvadrat metr uchun {price}dan boshlanadi. Yakuniy summa qavat, maydon va '
+          + 'tarhga bogʻliq, shuning uchun aniq xonadon boʻyicha hisob-kitobni savdo boʻlimi '
+          + 'menejeri qiladi: {phone}.',
+      },
+      {
+        q: 'Boʻlib toʻlash bormi va necha oyga?',
+        a: 'Ha, boʻlib toʻlash foizsiz va koʻpi bilan 36 oyga rasmiylashtiriladi: muddat '
+          + 'birinchi navbat topshirilishiga bogʻlangan, shuning uchun hozir {months} mavjud '
+          + 'va topshirish yaqinlashgani sari qoldiq qisqaradi. Toʻlov jadvali va boshlangʻich '
+          + 'toʻlov miqdorini savdo boʻlimida aniqlashtiring.',
+      },
+      {
+        q: 'PARI Residence quruvchisi kim?',
+        a: 'Quruvchi — {developer}. Kvartal arxitekturasini {architect} byurosi ishlab chiqqan. '
+          + 'Loyihaning hamkor banki — {bank}.',
+      },
+      {
+        q: 'Uy qachon topshiriladi?',
+        a: 'Kvartal ikki navbatda quriladi. Birinchi navbat — {stage1}, ikkinchisi — {stage2}. '
+          + '{buildAsOf} holatiga maydonchada «{buildStage}» bosqichi ketmoqda.',
+      },
+      {
+        q: 'Qanday xonadonlar va tarhlar sotuvda bor?',
+        a: 'Kvartalda jami {blocks} blokda {apartments} xonadon: bir, ikki, uch va toʻrt '
+          + 'xonali, maydoni {areaFrom} m²dan {areaTo} m²gacha. Saytda {plans} ta tarh '
+          + 'eʼlon qilingan, har birida xonadonning qavatdagi oʻrni koʻrsatilgan.',
+      },
+      {
+        q: 'Kvartalda nechta blok va qavat bor?',
+        a: 'Oʻn uchta turar-joy bloki, balandligi 13 dan 16 qavatgacha; ular kvartal boʻylab '
+          + 'yopiq hovli atrofida joylashgan. Turar-joy uchinchi qavatdan boshlanadi.',
+      },
+      {
+        q: 'Hovlida nima bor va avtoturargoh bormi?',
+        a: 'Hovli — bir gektarlik yopiq bogʻ, ichida mashina yoʻq: hududning 30 foizi '
+          + 'koʻkalamzorlashtirilgan. Avtomobillar uchun yer osti va yer usti avtoturargohi '
+          + 'koʻzda tutilgan, 148 mashinalik ochiq avtoturargoh esa hovli tashqarisiga '
+          + 'chiqarilgan.',
+      },
+      {
+        q: 'Xonadonni qanday koʻrish va tashrifga yozilish mumkin?',
+        a: 'Savdo boʻlimiga {address} manzili boʻyicha keling — u {hours} ishlaydi. Oldindan '
+          + '{phone} raqamiga qoʻngʻiroq qiling, menejer siz uchun vaqt ajratadi: qavatlardagi '
+          + 'boʻsh xonadonlarni, tarhlarni tafsiloti bilan va derazadan koʻrinishni '
+          + 'koʻrsatamiz. Arizani sayt shakli yoki Telegram orqali ham qoldirish mumkin.',
+      },
+    ],
+    ctaTitle: 'Savolingizni topmadingizmi?',
+    ctaText: 'Ism va telefoningizni qoldiring — savdo boʻlimi menejeri qoʻngʻiroq qilib javob beradi.',
+    more: 'Batafsil — boʻlimlarda:',
+    links: {
+      apartments: 'xonadon tarhlari',
+      select: 'qavatlar boʻyicha xonadon tanlash',
+      genplan: 'kvartal bosh rejasi',
+      location: 'joylashuv va transport',
+    },
   },
 
   contacts: {
