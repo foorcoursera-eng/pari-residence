@@ -102,7 +102,8 @@ function navItems(t) {
   return [
     [`${p}/project/`, t.nav.project],
     [`${p}/apartments/`, t.nav.apartments],
-    [`${p}/genplan/`, t.nav.genplan],
+    /* Генплан снят: раздел в разработке. Вернуть — расскобить строку. */
+    // [`${p}/genplan/`, t.nav.genplan],
     [`${p}/select/`, t.nav.select],
     [`${p}/installment/`, t.nav.instal],
     [`${p}/location/`, t.nav.location],
@@ -1457,28 +1458,8 @@ ${catalog}
 </section>
 ${interiors}
 <!-- ══════════════ VIII · LE PLAN ══════════════
-     Лист генплана как документ, дальше — интерактивный план на своей
-     странице: там выбор корпуса, вид с высоты и увеличение. -->
-<section class="m-chapter" id="plan">
-  <div class="m-wrap">
-    ${plate(t, 'plan')}
-    <h2 class="m-display m-display--xl" data-lines>${h.planTitle}</h2>
-    <p class="m-lede reveal">${esc(h.planText)}</p>
-
-    <a class="m-sheet__link" href="${genplanHref}" data-track="genplan_block" aria-label="${esc(h.planLink)}">
-      ${sheet(t, {
-        src: '/assets/img/genplan-line-1600.webp',
-        srcset: '/assets/img/genplan-line-1600.webp 1600w, /assets/img/genplan-line-2400.webp 2400w',
-        w: 2400, h: 1297, no: 'II',
-        alt: h.planAlt, title: h.sheetPlanTitle, note: h.sheetPlanNote,
-      })}
-    </a>
-
-    <div class="m-actions reveal">
-      <a class="pill" href="${genplanHref}" data-track="genplan_block">${esc(h.planLink)}</a>
-    </div>
-  </div>
-</section>
+     Глава с листом генплана снята вместе с самим разделом: он в разработке.
+     Разметка главы лежит в git, возвращать её вместе со страницей. -->
 
 <!-- ══════════════ IX · LA VILLE ══════════════ -->
 <section class="m-chapter" id="ville">
@@ -2138,7 +2119,6 @@ ${items}
     <p class="faq__more reveal">${esc(f.more)}
       <a href="${p}/apartments/">${esc(f.links.apartments)}</a>,
       <a href="${p}/select/">${esc(f.links.select)}</a>,
-      <a href="${p}/genplan/">${esc(f.links.genplan)}</a>,
       <a href="${p}/location/">${esc(f.links.location)}</a>.
     </p>
   </div>

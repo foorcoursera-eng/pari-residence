@@ -326,12 +326,19 @@ function pagesFor(t) {
       jsonld: [crumbsLd(t, [{ name: t.nav.instal, path: `${p}/installment/` }])],
       sitemap: { priority: '0.9', changefreq: 'monthly' },
     },
+    /* Генплан снят с сайта 09.09.2026: раздел в разработке. Сама страница
+       (T.genplan), её тексты в src/content.js и разметка живы и не тронуты —
+       чтобы вернуть, достаточно расскобить этот блок и строку с генпланом в
+       navItems. Пока раздел закрыт, адрес /genplan/ временно (307) уводится
+       на подбор квартиры — см. vercel.json: страница была в индексе и в
+       карте сайта, и упирать её в 404 незачем.
     {
       key: 'genplan', path: `${p}/genplan/`, render: T.genplan,
       title: t.meta.genplan.title, description: t.meta.genplan.description,
       jsonld: [crumbsLd(t, [{ name: t.nav.genplan, path: `${p}/genplan/` }])],
       sitemap: { priority: '0.8', changefreq: 'monthly' },
     },
+    */
     {
       key: 'location', path: `${p}/location/`, render: T.location,
       title: t.meta.location.title, description: t.meta.location.description,
