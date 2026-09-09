@@ -828,6 +828,9 @@ function shell(t, page) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Ставится до отрисовки, поэтому мигания нет: без этого класса блоки,
+     которые появляются по прокрутке, не прячутся вовсе. -->
+<script>document.documentElement.className+=' js'</script>
 <title>${esc(page.title)}</title>
 <meta name="description" content="${esc(page.description)}">
 ${page.noindex ? `<!-- Страница 404 не должна попадать в индекс. Раньше у неё стоял
@@ -1137,7 +1140,12 @@ ${h.interiors.map((x) => `    <figure class="m-strip__item reveal">
     <p class="m-hero__place" lang="uz">${h.heroEyebrow}</p>
     ${logoDraw('m-hero__mark')}
     <h1 class="m-hero__title">
-      <span class="m-hero__name">${site.brand} · Samarkand</span>
+      <!-- Строка внутри H1. Раньше здесь стояло «PARI Residence · Samarkand»,
+           и весь заголовок главной не содержал ни одного слова, по которому
+           её ищут: ни «квартиры», ни «Самарканд» в падеже запроса. При этом
+           title страницы говорил ровно об этом. Набор мелкий и разряженный,
+           слоган не тронут — на вид меняется одна подпись. -->
+      <span class="m-hero__name">${esc(h.heroName)}</span>
       <span class="m-hero__slogan script" data-write="heroSlogan">${h.heroSlogan}</span>
     </h1>
     <p class="m-hero__sub" lang="${t.lang === 'ru' ? 'uz' : 'ru'}">${esc(h.heroSub)}</p>
@@ -1437,9 +1445,13 @@ ${catalog}
     </div>
 
     <p class="m-note reveal">${esc(h.homesNote)}</p>
+    <!-- Третья ссылка — на рассрочку. Внутри главной на неё не вело ничего,
+         кроме пункта меню, хотя после каталога квартир это ровно следующий
+         вопрос покупателя: сколько и как платить. -->
     <div class="m-actions reveal">
       <a class="pill" href="${apartmentsHref}" data-track="cta_click">${esc(h.catalogAll)}</a>
       <a class="ghost" href="${p}/select/">${esc(t.nav.select)}</a>
+      <a class="ghost" href="${p}/installment/">${esc(t.nav.instal)}</a>
     </div>
   </div>
 </section>
@@ -1553,6 +1565,7 @@ ${carePanels}
     <div class="m-actions">
       <a class="pill" href="${apartmentsHref}" data-track="cta_click">${esc(t.ui.pick)}</a>
       <a class="ghost ghost--light" href="${contactsHref}" data-track="cta_click">${esc(h.finalVisit)}</a>
+      <a class="ghost ghost--light" href="${p}/faq/">${esc(t.nav.faq)}</a>
     </div>
   </div>
 </section>
@@ -1563,6 +1576,30 @@ ${rail(t)}`;
   return page;
 }
 
+
+/* ── ряд «квартиры по комнатности» ──
+   Один и тот же блок стоит на /apartments/, на страницах комнатности и на
+   странице подбора. Цифры считает src/flats.js из тех же 1186 записей, что и
+   фильтр, поэтому разойтись они не могут. Текущая группа остаётся в ряду без
+   ссылки: ряд не должен менять длину от страницы к странице, иначе человек не
+   понимает, где он и сколько всего вариантов. */
+function roomsCatalogue(t, currentKey) {
+  const p = t.lang === 'ru' ? '' : '/uz';
+  return roomGroups().map((x) => {
+    const span = x.areaFrom === x.areaTo
+      ? area(x.areaFrom) : area(x.areaFrom) + '–' + area(x.areaTo);
+    const inner = `<b>${esc(t.rooms.groups[x.key].short)}</b>
+        <i>${x.count}</i>
+        <span>${span} ${esc(t.ui.sqm)}</span>`;
+    return x.key === currentKey
+      ? `      <span class="rooms-nav__item is-current" aria-current="page">
+        ${inner}
+      </span>`
+      : `      <a class="rooms-nav__item" href="${p}/apartments/${x.slug}/">
+        ${inner}
+      </a>`;
+  }).join(String.fromCharCode(10));
+}
 
 /* ══════════════ выбор квартиры ══════════════
    Подъезд → этаж → план этажа с обведёнными квартирами. Контуры и список
@@ -1675,6 +1712,16 @@ ${ents}
     <div class="fl__more"><button class="pick" type="button" data-more hidden>${esc(s.more)}</button></div>
 
     <p class="plans__note">${esc(s.crmNote)}</p>
+
+    <!-- Состав дома словами. Весь подбор приходит скриптом из flats.json, и в
+         разметке страницы не было ни одной площади: робот видел форму, фильтр
+         и два абзаца. Этот ряд — те же цифры из шахматки, что и в фильтре,
+         плюс переходы на пять страниц по комнатности: до него внутри контента
+         отсюда вела ровно одна ссылка, «Главная» в хлебных крошках. -->
+    <h2 class="rf__h3">${esc(t.rooms.byRooms)}</h2>
+    <nav class="rooms-nav" aria-label="${esc(t.rooms.byRooms)}">
+${roomsCatalogue(t, null)}
+    </nav>
   </div>
 
   <!-- ══════════════ подъезд и этаж ══════════════ -->
@@ -2133,24 +2180,7 @@ ${plans.map((x) => planCard(t, x)).join('\n')}
     </div>`
     : `<p class="page__text">${esc(r.plansNone)}</p>`;
 
-  /* Маленький каталог по комнатности — тот же блок, что на /apartments/.
-     Раньше здесь лежала строчка текстовых ссылок; после того как со страницы
-     ушли таблица и два десятка чертежей, переход к соседним комнатностям
-     должен быть виден, а не теряться подписью внизу. Текущая группа остаётся
-     в ряду, но без ссылки: ряд не должен менять длину от страницы к странице,
-     иначе человек не понимает, где он и сколько всего вариантов. */
-  const others = roomGroups().map((x) => {
-    const inner = `<b>${esc(r.groups[x.key].short)}</b>
-        <i>${x.count}</i>
-        <span>${x.areaFrom === x.areaTo ? area(x.areaFrom) : area(x.areaFrom) + '–' + area(x.areaTo)} ${esc(t.ui.sqm)}</span>`;
-    return x.key === g.key
-      ? `      <span class="rooms-nav__item is-current" aria-current="page">
-        ${inner}
-      </span>`
-      : `      <a class="rooms-nav__item" href="${p}/apartments/${x.slug}/">
-        ${inner}
-      </a>`;
-  }).join('\n');
+  const others = roomsCatalogue(t, g.key);
 
   page.body = `<section class="page">
   <div class="page__inner">

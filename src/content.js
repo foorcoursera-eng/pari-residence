@@ -333,6 +333,7 @@ const ru = {
     /* Названия и номера глав задаются один раз в maison (v6) — оттуда их
        берут и разметка, и боковая навигация. */
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
+    heroName: 'PARI Residence — квартиры в Самарканде',
     heroSlogan: 'Парижское&nbsp;очарование.<br>Самаркандская&nbsp;душа.',
     heroSub: 'Parijona Joziba. Samarqand ruhi.',
     heroAlt: 'PARI Residence — Самарканд на рассвете',
@@ -1322,6 +1323,7 @@ const uz = {
 
   home: {
     heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
+    heroName: 'PARI Residence — Samarqandda kvartiralar',
     heroSlogan: 'Parijona&nbsp;Joziba.<br>Samarqand&nbsp;ruhi.',
     heroSub: 'Парижское очарование. Самаркандская душа.',
     heroAlt: 'PARI Residence — tong otishida Samarqand',

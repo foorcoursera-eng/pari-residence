@@ -857,7 +857,13 @@ body.is-locked .viewer{overflow:visible}
 }
 
 /* ---------- появление на скролле ---------- */
-.reveal{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s cubic-bezier(.22,.61,.36,1)}
+/* Появление по прокрутке прячет содержимое до срабатывания наблюдателя.
+   Пряталось оно безусловно, а показывал скрипт — и если скрипт заблокирован,
+   упал или его просто не исполнили, текст оставался невидимым. Правило в
+   noscript спасало только от выключенного JS, что не одно и то же. Теперь
+   класс js ставит первая же строка в head: нет её — ничего и не прячется. */
+.js .reveal{opacity:0;transform:translateY(22px)}
+.reveal{transition:opacity .9s ease,transform .9s cubic-bezier(.22,.61,.36,1)}
 .reveal.is-in{opacity:1;transform:none}
 .reveal:nth-child(2){transition-delay:.08s}
 .reveal:nth-child(3){transition-delay:.16s}
