@@ -179,6 +179,20 @@ if (/Disallow:\s*\/(assets|styles|script)/.test(robots)) {
   problems.push('robots.txt: закрыты ассеты — робот не отрисует страницу');
 }
 
+/* Число квартир в текстах против числа квартир в шахматке.
+   Расхождение известное и настоящее: в альбоме проекта 1202 квартиры, в
+   выгрузке CRM — 1186 (см. шапку src/flats.js). Но наружу оно выходит так:
+   в текстах написано одно, а каталог по комнатности складывается в другое,
+   и покупатель это сложит. Какое число рекламировать — решает застройщик,
+   поэтому здесь замечание, а не ошибка: пусть висит на виду, пока не решат. */
+const flats = require('./src/flats.js');
+const { site } = require('./src/content.js');
+const inChess = flats.expand().length;
+if (site.facts.apartments !== inChess) {
+  notes.push(`квартир в текстах ${site.facts.apartments}, в шахматке ${inChess}`
+    + ' — на сайте оба числа видны сразу, нужно решение застройщика');
+}
+
 console.log(`Проверено страниц: ${pages.length}, файлов: ${files.length}`);
 if (notes.length) {
   console.log('\nЗамечания:');
