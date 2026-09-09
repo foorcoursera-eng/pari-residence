@@ -2,7 +2,6 @@
   "buildCommand": "node build.js",
   "outputDirectory": "dist",
   "trailingSlash": true,
-  "comment-redirects": "Генплан снят с сайта 09.09.2026 — раздел в разработке. Адреса уже были в индексе и в карте сайта, поэтому уводим их на подбор квартиры, а не в 404. Редирект временный (307): когда раздел вернут, эти правила надо убрать, иначе страница будет недоступна.",
   "redirects": [
     { "source": "/genplan", "destination": "/select/", "permanent": false },
     { "source": "/genplan/", "destination": "/select/", "permanent": false },
