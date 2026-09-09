@@ -40,7 +40,11 @@ const esc = (s) => String(s).replace(/&(?!#?\w+;)/g, '&amp;').replace(/</g, '&lt
 const url = (path) => site.origin.replace(/\/$/, '') + path;
 
 /* путь страницы на другом языке */
-const swap = (path) => (path.startsWith('/uz/') ? path.slice(3) || '/' : path === '/' ? '/uz/' : '/uz' + path);
+/* Адрес той же страницы на другом языке. У 404 такой страницы нет: она одна
+   на весь сайт и переключает язык скриптом, поэтому переключатель с неё ведёт
+   на главные — иначе ссылка указывала бы на /uz/404.html, которого больше не
+   собирается. */
+const swap = (path) => (path === '/404.html' ? '/uz/' : path.startsWith('/uz/') ? path.slice(3) || '/' : path === '/' ? '/uz/' : '/uz' + path);
 
 /* ── бабочка: один силуэт, используется четырежды ── */
 const WING = '<path class="w" d="M60 46C52 21 38 7 24 8 10 9 5 22 11 33 18 45 39 51 60 46Z"/>'
@@ -428,7 +432,7 @@ function mapBlock(t, mod) {
 function planCard(t, x) {
   const p = t.plans;
   const size = imgSize(`assets/img/plans/${x.id}-800.webp`) || { w: 900, h: 1100 };
-  const rooms = p.roomWord[x.rooms];
+  const rooms = x.studio ? p.studioWord : p.roomWord[x.rooms];
   const blocks = `${p.blockWord[x.blocks.length > 1 ? 2 : 1]} ${x.blocks.join(', ')}`;
   const label = `${rooms} · ${x.area} ${t.ui.sqm} · ${blocks}`;
   return `      <article class="plan reveal" data-rooms="${x.rooms}" data-area="${x.area.replace(',', '.')}">
@@ -436,7 +440,12 @@ function planCard(t, x) {
                 data-zoom="/assets/img/plans/${x.id}-1400.webp"
                 data-zoom-label="${esc(label)}"
                 aria-label="${esc(p.zoom)}: ${esc(label)}">
+          <!-- Лист 1400 лежит рядом и раньше открывался только по клику, а в
+               карточке всегда стоял 800: на плотном экране чертёж выходил
+               мыльным. А чертёж — это ровно то, что человек и рассматривает. -->
           <img src="/assets/img/plans/${x.id}-800.webp"
+               srcset="/assets/img/plans/${x.id}-800.webp 800w, /assets/img/plans/${x.id}-1400.webp 1400w"
+               sizes="(min-width:640px) 44vw, 88vw"
                alt="${esc(rooms)} ${x.area} ${t.ui.sqm} — ${esc(t.ui.planWord)}"
                width="${size.w}" height="${size.h}" loading="lazy" decoding="async">
           <span class="plan__zoom">${esc(p.zoom)}</span>
@@ -821,10 +830,14 @@ function shell(t, page) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(page.title)}</title>
 <meta name="description" content="${esc(page.description)}">
-<link rel="canonical" href="${canonical}">
+${page.noindex ? `<!-- Страница 404 не должна попадать в индекс. Раньше у неё стоял
+     самоссылающийся canonical и полный набор hreflang, а Vercel на прямой
+     запрос /404.html отдаёт 200 — то есть поисковик видел обычную
+     индексируемую страницу и мог показать её в выдаче. -->
+<meta name="robots" content="noindex, follow">` : `<link rel="canonical" href="${canonical}">
 <link rel="alternate" hreflang="ru" href="${ruUrl}">
 <link rel="alternate" hreflang="uz" href="${uzUrl}">
-<link rel="alternate" hreflang="x-default" href="${ruUrl}">
+<link rel="alternate" hreflang="x-default" href="${ruUrl}">`}
 <meta name="theme-color" content="#FAFAFA">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${site.brand}">
@@ -963,7 +976,7 @@ function sheet(t, o) {
 function catalogRow(t, x, i) {
   const p = t.plans;
   const size = imgSize(`assets/img/plans/${x.id}-800.webp`) || { w: 900, h: 1100 };
-  const rooms = p.roomWord[x.rooms];
+  const rooms = x.studio ? p.studioWord : p.roomWord[x.rooms];
   const blocks = `${p.blockWord[x.blocks.length > 1 ? 2 : 1]} ${x.blocks.join(', ')}`;
   const label = `${rooms} · ${x.area} ${t.ui.sqm} · ${blocks}`;
   return `      <article class="m-cat__row reveal">
@@ -971,7 +984,9 @@ function catalogRow(t, x, i) {
                 data-zoom="/assets/img/plans/${x.id}-1400.webp"
                 data-zoom-label="${esc(label)}"
                 aria-label="${esc(p.zoom)}: ${esc(label)}">
-          <img src="/assets/img/plans/${x.id}-800.webp" alt="${esc(label)}"
+          <img src="/assets/img/plans/${x.id}-800.webp"
+               srcset="/assets/img/plans/${x.id}-800.webp 800w, /assets/img/plans/${x.id}-1400.webp 1400w"
+               sizes="(min-width:900px) 30vw, 60vw" alt="${esc(label)}"
                width="${size.w}" height="${size.h}" loading="lazy" decoding="async">
         </button>
         <div class="m-cat__meta">
@@ -1525,7 +1540,9 @@ ${carePanels}
      Последний кадр: квартал целиком, одно предложение и два действия. -->
 <section class="m-final" id="votre">
   <figure class="m-final__media">
-    <img src="/assets/img/hero-aerial-1920.webp" sizes="100vw"
+    <!-- Без srcset атрибут sizes браузер игнорирует, и телефон качал полный
+         кадр 1920 на 462 КБ — самую тяжёлую картинку сайта. -->
+    <img src="/assets/img/hero-aerial-1920.webp" srcset="/assets/img/hero-aerial-960.webp 960w, /assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w" sizes="100vw"
          alt="${esc(h.sceneAlt)}" width="1920" height="1080"
          loading="lazy" decoding="async">
   </figure>
@@ -1768,6 +1785,7 @@ ${blocks.map((b) => `        <span class="gp__tag" data-tag="${b.id}"
            оставлены на чертеже: на перспективном снимке ряды застройки
            перекрывают друг друга, и границы блоков пришлось бы угадывать. -->
       <img class="gp__aerial" src="/assets/img/hero-aerial-1920.webp"
+           srcset="/assets/img/hero-aerial-960.webp 960w, /assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w" sizes="(min-width:1100px) 60vw, 100vw"
            alt="${esc(g.aerialAlt)}" width="1920" height="1080" loading="lazy" decoding="async" hidden>
 
       <p class="gp__swipe" aria-hidden="true">${esc(g.swipe)}</p>
@@ -2104,7 +2122,9 @@ function roomsPage(t, page) {
      Показываем не больше четырёх: двухкомнатных листов двадцать четыре, и
      страница из них не кончалась. Четыре — это ровно два ряда крупных
      карточек, дальше человек идёт в подбор или звонит. */
-  const plans = (g.key === 's' ? [] : t.plans.items.filter((x) => String(x.rooms) === g.key))
+  const isStudio = g.key === 's';
+  const plans = t.plans.items
+    .filter((x) => (isStudio ? x.studio : !x.studio && String(x.rooms) === g.key))
     .slice(0, PLANS_SHOWN);
   const plansBlock = plans.length
     ? `<p class="page__text">${esc(r.plansLead)}</p>

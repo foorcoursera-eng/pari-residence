@@ -85,8 +85,13 @@ pages.forEach((file) => {
   const leftover = html.match(/content="[^"]*\{[a-zA-Z]+\}[^"]*"/);
   if (leftover) { problems.push(`${page}: подстановка не заполнена — ${leftover[0].slice(0, 90)}`); }
 
-  if (!/rel="canonical"/.test(html)) { problems.push(`${page}: нет canonical`); }
-  if (!/hreflang="ru"/.test(html) || !/hreflang="uz"/.test(html)) { problems.push(`${page}: нет пары hreflang`); }
+  /* Страницы под noindex canonical и hreflang не нужны — они не участвуют
+     в индексе, и самоссылающийся canonical на них только мешает. */
+  const noindex = /<meta name="robots" content="noindex/.test(html);
+  if (!noindex) {
+    if (!/rel="canonical"/.test(html)) { problems.push(`${page}: нет canonical`); }
+    if (!/hreflang="ru"/.test(html) || !/hreflang="uz"/.test(html)) { problems.push(`${page}: нет пары hreflang`); }
+  }
   if (!/application\/ld\+json/.test(html) && !/404/.test(page)) { problems.push(`${page}: нет микроразметки`); }
 
   /* ── картинки ── */

@@ -65,6 +65,7 @@ const siteLd = (t) => ({
 const complexLd = (t) => ({
   '@context': 'https://schema.org',
   '@type': 'ApartmentComplex',
+  '@id': T.url('/#complex'),
   name: site.brand,
   url: T.url(t.lang === 'ru' ? '/' : '/uz/'),
   image: T.url('/assets/img/opening-shot-1920.webp'),
@@ -106,6 +107,7 @@ const agentLd = (t) => {
   const o = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',
+    '@id': T.url('/contacts/#sales'),
     name: `${site.brand} — ${t.contacts.h1}`,
     url: T.url(t.lang === 'ru' ? '/contacts/' : '/uz/contacts/'),
     image: T.url('/assets/img/lobby-1920.webp'),
@@ -185,7 +187,10 @@ const roomsLd = (t, page) => {
       minValue: g.areaFrom, maxValue: g.areaTo, unitCode: 'MTK',
     },
     floorLevel: `${g.floorFrom}-${g.floorTo}`,
-    containedInPlace: { '@id': T.url('/#organization') },
+    /* Квартира лежит в жилом комплексе, а не в организации: у
+       containedInPlace область значений — Place, а Organization местом
+       не является, и ссылка просто не разбиралась. */
+    containedInPlace: { '@id': T.url('/#complex') },
     address: orgLd(t).address,
     geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lon },
   };
@@ -266,7 +271,6 @@ function pagesFor(t) {
       title: t.meta.home.title, description: t.meta.home.description,
       preload: preloadHome,
       splash: site.splash,
-      jsonld: [orgLd(t), siteLd(t), complexLd(t)],
       sitemap: { priority: '1.0', changefreq: 'weekly' },
     },
     {
@@ -351,7 +355,15 @@ function build() {
       page.title = fillMeta(page.title, common);
       page.description = fillMeta(page.description, common);
       page.v = v;
-      page.jsonld = [pageLd(t, page)].concat(page.jsonld || []);
+      /* Organization и WebSite печатаются на каждой странице, а не только на
+         главной. Раньше они стояли лишь на «/», а ссылались на них по @id все
+         тридцать остальных: isPartOf и about в pageLd, seller в предложениях,
+         parentOrganization в контактах. Разбирается страница отдельно, и на
+         тридцати страницах эти ссылки висели в пустоту — ни издателя, ни
+         организации. Дублировать узлы с одинаковым @id схема разрешает,
+         весят они по четыре сотни байт. */
+      page.jsonld = [pageLd(t, page), orgLd(t), siteLd(t), complexLd(t)]
+        .concat(page.jsonld || []);
       const filled = page.render(t, page);
       const html = T.shell(t, filled);
       const rel = page.path === '/' ? 'index.html' : page.path.replace(/^\//, '') + 'index.html';
@@ -360,10 +372,15 @@ function build() {
       urls.push({ loc: T.url(page.path), alt: T.url(T.swap(page.path)), lang: t.lang, ...page.sitemap });
     });
 
-    /* 404 — по одной на язык, отдаём русскую как общую */
-    const nf = { path: t.lang === 'ru' ? '/404.html' : '/uz/404.html', v, render: T.notFound,
+    /* 404 — одна на весь сайт. Раньше собирались две, но Vercel на любой
+       ненайденный адрес отдаёт корневую, а она и так переключается на
+       узбекский скриптом. Вторая копия просто висела в индексе без единой
+       входящей ссылки. Из индекса страница исключена флагом noindex:
+       на прямой запрос /404.html хостинг отвечает 200. */
+    if (t.lang !== 'ru') { return; }
+    const nf = { path: '/404.html', v, render: T.notFound, noindex: true,
       title: t.meta.notFound.title, description: t.meta.notFound.description, jsonld: [] };
-    const html404 = T.shell(t, T.notFound(t, nf, t.lang === 'ru' ? uz : null));
+    const html404 = T.shell(t, T.notFound(t, nf, uz));
     write(nf.path.replace(/^\//, ''), html404);
     written.push(nf.path);
   });
@@ -427,10 +444,13 @@ ${urls.map((u) => `  <url>
      ни одному из роботов отрисовать страницу и оценить её мобильную версию. */
   const cleanParams = 'utm_source&utm_medium&utm_campaign&utm_term&utm_content'
     + '&yclid&gclid&fbclid&from&_openstat';
+  /* Файл подтверждения прав в Яндексе закрыт от всех, кроме самого Яндекса:
+     это страница на две строки, которая иначе висит в индексе. */
   write('robots.txt', `User-agent: *
 Allow: /
 Disallow: /api/
-
+${site.verify && site.verify.yandex ? `Disallow: /yandex_${site.verify.yandex}.html
+` : ''}
 User-agent: Yandex
 Allow: /
 Disallow: /api/
