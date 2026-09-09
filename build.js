@@ -30,6 +30,35 @@ const write = (rel, data) => {
 const copyDir = (from, to) => fs.cpSync(from, to, { recursive: true });
 const hash = (file) => crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 8);
 
+/* ---------- дата последнего изменения страницы ----------
+   Раньше во все адреса подставлялась дата сборки, и каждый деплой сообщал
+   обоим поисковикам, что изменились разом все двадцать восемь страниц. Яндекс
+   при таком расхождении перестаёт опираться на lastmod, Google прямо пишет,
+   что ненадёжный lastmod игнорирует, — то есть поле работало против нас.
+
+   Считаем от содержимого: если готовый HTML страницы не изменился, дата
+   остаётся прежней. Метки версии ассетов из сравнения вычищаются, иначе
+   правка одной строчки в стилях помечала бы изменившимся весь сайт.
+
+   Слепок лежит в src/lastmod.json и коммитится: на сборке в облаке файл
+   только читается, записи туда всё равно пропадают вместе с контейнером.
+   Если слепка нет или он разошёлся — ставится сегодняшняя дата, то есть
+   худший случай ровно такой, каким было поведение раньше. */
+const LASTMOD_FILE = path.join(root, 'src', 'lastmod.json');
+const lastmodPrev = fs.existsSync(LASTMOD_FILE)
+  ? JSON.parse(fs.readFileSync(LASTMOD_FILE, 'utf8')) : {};
+const lastmodNext = {};
+const today = new Date().toISOString().slice(0, 10);
+
+function lastmodFor(pagePath, html) {
+  const bare = html.replace(/\?v=[0-9a-f-]+/g, '');
+  const sum = crypto.createHash('sha1').update(bare).digest('hex').slice(0, 12);
+  const was = lastmodPrev[pagePath];
+  const date = was && was.sum === sum ? was.date : today;
+  lastmodNext[pagePath] = { sum, date };
+  return date;
+}
+
 /* ---------- микроразметка ---------- */
 const orgLd = (t) => ({
   '@context': 'https://schema.org',
@@ -369,7 +398,8 @@ function build() {
       const rel = page.path === '/' ? 'index.html' : page.path.replace(/^\//, '') + 'index.html';
       write(rel, html);
       written.push(rel);
-      urls.push({ loc: T.url(page.path), alt: T.url(T.swap(page.path)), lang: t.lang, ...page.sitemap });
+      urls.push({ loc: T.url(page.path), alt: T.url(T.swap(page.path)), lang: t.lang,
+        lastmod: lastmodFor(page.path, html), ...page.sitemap });
     });
 
     /* 404 — одна на весь сайт. Раньше собирались две, но Vercel на любой
@@ -390,12 +420,11 @@ function build() {
      переобходить в первую очередь, и без неё считает карту неинформативной.
      Берём дату сборки: страницы генерируются целиком при каждом деплое,
      более точной величины у статики просто нет. */
-  const lastmod = new Date().toISOString().slice(0, 10);
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.map((u) => `  <url>
     <loc>${u.loc}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <lastmod>${u.lastmod}</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="${u.lang === 'ru' ? u.loc : u.alt}"/>
     <xhtml:link rel="alternate" hreflang="uz" href="${u.lang === 'uz' ? u.loc : u.alt}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${u.lang === 'ru' ? u.loc : u.alt}"/>
@@ -405,6 +434,7 @@ ${urls.map((u) => `  <url>
 </urlset>
 `;
   write('sitemap.xml', sitemap);
+  fs.writeFileSync(LASTMOD_FILE, JSON.stringify(lastmodNext, null, 1) + String.fromCharCode(10), 'utf8');
 
   /* Файл подтверждения прав для Яндекс Вебмастера: должен лежать ровно в корне
      и отдаваться как HTML. Имя и содержимое задаёт Яндекс, менять их нельзя. */

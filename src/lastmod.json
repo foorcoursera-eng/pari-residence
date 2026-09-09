@@ -1,0 +1,114 @@
+{
+ "/": {
+  "sum": "3da7703b850f",
+  "date": "2026-09-09"
+ },
+ "/project/": {
+  "sum": "e88b05d2c7b6",
+  "date": "2026-09-09"
+ },
+ "/apartments/": {
+  "sum": "70fa9a878ada",
+  "date": "2026-09-09"
+ },
+ "/select/": {
+  "sum": "0d30a8a44141",
+  "date": "2026-09-09"
+ },
+ "/installment/": {
+  "sum": "e2e64225f9fe",
+  "date": "2026-09-09"
+ },
+ "/genplan/": {
+  "sum": "a405f5d7e355",
+  "date": "2026-09-09"
+ },
+ "/location/": {
+  "sum": "ebdf8f989065",
+  "date": "2026-09-09"
+ },
+ "/faq/": {
+  "sum": "31023531bc99",
+  "date": "2026-09-09"
+ },
+ "/contacts/": {
+  "sum": "1c29fca5eb73",
+  "date": "2026-09-09"
+ },
+ "/apartments/studio/": {
+  "sum": "b641ca3295c7",
+  "date": "2026-09-09"
+ },
+ "/apartments/1-room/": {
+  "sum": "9e2272f67cab",
+  "date": "2026-09-09"
+ },
+ "/apartments/2-room/": {
+  "sum": "6aba3bfaba84",
+  "date": "2026-09-09"
+ },
+ "/apartments/3-room/": {
+  "sum": "3cbccae88a3f",
+  "date": "2026-09-09"
+ },
+ "/apartments/4-room/": {
+  "sum": "074d69b4d4be",
+  "date": "2026-09-09"
+ },
+ "/uz/": {
+  "sum": "ddc4f5036fd8",
+  "date": "2026-09-09"
+ },
+ "/uz/project/": {
+  "sum": "db258604a4c0",
+  "date": "2026-09-09"
+ },
+ "/uz/apartments/": {
+  "sum": "c17b42b5fb4f",
+  "date": "2026-09-09"
+ },
+ "/uz/select/": {
+  "sum": "e8cc30bb58f6",
+  "date": "2026-09-09"
+ },
+ "/uz/installment/": {
+  "sum": "9025e3423198",
+  "date": "2026-09-09"
+ },
+ "/uz/genplan/": {
+  "sum": "b5a4974a1857",
+  "date": "2026-09-09"
+ },
+ "/uz/location/": {
+  "sum": "c4a893feef22",
+  "date": "2026-09-09"
+ },
+ "/uz/faq/": {
+  "sum": "37fc285a39c5",
+  "date": "2026-09-09"
+ },
+ "/uz/contacts/": {
+  "sum": "ad57f4a95c60",
+  "date": "2026-09-09"
+ },
+ "/uz/apartments/studio/": {
+  "sum": "fa05c51107f0",
+  "date": "2026-09-09"
+ },
+ "/uz/apartments/1-room/": {
+  "sum": "22be7feea246",
+  "date": "2026-09-09"
+ },
+ "/uz/apartments/2-room/": {
+  "sum": "19e040942b8e",
+  "date": "2026-09-09"
+ },
+ "/uz/apartments/3-room/": {
+  "sum": "eff3e33dd19e",
+  "date": "2026-09-09"
+ },
+ "/uz/apartments/4-room/": {
+  "sum": "9e979c715674",
+  "date": "2026-09-09"
+ }
+}

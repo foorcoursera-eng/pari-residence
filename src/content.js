@@ -454,9 +454,13 @@ const ru = {
     sceneTitle: 'Парижское очарование.<br>Самаркандская душа.',
     sceneText: 'Выберите пространство,<br>которое станет вашим.',
     sceneVisit: 'Посетить отдел продаж',
-    sceneAlt: 'PARI Residence — двор-парк квартала',
+    /* Подписи у разных кадров должны быть разными: одинаковый alt у двух
+       картинок на одной странице не описывает ни одну из них. */
+    sceneAlt: 'PARI Residence — закрытый двор-парк между корпусами',
+    finalAlt: 'PARI Residence — квартал целиком с высоты на закате',
     leadFrameAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
-    leadPlanAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
+    leadPlanAlt: 'PARI Residence — фасад со стороны улицы Гуругли, лист альбома проекта',
+    archWideAlt: 'PARI Residence — аркада первых этажей во всю длину фасада',
 
     aboutEyebrow: 'О проекте',
     aboutTitle: 'Премиальный <em>квартал</em><br>на тринадцать блоков',
@@ -1416,9 +1420,11 @@ const uz = {
     sceneTitle: 'Parijona Joziba.<br>Samarqand ruhi.',
     sceneText: 'Oʻzingizniki boʻladigan<br>makonni tanlang.',
     sceneVisit: 'Savdo boʻlimiga tashrif',
-    sceneAlt: 'PARI Residence — kvartal hovli-bogʻi',
+    sceneAlt: 'PARI Residence — bloklar orasidagi yopiq hovli-bogʻ',
+    finalAlt: 'PARI Residence — quyosh botishida balandlikdan butun kvartal',
     leadFrameAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan kvartal fasadlari',
-    leadPlanAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan fasadlar',
+    leadPlanAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan fasad, loyiha albomi varagʻi',
+    archWideAlt: 'PARI Residence — fasad boʻylab birinchi qavatlar arkadasi',
 
     aboutEyebrow: 'Loyiha haqida',
     aboutTitle: 'Oʻn uch blokdan iborat<br><em>premium</em> kvartal',

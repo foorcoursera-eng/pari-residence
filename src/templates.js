@@ -1292,7 +1292,7 @@ ${spec}
   <figure class="m-full">
     <img src="/assets/img/arch-facade-1280.webp"
          srcset="/assets/img/arch-facade-1280.webp 1280w, /assets/img/arch-facade-1920.webp 1920w, /assets/img/arch-facade-2560.webp 2560w"
-         sizes="100vw" alt="${esc(h.arch[0].cap)}" width="2560" height="1429"
+         sizes="100vw" alt="${esc(h.archWideAlt)}" width="2560" height="1429"
          loading="lazy" decoding="async">
   </figure>
 
@@ -1555,7 +1555,7 @@ ${carePanels}
     <!-- Без srcset атрибут sizes браузер игнорирует, и телефон качал полный
          кадр 1920 на 462 КБ — самую тяжёлую картинку сайта. -->
     <img src="/assets/img/hero-aerial-1920.webp" srcset="/assets/img/hero-aerial-960.webp 960w, /assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w" sizes="100vw"
-         alt="${esc(h.sceneAlt)}" width="1920" height="1080"
+         alt="${esc(h.finalAlt)}" width="1920" height="1080"
          loading="lazy" decoding="async">
   </figure>
   <div class="m-final__inner">
