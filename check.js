@@ -68,11 +68,22 @@ pages.forEach((file) => {
   const h1 = html.match(/<h1[\s>]/g) || [];
   if (h1.length !== 1) { problems.push(`${page}: h1 должен быть ровно один, найдено ${h1.length}`); }
 
+  /* Границы взяты по тому, что поиск реально показывает, а не по тому, что
+     он разрешает записать. Верхняя планка description была 300 — под неё
+     проходило всё, и 28 страниц из 31 ездили с описанием на 170–199 знаков:
+     в выдаче они обрывались на полуслове. Яндекс и Google режут около 160,
+     на телефоне раньше. Title режется около 65. */
   const title = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
-  if (title.length < 15 || title.length > 70) { notes.push(`${page}: длина title ${title.length} (норма 15–70)`); }
+  if (title.length < 15 || title.length > 65) { notes.push(`${page}: длина title ${title.length} (норма 15–65)`); }
 
   const desc = (html.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
-  if (desc.length < 70 || desc.length > 300) { notes.push(`${page}: длина description ${desc.length} (норма 70–300)`); }
+  if (desc.length < 70 || desc.length > 160) { notes.push(`${page}: длина description ${desc.length} (норма 70–160)`); }
+
+  /* Невставленная подстановка. Ловится именно здесь, а не глазами: описание
+     страницы рассрочки полгода уезжало в поиск со строкой «цена от {price}
+     за м²», и на самой странице этого видно не было. */
+  const leftover = html.match(/content="[^"]*\{[a-zA-Z]+\}[^"]*"/);
+  if (leftover) { problems.push(`${page}: подстановка не заполнена — ${leftover[0].slice(0, 90)}`); }
 
   if (!/rel="canonical"/.test(html)) { problems.push(`${page}: нет canonical`); }
   if (!/hreflang="ru"/.test(html) || !/hreflang="uz"/.test(html)) { problems.push(`${page}: нет пары hreflang`); }

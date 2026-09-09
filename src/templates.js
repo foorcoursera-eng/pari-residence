@@ -1101,6 +1101,20 @@ ${h.interiors.map((x) => `    <figure class="m-strip__item reveal">
          srcset="/assets/img/opening-shot-1280.webp 1280w, /assets/img/opening-shot-1920.webp 1920w, /assets/img/opening-shot-2560.webp 2560w"
          sizes="100vw" alt="${esc(h.leadFrameAlt)}" width="2560" height="1429"
          fetchpriority="high" decoding="async">
+    <!-- Промо-ролик ложится ровно на кадр и проявляется, только когда пошёл.
+         Кадр под ним остаётся и постером, и запасным вариантом: при экономии
+         трафика, на медленной сети и при выключенных анимациях ролик не
+         грузится вовсе, и первый экран выглядит ровно так же, как раньше.
+         Отрезок собирает tools/make-promo-loop.py из бренд-фильма; на
+         телефоне играет вертикальная петля — горизонтальный кадр 2:1 в
+         вертикальном окне обрезался бы до полоски. -->
+    <video class="m-hero__video" muted loop playsinline preload="none"
+           aria-hidden="true" tabindex="-1"
+           data-widths="1280,1920,2096"
+           data-webm="/assets/video/promo-hero-{w}.webm?v=${page.v}"
+           data-mp4="/assets/video/promo-hero-{w}.mp4?v=${page.v}"
+           data-webm-portrait="/assets/video/hero-portrait.webm?v=${page.v}"
+           data-mp4-portrait="/assets/video/hero-portrait.mp4?v=${page.v}"></video>
   </figure>
   <div class="m-hero__veil" aria-hidden="true"></div>
 
@@ -1231,10 +1245,10 @@ ${spec}
   <video class="film__video" id="heroVideo" muted loop playsinline
          preload="none" aria-hidden="true" tabindex="-1"
          poster="/assets/img/hero-poster-1600.webp"
-         data-webm="/assets/video/hero-loop-{w}.webm"
-         data-mp4="/assets/video/hero-loop-{w}.mp4"
-         data-webm-portrait="/assets/video/hero-portrait.webm"
-         data-mp4-portrait="/assets/video/hero-portrait.mp4"></video>
+         data-webm="/assets/video/hero-loop-{w}.webm?v=${page.v}"
+         data-mp4="/assets/video/hero-loop-{w}.mp4?v=${page.v}"
+         data-webm-portrait="/assets/video/hero-portrait.webm?v=${page.v}"
+         data-mp4-portrait="/assets/video/hero-portrait.mp4?v=${page.v}"></video>
   <div class="film__veil" aria-hidden="true"></div>
   <div class="film__inner">
     <p class="eyebrow eyebrow--light reveal">${esc(h.filmEyebrow)}</p>

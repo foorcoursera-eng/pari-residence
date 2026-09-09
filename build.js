@@ -327,15 +327,29 @@ function build() {
 
   /* Версия ассетов. Считаем её по всем нашим файлам, включая motion.js:
      раньше он в подсчёт не входил, а Vercel отдаёт /assets/* с кэшем на год —
-     правка анимаций просто не доезжала до вернувшегося посетителя. */
+     правка анимаций просто не доезжала до вернувшегося посетителя.
+
+     Петля первого экрана считается здесь же по той же причине: имя файла у
+     неё постоянное, а содержимое меняется при каждой перенарезке, и без
+     этого вернувшийся посетитель смотрел бы старый монтаж. Читать ради
+     версии полсотни мегабайт не жалко — сборка идёт раз в деплой. */
   const v = [
     'styles.css', 'script.js', path.join('assets', 'js', 'motion.js'),
+    path.join('assets', 'video', 'promo-hero-1920.webm'),
   ].map((f) => hash(path.join(root, f))).join('-');
   const written = [];
   const urls = [];
 
   [ru, uz].forEach((t) => {
+    /* Подстановки в title и description работали только на страницах по
+       комнатности, и {price} в описании рассрочки уезжал в разметку как есть —
+       поиск показывал «цена от {price} за м²». Теперь через fillMeta проходят
+       заголовки всех страниц, а факты берутся оттуда же, откуда их берут
+       тексты, так что цене неоткуда разойтись. */
+    const common = T.facts(t);
     pagesFor(t).concat(roomPagesFor(t)).forEach((page) => {
+      page.title = fillMeta(page.title, common);
+      page.description = fillMeta(page.description, common);
       page.v = v;
       page.jsonld = [pageLd(t, page)].concat(page.jsonld || []);
       const filled = page.render(t, page);

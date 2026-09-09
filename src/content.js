@@ -268,63 +268,54 @@ const ru = {
     home: {
       title: 'ЖК PARI Residence — новостройка в Самарканде, купить квартиру',
       description: 'Новостройка премиум-класса в Самарканде на улице Гуругли: 13 блоков, '
-        + '1202 квартиры от 27 до 95 м², двор-парк 1 Га без машин. Квартиры от застройщика, '
-        + 'рассрочка 0% до 36 месяцев.',
+        + 'квартиры от 27 до 95 м², двор-парк без машин. Рассрочка 0% на 36 месяцев.',
     },
     project: {
-      title: 'О проекте PARI Residence — новостройка премиум-класса в Самарканде',
-      description: 'ЖК PARI Residence в новом районе Залиния, Самарканд: архитектура '
-        + 'SAFRONOVA PROJECT, фасады из натурального камня, двор-парк 1 Га без машин, '
-        + 'подземный паркинг, застройщик FD MARAKANDA.',
+      title: 'Проект PARI Residence — новостройка премиум-класса в Самарканде',
+      description: 'ЖК PARI Residence в районе Залиния, Самарканд: архитектура SAFRONOVA '
+        + 'PROJECT, фасады из натурального камня, двор-парк 1 Га, подземный паркинг.',
     },
     select: {
       title: 'Выбрать квартиру в PARI Residence — планы этажей новостройки',
-      description: 'Планы всех этажей ЖК PARI Residence в Самарканде: тринадцать подъездов, '
-        + 'этажи с третьего по шестнадцатый, расположение каждой квартиры на этаже. '
-        + 'Подберите квартиру по комнатности и площади.',
+      description: 'Планы этажей ЖК PARI Residence в Самарканде: 13 подъездов, этажи со '
+        + '2-го по 16-й. Подберите квартиру по комнатности, этажу и площади.',
     },
     genplan: {
       title: 'Генплан ЖК PARI Residence — 13 корпусов новостройки в Самарканде',
-      description: 'Генеральный план жилого квартала PARI Residence: тринадцать корпусов '
-        + 'высотой от 13 до 16 этажей вокруг закрытого двора-парка площадью один гектар, '
-        + 'въезды, паркинг и входные группы.',
+      description: 'Генплан квартала PARI Residence в Самарканде: 13 корпусов от 13 до 16 '
+        + 'этажей вокруг закрытого двора-парка в гектар, паркинг и входные группы.',
     },
     apartments: {
       title: 'Купить квартиру в Самарканде — планировки ЖК PARI Residence',
-      description: '1202 квартиры в новостройке PARI Residence: одно-, двух-, трёх- и '
-        + 'четырёхкомнатные от 27 до 95 м², 33 планировки. Цена от 10 млн сум за м², '
-        + 'рассрочка 0% до 36 месяцев от застройщика.',
+      description: 'Квартиры в новостройке PARI Residence, Самарканд: от студий до '
+        + 'четырёхкомнатных, 27–95 м², 33 планировки. От 10 млн сум за м², рассрочка 0%.',
     },
     location: {
       title: 'Где находится PARI Residence — улица Гуругли, Самарканд',
-      description: 'ЖК PARI Residence расположен в Самарканде на улице Гуругли, 1: 3 минуты '
-        + 'до вокзала, 15 минут до аэропорта, супермаркеты, школы и торговый центр рядом. '
-        + 'Карта и маршрут до отдела продаж.',
+      description: 'ЖК PARI Residence в Самарканде на улице Гуругли: 3 минуты до вокзала, '
+        + '15 до аэропорта, школы и торговый центр рядом. Карта и маршрут.',
     },
     /* Заголовки страниц по комнатности собираются из настоящих цифр:
        {title} {short} {countN} {areaFrom} {areaTo} {floorFrom} {floorTo} {price} {months} */
     rooms: {
       title: '{title} в Самарканде — ЖК PARI Residence',
-      description: '{count}, {areaSpan}, в новостройке PARI Residence на улице Гуругли, '
-        + 'Самарканд. Этажи {floorSpan}, планировки, цена от {price} за м², рассрочка 0%.',
+      description: '{count}, {areaSpan}, в новостройке PARI Residence, Самарканд. '
+        + 'Этажи {floorSpan}, цена от {price} за м², рассрочка 0%.',
     },
     instal: {
-      title: 'Квартира в рассрочку в Самарканде — PARI Residence, 0% на 36 месяцев',
-      description: 'Беспроцентная рассрочка на квартиру в ЖК PARI Residence: до 36 месяцев '
-        + 'напрямую у застройщика, без банка и переплаты. Условия, расчёт платежа '
-        + 'и цена от {price} за м².',
+      title: 'Рассрочка 0% на квартиру в Самарканде — ЖК PARI Residence',
+      description: 'Беспроцентная рассрочка на квартиру в PARI Residence: до 36 месяцев '
+        + 'у застройщика, без банка и переплаты. Расчёт платежа, цена от {price} за м².',
     },
     faq: {
       title: 'Вопросы и ответы о ЖК PARI Residence — цены, рассрочка, сроки',
-      description: 'Ответы на вопросы о новостройке PARI Residence в Самарканде: где находится, '
-        + 'сколько стоит квартира, есть ли рассрочка и на какой срок, когда сдача, '
-        + 'какие планировки и как посмотреть квартиру.',
+      description: 'Ответы о новостройке PARI Residence в Самарканде: цена квартиры, срок '
+        + 'рассрочки, когда сдача, какие планировки и как посмотреть квартиру.',
     },
     contacts: {
       title: 'Отдел продаж PARI Residence в Самарканде — контакты и адрес',
       description: 'Отдел продаж ЖК PARI Residence: Самарканд, улица Гуругли, 1, ежедневно '
-        + 'с 9:00 до 20:00. Телефон 55 705 05 05. Запишитесь на визит и узнайте условия '
-        + 'покупки и рассрочки.',
+        + '9:00–20:00, тел. 55 705 05 05. Запишитесь на визит и узнайте условия покупки.',
     },
     notFound: {
       title: 'Страница не найдена — PARI Residence',
@@ -1267,63 +1258,53 @@ const uz = {
        ham toʻgʻri, hech qanday soʻz zichligi uchun qoʻshilmagan. */
     home: {
       title: 'PARI Residence — Samarqandda yangi uy, kvartira sotib olish',
-      description: 'Samarqand, Goʻroʻgʻli koʻchasidagi premium-klass yangi turar-joy majmuasi: '
-        + '13 blok, 27–95 m² 1202 xonadon, 1 gektarlik mashinasiz hovli-bogʻ. Quruvchidan '
-        + 'kvartira, 36 oygacha 0% boʻlib toʻlash.',
+      description: 'Samarqand, Goʻroʻgʻli koʻchasida premium-klass yangi majmua: 13 blok, '
+        + '27–95 m² xonadonlar, mashinasiz hovli-bogʻ. 36 oyga 0% boʻlib toʻlash.',
     },
     project: {
       title: 'PARI Residence loyihasi — Samarqandda premium yangi qurilish',
-      description: 'PARI Residence Samarqandning yangi «Zaliniya» mahallasida: SAFRONOVA '
-        + 'PROJECT arxitekturasi, tabiiy toshli fasadlar, 1 gektarlik mashinasiz hovli-bogʻ, '
-        + 'yer osti avtoturargohi. Quruvchi — FD MARAKANDA.',
+      description: 'PARI Residence Samarqand, «Zaliniya» mahallasida: SAFRONOVA PROJECT '
+        + 'arxitekturasi, tabiiy toshli fasadlar, hovli-bogʻ, yer osti avtoturargohi.',
     },
     select: {
       title: 'PARI Residence xonadon tanlash — yangi uy qavat rejalari',
-      description: 'PARI Residence barcha qavatlari rejalari: oʻn uch podyezd, uchinchidan '
-        + 'oʻn oltinchi qavatgacha, har bir xonadonning qavatdagi joylashuvi. Xonalar soni '
-        + 'va maydoni boʻyicha kvartira tanlang.',
+      description: 'PARI Residence qavat rejalari: 13 podyezd, 2-dan 16-qavatgacha. '
+        + 'Xonalar soni, qavat va maydon boʻyicha kvartira tanlang.',
     },
     genplan: {
       title: 'PARI Residence bosh rejasi — Samarqandda 13 blokli majmua',
-      description: 'PARI Residence turar-joy kvartalining bosh rejasi: bir gektarlik yopiq '
-        + 'hovli-bogʻ atrofida 13 dan 16 qavatgacha boʻlgan oʻn uch blok, kirish joylari '
-        + 'va avtoturargoh.',
+      description: 'PARI Residence bosh rejasi: bir gektarlik yopiq hovli-bogʻ atrofida '
+        + '13–16 qavatli 13 blok, kirish joylari va avtoturargoh.',
     },
     apartments: {
       title: 'Samarqandda kvartira sotib olish — PARI Residence tarhlari',
-      description: 'PARI Residence yangi majmuasidagi 1202 xonadon: bir, ikki, uch va toʻrt '
-        + 'xonali, 27–95 m², 33 ta tarh. Narxi 1 m² uchun 10 mln soʻmdan, quruvchidan '
-        + '36 oygacha 0% boʻlib toʻlash.',
+      description: 'PARI Residence xonadonlari: studiyadan toʻrt xonaligacha, 27–95 m², '
+        + '33 ta tarh. 1 m² uchun 10 mln soʻmdan, 0% boʻlib toʻlash.',
     },
     location: {
       title: 'PARI Residence qayerda — Goʻroʻgʻli koʻchasi, Samarqand',
-      description: 'PARI Residence Samarqand, Goʻroʻgʻli koʻchasi, 1 manzilida: vokzalgacha '
-        + '3 daqiqa, aeroportgacha 15 daqiqa, yaqinida supermarketlar, maktablar va savdo '
-        + 'markazi. Xarita va savdo boʻlimigacha yoʻl.',
+      description: 'PARI Residence Samarqand, Goʻroʻgʻli koʻchasida: vokzalgacha 3 daqiqa, '
+        + 'aeroportgacha 15 daqiqa, maktab va savdo markazi yaqin. Xarita va yoʻl.',
     },
     rooms: {
       title: 'Samarqandda {titleLc} — PARI Residence',
-      description: 'PARI Residence yangi majmuasida {count}: {areaSpan}, '
-        + '{floorSpan}-qavatlar, tarhlar, narxi 1 m² uchun {price}dan, '
-        + '0% boʻlib toʻlash. Samarqand, Goʻroʻgʻli koʻchasi.',
+      description: 'PARI Residence, Samarqand: {count}, {areaSpan}, '
+        + '{floorSpan}-qavatlar, 1 m² uchun {price}dan, 0% boʻlib toʻlash.',
     },
     instal: {
-      title: 'Samarqandda boʻlib toʻlashga kvartira — PARI Residence, 36 oyga 0%',
-      description: 'PARI Residence’da foizsiz boʻlib toʻlash: toʻgʻridan-toʻgʻri quruvchidan '
-        + '36 oygacha, banksiz va ortiqcha toʻlovsiz. Shartlar, toʻlov hisobi va '
-        + '1 m² uchun {price}dan narx.',
+      title: 'Samarqandda boʻlib toʻlashga kvartira — PARI Residence, 0%',
+      description: 'PARI Residence’da foizsiz boʻlib toʻlash: quruvchidan 36 oygacha, '
+        + 'banksiz va ortiqcha toʻlovsiz. Toʻlov hisobi, 1 m² uchun {price}dan.',
     },
     faq: {
       title: 'PARI Residence — savol-javob: narx, boʻlib toʻlash, muddat',
-      description: 'Samarqanddagi PARI Residence haqida savollarga javoblar: qayerda '
-        + 'joylashgan, kvartira qancha turadi, boʻlib toʻlash necha oyga, topshirish muddati '
-        + 'va xonadonni qanday koʻrish mumkin.',
+      description: 'Samarqanddagi PARI Residence haqida javoblar: kvartira narxi, boʻlib '
+        + 'toʻlash muddati, topshirish vaqti va xonadonni qanday koʻrish mumkin.',
     },
     contacts: {
       title: 'PARI Residence savdo boʻlimi — Samarqand, manzil va aloqa',
-      description: 'PARI Residence savdo boʻlimi: Samarqand, Goʻroʻgʻli koʻchasi, 1, har kuni '
-        + '9:00–20:00. Telefon 55 705 05 05. Tashrifga yoziling va sotib olish hamda boʻlib '
-        + 'toʻlash shartlarini biling.',
+      description: 'PARI Residence savdo boʻlimi: Samarqand, Goʻroʻgʻli koʻchasi, 1, '
+        + 'har kuni 9:00–20:00, tel. 55 705 05 05. Tashrifga yoziling.',
     },
     notFound: {
       title: 'Sahifa topilmadi — PARI Residence',

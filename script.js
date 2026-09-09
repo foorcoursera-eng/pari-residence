@@ -9,40 +9,67 @@
   var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
-  /* ══════════════ петля первого экрана ══════════════
-     На широком экране идёт горизонтальная петля (1920 или 1280 по ширине окна),
-     на телефоне — отдельная вертикальная 720×1280 весом 1,4 МБ.
-     Не грузим её при включённой экономии трафика, на медленной сети
-     и когда человек попросил убрать анимации. */
-  var v = document.getElementById('heroVideo');
-  var film = v ? v.closest('.film') : null;
+  /* ══════════════ петли: первый экран и глава «Кино» ══════════════
+     Обе идут без звука, обе лежат поверх кадра и проявляются, только когда
+     действительно пошли: пока ролик грузится — виден снимок, и если сеть его
+     не дала, снимок так и остаётся. Не грузим при включённой экономии
+     трафика, на медленной сети и когда человек попросил убрать анимации.
+     На широком экране горизонтальная петля (1920 или 1280 по ширине окна),
+     на телефоне — вертикальная, если она у ролика есть. */
   var net = navigator.connection || {};
   var thrifty = net.saveData === true;
   var slow = typeof net.effectiveType === 'string' && /2g$/.test(net.effectiveType);
+  var mayLoop = !calm && !thrifty && !slow;
 
-  if (v && !calm && !thrifty && !slow) {
+  var playLoop = function (el, onPlaying) {
     var portrait = innerWidth <= 700;
+    /* Ступени перечисляет сам ролик: у них разный набор, и брать «1920, если
+       окно шире 1400» нельзя — на экране 1440 с двойной плотностью браузер
+       растягивал такую дорожку в полтора раза, и это было видно. Считаем,
+       сколько точек реально нужно, и берём первую ступень не мельче. */
+    var widths = (el.dataset.widths || '1280,1920').split(',');
+    var want = innerWidth * (devicePixelRatio > 1.5 ? 1.5 : devicePixelRatio || 1);
+    var wide = widths[widths.length - 1];
+    for (var i = 0; i < widths.length; i++) {
+      if (parseInt(widths[i], 10) >= want) { wide = widths[i]; break; }
+    }
     var pick = function (kind) {
-      if (portrait) { return v.dataset[kind + 'Portrait']; }
-      var wide = innerWidth * (devicePixelRatio > 1.5 ? 1.5 : 1) >= 1400 ? '1920' : '1280';
-      return v.dataset[kind].replace('{w}', wide);
+      var vertical = el.dataset[kind + 'Portrait'];
+      if (portrait && vertical) { return vertical; }
+      return el.dataset[kind].replace('{w}', wide);
     };
     [['video/webm', pick('webm')], ['video/mp4', pick('mp4')]].forEach(function (pair) {
       var s = document.createElement('source');
       s.type = pair[0]; s.src = pair[1];
-      v.appendChild(s);
+      el.appendChild(s);
     });
-    v.addEventListener('playing', function () {
-      v.classList.add('is-playing');
-      if (film) { film.classList.add('has-video'); }
+    el.addEventListener('playing', function () {
+      el.classList.add('is-playing');
+      if (onPlaying) { onPlaying(); }
     }, { once: true });
+    el.load();
+    var go = el.play();
+    if (go && go.catch) { go.catch(function () {}); }
+  };
+
+  /* Первый экран. Ролик стартует только после полной загрузки страницы:
+     иначе он делит канал с кадром, который человек видит первым, и первый
+     экран рисуется медленнее, чем сейчас. */
+  var promo = document.querySelector('.m-hero__video');
+  if (promo && mayLoop) {
+    var startPromo = function () { setTimeout(function () { playLoop(promo); }, 600); };
+    if (document.readyState === 'complete') { startPromo(); }
+    else { addEventListener('load', startPromo); }
+  }
+
+  /* Глава «Кино» стоит в середине страницы — её петлю грузим, когда раздел
+     подходит к экрану. */
+  var v = document.getElementById('heroVideo');
+  var film = v ? v.closest('.film') : null;
+  if (v && mayLoop) {
     var start = function () {
-      v.load();
-      var go = v.play();
-      if (go && go.catch) { go.catch(function () {}); }
+      playLoop(v, function () { if (film) { film.classList.add('has-video'); } });
     };
-    /* Ролик стоит в середине страницы, поэтому грузим его не сразу, а когда
-       раздел подходит к экрану: первый экран не делит канал с видео. */
     if (film && 'IntersectionObserver' in window) {
       var filmIO = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
