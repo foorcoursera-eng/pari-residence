@@ -34,13 +34,40 @@ RENDERS = [
 ]
 WIDTHS = (1280, 1920, 2560)
 
+# Вторая партия рендеров (архив 3.1.zip, 19.09.2026): первая линия днём и на
+# рассвете, угловая торговая галерея. Кадр галереи берём только левой частью:
+# в правой на витринах стоят подписи чужих марок-заглушек, их на сайте быть
+# не должно. Кадр (left, top, right, bottom) — в долях исходника.
+SRC_31 = os.environ.get('PARI_RENDERS_31', r'C:/Users/User/Downloads/Telegram Desktop/3.1')
+RENDERS_31 = [
+    ('6-Кадр01.jpg', 'line-day', None),
+    ('3.1.jpg', 'line-dawn', None),
+    ('13.jpg', 'gallery-corner', (0.04, 0.30, 0.42, 1.0)),
+]
 
-def find(name):
+
+# Интерьеры из материалов PARI (папка «pari 21.09», четыре вертикальных кадра
+# с маркой PARI): иллюстрация возможной отделки при white-box. Порядок —
+# гостиная-кухня, спальня, столовая у окна, кухня. Исходники 960×1280 —
+# ступени 760 и 960, выше не поднимаем.
+SRC_INT = os.environ.get('PARI_INTERIORS', r'D:/Новый дизайн для Pari/Reference & Design/pari 21.09')
+INTERIORS = [
+    ('3213dd39-ecd8-40fb-bfa1-85555f4bc571.jfif', 'interior-01'),
+    ('9b6f3fc8-e14b-4dcd-9ff4-c605b1cb85f3.jfif', 'interior-02'),
+    ('d3e6a93b-3992-4244-b1b8-efd57738223b.jfif', 'interior-03'),
+    ('e7d57188-9f71-4f24-bcb0-3cd7013b0b7f.jfif', 'interior-04'),
+]
+
+
+def find(name, src=None):
     """Имена приходят из Telegram с разложенными «й» и «ё» — сравниваем нормализованно."""
+    src = src or SRC
+    if not os.path.isdir(src):
+        return None
     want = unicodedata.normalize('NFC', name)
-    for f in os.listdir(SRC):
+    for f in os.listdir(src):
         if unicodedata.normalize('NFC', f) == want:
-            return os.path.join(SRC, f)
+            return os.path.join(src, f)
     return None
 
 
@@ -63,6 +90,26 @@ def main():
             print('  ПРОПУЩЕН (нет файла):', name)
             continue
         save_set(Image.open(path).convert('RGB'), base)
+
+    print('Рендеры 3.1:')
+    for name, base, box in RENDERS_31:
+        path = find(name, SRC_31)
+        if not path:
+            print('  ПРОПУЩЕН (нет файла):', name)
+            continue
+        im = Image.open(path).convert('RGB')
+        if box:
+            im = im.crop((round(im.width * box[0]), round(im.height * box[1]),
+                          round(im.width * box[2]), round(im.height * box[3])))
+        save_set(im, base)
+
+    print('Интерьеры:')
+    for name, base in INTERIORS:
+        path = find(name, SRC_INT)
+        if not path:
+            print('  ПРОПУЩЕН (нет файла):', name)
+            continue
+        save_set(Image.open(path).convert('RGB'), base, (760, 960), quality=82)
 
     doc = pymupdf.open(BOOK)
 

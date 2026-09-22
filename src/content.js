@@ -20,9 +20,15 @@ const site = {
   origin: ORIGIN,
   brand: 'PARI Residence',
   phone: { display: '55 705 05 05', tel: '+998557050505', intl: '+998 55 705 05 05' },
+  /* Адрес офиса продаж — по карточке 2ГИС (maps2gis ниже), решение владельца
+     от 11.09.2026: до этого на сайте стоял «Гуругли, 1», в карточке — «6/1»,
+     и Яндекс по «Гуругли, 1» уводил точку на 3,6 км. Индекс оттуда же. Сам
+     квартал строится на новом участке, где номера домов ещё не заведены, —
+     поэтому в текстах про стройку улица без номера, номер только у офиса. */
   address: {
-    street: 'улица Гуругли, 1',
-    streetUz: 'Goʻroʻgʻli koʻchasi, 1',
+    street: 'улица Гуругли, 6/1',
+    streetUz: 'Goʻroʻgʻli koʻchasi, 6/1',
+    postalCode: '140102',
     city: 'Самарканд',
     cityUz: 'Samarqand',
     country: 'UZ',
@@ -63,8 +69,7 @@ const site = {
      её не подтверждал (висит кнопка «Это моя компания»).
      В sameAs она нужна затем же, зачем Instagram и Telegram: связать сайт и
      карточку в один субъект, иначе поисковик считает их разными.
-     ВНИМАНИЕ: адрес в карточке — «Улица Гуругли, 6/1», индекс 140102, а на сайте
-     «улица Гуругли, 1». Одно из двух неверно, см. README. */
+     Адрес и индекс на сайте взяты из этой карточки — см. site.address. */
   maps2gis: 'https://2gis.uz/samarkand/firm/70000001117257081',
   // Подтверждено владельцем 26.08.2026. WhatsApp у отдела продаж нет.
   telegram: 'https://t.me/pari_residence',
@@ -215,6 +220,13 @@ const ru = {
     closeViewer: 'Закрыть',
     zoomOpen: 'Рассмотреть подробно',
     viewerHint: 'Колесо или щипок — увеличить, перетаскивание — двигать',
+    zoomLabel: 'Масштаб',
+    zoomIn: 'Приблизить',
+    zoomOut: 'Отдалить',
+    zoomFit: 'Целиком',
+    railPrev: 'Предыдущая планировка',
+    railNext: 'Следующая планировка',
+    railHint: 'Листайте планировки',
     mapHint: 'Карта загрузится по нажатию — так страница открывается быстрее',
     sqm: 'м²',
     planWord: 'планировка',
@@ -319,7 +331,7 @@ const ru = {
     },
     contacts: {
       title: 'Отдел продаж PARI Residence в Самарканде — контакты и адрес',
-      description: 'Отдел продаж ЖК PARI Residence: Самарканд, улица Гуругли, 1, ежедневно '
+      description: 'Отдел продаж ЖК PARI Residence: Самарканд, улица Гуругли, 6/1, ежедневно '
         + '9:00–20:00, тел. 55 705 05 05. Запишитесь на визит и узнайте условия покупки.',
     },
     notFound: {
@@ -332,7 +344,7 @@ const ru = {
   home: {
     /* Названия и номера глав задаются один раз в maison (v6) — оттуда их
        берут и разметка, и боковая навигация. */
-    heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
+    heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;6/1',
     heroName: 'PARI Residence — квартиры в Самарканде',
     heroSlogan: 'Парижское&nbsp;очарование.<br>Самаркандская&nbsp;душа.',
     heroSub: 'Parijona Joziba. Samarqand ruhi.',
@@ -381,15 +393,15 @@ const ru = {
     /* ── глава I ── */
     houseLead: 'Квартал, в котором парижская лёгкость<br>встречается с самаркандским светом.',
     specTitle: 'Спецификация',
-    specNote: 'Показатели приведены по альбому проекта.',
+    specNote: 'Показатели приведены по альбому и буклету проекта.',
     spec: [
       ['Блоков', '13'],
       ['Квартир', '1202'],
       ['Этажей', '13–16'],
       ['Площадь квартир', '27–95 м²'],
-      ['Планировок', '33'],
+      ['Типовых планировок', '33'],
       ['Двор-парк', '1 гектар'],
-      ['Озеленение', '30%'],
+      ['Озеленение и благоустройство', '30%'],
       ['Открытая парковка', '148 мест'],
       ['Отделка', 'White-box'],
       ['Архитектура', 'SAFRONOVA PROJECT'],
@@ -425,7 +437,7 @@ const ru = {
     ideaPariAlt: 'PARI Residence — фасады с первой линии',
     materialsLabel: 'Материалы',
 
-    catalogLead: 'Тридцать три планировки: от компактной однокомнатной до семейной четырёхкомнатной.',
+    catalogLead: 'Тридцать три типовые планировки по рабочим листам застройщика: от компактной однокомнатной до семейной четырёхкомнатной. Полный состав квартир — в подборе.',
     catalogView: 'Смотреть план',
     catalogAll: 'Весь каталог',
 
@@ -457,7 +469,10 @@ const ru = {
     /* Подписи у разных кадров должны быть разными: одинаковый alt у двух
        картинок на одной странице не описывает ни одну из них. */
     sceneAlt: 'PARI Residence — закрытый двор-парк между корпусами',
-    finalAlt: 'PARI Residence — квартал целиком с высоты на закате',
+    finalAlt: 'PARI Residence — первая линия квартала на рассвете',
+    /* рендеры второй партии (3.1.zip): первая линия днём, угловая галерея с кафе */
+    lineDayAlt: 'PARI Residence — первая линия квартала днём, торговая галерея вдоль улицы',
+    cornerAlt: 'Кафе под аркадой первого этажа PARI Residence',
     leadFrameAlt: 'PARI Residence — фасады квартала со стороны улицы Гуругли',
     leadPlanAlt: 'PARI Residence — фасад со стороны улицы Гуругли, лист альбома проекта',
     archWideAlt: 'PARI Residence — аркада первых этажей во всю длину фасада',
@@ -499,6 +514,9 @@ const ru = {
       + 'утончённость, тепло солнечного света и неповторимая душа.',
     conceptReliefAlt: 'Барельеф: Регистан и Париж в едином орнаменте',
     conceptWhisper: 'В восточной традиции PARI — фея, образ лёгкости и почти волшебного очарования.',
+    /* подписи под словами Paris / Samarqand в развороте концепции — слова из абзацев выше */
+    conceptParisWord: 'Вкус · изящество · архитектура',
+    conceptSamarkandWord: 'История · свет · душа',
 
     cineLabel: 'Состав квартала',
     cinePrev: 'Предыдущий раздел',
@@ -563,7 +581,7 @@ const ru = {
     stats: [
       { value: 13, label: 'блоков' },
       { value: 1202, label: 'квартиры' },
-      { value: 30, suffix: '%', label: 'озеленения' },
+      { value: 30, suffix: '%', label: 'озеленения и благоустройства' },
       { value: 1, label: 'гектар двора' },
     ],
 
@@ -784,8 +802,19 @@ const ru = {
     more: 'Показать ещё',
     showOnPlan: 'На плане',
     noPlan: 'Чертёж этажа уточняется',
+    /* Подъезды 8–13: на поэтажных схемах застройщика квартиры пронумерованы
+       с третьего этажа, а в выгрузке отдела продаж — со второго, поэтому
+       номера расходятся ровно на один этаж. Пока застройщик не подтвердил
+       соответствие, контур такой квартиры не выделяем: открываем схему
+       этажа и говорим, что положение уточнит менеджер. */
+    floorOnly: 'Схема этажа',
+    noMatch: 'На схеме этажа нумерация квартир застройщика отличается от выгрузки отдела продаж, поэтому контур не выделен. Точное расположение квартиры уточнит менеджер.',
+    planNum: 'Квартира на схеме',
+    swipe: 'Проведите в сторону',
+    fitAll: 'Весь этаж',
+    fitZoom: 'Крупнее',
     colFloor: 'этаж',
-    crmNote: 'Состав квартир — по данным отдела продаж. Свободные квартиры, этажи и стоимость '
+    crmNote: 'Состав квартир — по выгрузке отдела продаж: в ней 1186 квартир из 1202 по проекту. Свободные квартиры, этажи и стоимость '
       + 'уточняйте по телефону: наличие меняется каждый день.',
   },
   plans: {
@@ -831,6 +860,17 @@ const ru = {
     finishText: 'Позвоните — менеджер уточнит, что вам подходит, и назначит удобное время. '
       + 'В отделе продаж покажем свободные квартиры на этажах, планировки в деталях, '
       + 'виды из окон и расскажем об условиях покупки.',
+    /* Интерьеры из материалов PARI — иллюстрация возможной отделки:
+       квартиры передаются в white-box, обещания отделки здесь нет. */
+    interiorsTitle: 'Квартиры сдаются в формате white-box',
+    interiorsText: 'Планировки позволяют развести личные и общие зоны, а панорамные окна наполняют комнаты светом. Отделку хозяин выбирает сам.',
+    interiorsNote: 'Интерьеры на иллюстрациях — пример возможной отделки из материалов PARI. Квартиры передаются без отделки.',
+    interiors: [
+      { img: 'interior-01', cap: 'Гостиная с кухней' },
+      { img: 'interior-02', cap: 'Спальня' },
+      { img: 'interior-03', cap: 'Столовая у окна' },
+      { img: 'interior-04', cap: 'Кухня' },
+    ],
   },
 
   /* ── страница «О проекте» ──
@@ -887,6 +927,8 @@ const ru = {
     archGallery: [
       { img: 'arch-facade', cap: 'Аркада первых этажей на закате', big: true },
       { img: 'arch-line', cap: 'Фасады с первой линии' },
+      { img: 'line-day', cap: 'Первая линия днём: торговая галерея вдоль улицы' },
+      { img: 'gallery-corner', cap: 'Кафе под аркадой первого этажа' },
       { img: 'arch-stone', cap: 'Травертин парапетов вблизи' },
       { img: 'arch-balcony', cap: 'Балкон: стекло, латунь, камень', wide: true },
     ],
@@ -962,7 +1004,7 @@ const ru = {
   /* ── страница локации ── */
   location: {
     h1: 'Расположение PARI Residence в Самарканде',
-    lead: 'Жилой квартал строится на улице Гуругли, 1 — в новом районе «Залиния». Рядом железнодорожный '
+    lead: 'Жилой квартал строится на улице Гуругли — в новом районе «Залиния». Рядом железнодорожный '
       + 'вокзал, супермаркеты, школы и торговый центр, а до международного аэропорта 15 минут на машине.',
     districtTitle: 'Район, который строится вместе с домом',
     masterTitle: 'Мастер-план района «Залиния»',
@@ -998,7 +1040,7 @@ const ru = {
     /* Заголовок и вводный абзац общие, различаются словом группы. */
     h1: '{title} в PARI Residence, Самарканд',
     lead: '{count} — {areaSpan}, этажи {floorSpan}, {entrances}. '
-      + 'Новый квартал бизнес-класса на улице Гуругли: '
+      + 'Новый квартал премиум-класса на улице Гуругли: '
       + 'закрытый двор-парк без машин, подземный паркинг, фасады из натурального камня.',
     leadPrice: 'Цена от {price} за квадратный метр, покупка напрямую у застройщика, '
       + 'беспроцентная рассрочка до {months}.',
@@ -1219,6 +1261,13 @@ const uz = {
     closeViewer: 'Yopish',
     zoomOpen: 'Batafsil koʻrish',
     viewerHint: 'Gʻildirak yoki barmoqlar bilan kattalashtiring, surib koʻchiring',
+    zoomLabel: 'Masshtab',
+    zoomIn: 'Yaqinlashtirish',
+    zoomOut: 'Uzoqlashtirish',
+    zoomFit: 'Toʻliq',
+    railPrev: 'Oldingi tarh',
+    railNext: 'Keyingi tarh',
+    railHint: 'Tarhlarni varaqlang',
     mapHint: 'Xarita bosilganda yuklanadi — sahifa shu tufayli tez ochiladi',
     sqm: 'm²',
     planWord: 'tarh',
@@ -1316,7 +1365,7 @@ const uz = {
     },
     contacts: {
       title: 'PARI Residence savdo boʻlimi — Samarqand, manzil va aloqa',
-      description: 'PARI Residence savdo boʻlimi: Samarqand, Goʻroʻgʻli koʻchasi, 1, '
+      description: 'PARI Residence savdo boʻlimi: Samarqand, Goʻroʻgʻli koʻchasi, 6/1, '
         + 'har kuni 9:00–20:00, tel. 55 705 05 05. Tashrifga yoziling.',
     },
     notFound: {
@@ -1326,7 +1375,7 @@ const uz = {
   },
 
   home: {
-    heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;1',
+    heroEyebrow: 'Samarqand &nbsp;·&nbsp; Goʻroʻgʻli&nbsp;6/1',
     heroName: 'PARI Residence — Samarqandda kvartiralar',
     heroSlogan: 'Parijona&nbsp;Joziba.<br>Samarqand&nbsp;ruhi.',
     heroSub: 'Парижское очарование. Самаркандская душа.',
@@ -1365,15 +1414,15 @@ const uz = {
 
     houseLead: 'Parij yengilligi samarqand yorugʻligi bilan<br>uchrashadigan kvartal.',
     specTitle: 'Spetsifikatsiya',
-    specNote: 'Koʻrsatkichlar loyiha albomi boʻyicha keltirilgan.',
+    specNote: 'Koʻrsatkichlar loyiha albomi va bukleti boʻyicha keltirilgan.',
     spec: [
       ['Bloklar', '13'],
       ['Xonadonlar', '1202'],
       ['Qavatlar', '13–16'],
       ['Xonadon maydoni', '27–95 m²'],
-      ['Tarhlar', '33'],
+      ['Namunaviy tarhlar', '33'],
       ['Hovli-bogʻ', '1 gektar'],
-      ['Koʻkalamzorlashtirish', '30%'],
+      ['Koʻkalamzorlashtirish va obodonlashtirish', '30%'],
       ['Ochiq avtoturargoh', '148 oʻrin'],
       ['Pardoz', 'White-box'],
       ['Arxitektura', 'SAFRONOVA PROJECT'],
@@ -1398,7 +1447,7 @@ const uz = {
     ideaPariAlt: 'PARI Residence — birinchi chiziqdan fasadlar',
     materialsLabel: 'Materiallar',
 
-    catalogLead: 'Oʻttiz uchta tarh: ixcham bir xonalidan oilaviy toʻrt xonaligacha.',
+    catalogLead: 'Quruvchining ish varaqlari boʻyicha oʻttiz uchta namunaviy tarh: ixcham bir xonalidan oilaviy toʻrt xonaligacha. Xonadonlarning toʻliq tarkibi — tanlovda.',
     catalogView: 'Tarhni koʻrish',
     catalogAll: 'Butun katalog',
 
@@ -1421,7 +1470,9 @@ const uz = {
     sceneText: 'Oʻzingizniki boʻladigan<br>makonni tanlang.',
     sceneVisit: 'Savdo boʻlimiga tashrif',
     sceneAlt: 'PARI Residence — bloklar orasidagi yopiq hovli-bogʻ',
-    finalAlt: 'PARI Residence — quyosh botishida balandlikdan butun kvartal',
+    finalAlt: 'PARI Residence — tong paytida kvartalning birinchi liniyasi',
+    lineDayAlt: 'PARI Residence — kunduzi kvartalning birinchi liniyasi, koʻcha boʻylab savdo galereyasi',
+    cornerAlt: 'PARI Residence birinchi qavat arkadasi ostidagi kafe',
     leadFrameAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan kvartal fasadlari',
     leadPlanAlt: 'PARI Residence — Goʻroʻgʻli koʻchasi tomonidan fasad, loyiha albomi varagʻi',
     archWideAlt: 'PARI Residence — fasad boʻylab birinchi qavatlar arkadasi',
@@ -1463,6 +1514,8 @@ const uz = {
       + 'nafislik, quyosh nurining iliqligi va betakror ruh yashaydi.',
     conceptReliefAlt: 'Barelyef: Registon va Parij yagona naqshda',
     conceptWhisper: 'Sharq anʼanasida PARI — pari, yengillik va sehrli joziba timsoli.',
+    conceptParisWord: 'Did · nafislik · arxitektura',
+    conceptSamarkandWord: 'Tarix · nur · ruh',
 
     cineLabel: 'Kvartal tarkibi',
     cinePrev: 'Oldingi boʻlim',
@@ -1520,7 +1573,7 @@ const uz = {
     stats: [
       { value: 13, label: 'blok' },
       { value: 1202, label: 'xonadon' },
-      { value: 30, suffix: '%', label: 'koʻkalamzorlik' },
+      { value: 30, suffix: '%', label: 'koʻkalamzorlik va obodonlashtirish' },
       { value: 1, label: 'gektar hovli' },
     ],
 
@@ -1709,8 +1762,14 @@ const uz = {
     more: 'Yana koʻrsatish',
     showOnPlan: 'Rejada',
     noPlan: 'Qavat chizmasi aniqlanmoqda',
+    floorOnly: 'Qavat chizmasi',
+    noMatch: 'Qavat chizmasida quruvchining xonadon raqamlari savdo boʻlimi roʻyxatidan farq qiladi, shuning uchun kontur ajratilmagan. Xonadonning aniq joylashuvini menejer aniqlab beradi.',
+    planNum: 'Chizmadagi xonadon',
+    swipe: 'Yon tomonga suring',
+    fitAll: 'Butun qavat',
+    fitZoom: 'Kattaroq',
     colFloor: 'qavat',
-    crmNote: 'Xonadonlar tarkibi — savdo boʻlimi maʼlumotlari boʻyicha. Boʻsh xonadonlar, qavatlar '
+    crmNote: 'Xonadonlar tarkibi — savdo boʻlimi roʻyxati boʻyicha: unda loyihadagi 1202 xonadondan 1186 tasi bor. Boʻsh xonadonlar, qavatlar '
       + 'va narxni telefon orqali aniqlang: mavjudlik har kuni oʻzgaradi.',
   },
   plans: {
@@ -1753,6 +1812,15 @@ const uz = {
     finishText: 'Qoʻngʻiroq qiling — menejer sizga nima mos kelishini aniqlaydi va qulay vaqt belgilaydi. '
       + 'Savdo boʻlimida qavatlardagi boʻsh xonadonlarni, rejalarni batafsil, deraza manzaralarini '
       + 'koʻrsatamiz va sotib olish shartlarini tushuntiramiz.',
+    interiorsTitle: 'Xonadonlar white-box formatida topshiriladi',
+    interiorsText: 'Tarhlar shaxsiy va umumiy zonalarni ajratishga imkon beradi, panoramali derazalar xonalarni yorugʻlik bilan toʻldiradi. Pardozni egasi oʻzi tanlaydi.',
+    interiorsNote: 'Rasmlardagi interyerlar — PARI materiallaridan olingan pardoz namunasi. Xonadonlar pardozsiz topshiriladi.',
+    interiors: [
+      { img: 'interior-01', cap: 'Oshxonali mehmonxona' },
+      { img: 'interior-02', cap: 'Yotoqxona' },
+      { img: 'interior-03', cap: 'Deraza yonidagi ovqatlanish joyi' },
+      { img: 'interior-04', cap: 'Oshxona' },
+    ],
   },
 
   /* ── «Loyiha haqida» sahifasi: matnlar buklet bo‘limlaridan (02–06, 11) ── */
@@ -1807,6 +1875,8 @@ const uz = {
     archGallery: [
       { img: 'arch-facade', cap: 'Quyosh botishida birinchi qavatlar arkadasi', big: true },
       { img: 'arch-line', cap: 'Birinchi liniyadan fasadlar' },
+      { img: 'line-day', cap: 'Kunduzi birinchi liniya: koʻcha boʻylab savdo galereyasi' },
+      { img: 'gallery-corner', cap: 'Birinchi qavat arkadasi ostidagi kafe' },
       { img: 'arch-stone', cap: 'Parapet travertini yaqindan' },
       { img: 'arch-balcony', cap: 'Balkon: shisha, guruch, tosh', wide: true },
     ],
@@ -1877,7 +1947,7 @@ const uz = {
 
   location: {
     h1: 'PARI Residence Samarqandda qayerda joylashgan',
-    lead: 'Turar-joy majmuasi «Zaliniya» yangi mahallasida, Goʻroʻgʻli koʻchasi, 1 manzilida qurilmoqda. '
+    lead: 'Turar-joy majmuasi «Zaliniya» yangi mahallasida, Goʻroʻgʻli koʻchasida qurilmoqda. '
       + 'Yaqinida temir yoʻl vokzali, supermarketlar, maktablar va savdo markazi, xalqaro aeroportgacha '
       + 'mashinada 15 daqiqa.',
     districtTitle: 'Uy bilan birga oʻsib borayotgan mahalla',
@@ -1902,7 +1972,7 @@ const uz = {
   rooms: {
     h1: '{title} PARI Residence’da, Samarqand',
     lead: '{count} — {areaSpan}, {floorSpan}-qavatlar, {entrances}. '
-      + 'Goʻroʻgʻli koʻchasidagi yangi biznes-klass '
+      + 'Goʻroʻgʻli koʻchasidagi yangi premium-klass '
       + 'kvartal: mashinasiz yopiq hovli-bogʻ, yer osti avtoturargohi, tabiiy toshli fasadlar.',
     leadPrice: 'Narxi 1 m² uchun {price}dan, xarid toʻgʻridan-toʻgʻri quruvchidan, '
       + '{months}gacha foizsiz boʻlib toʻlash.',

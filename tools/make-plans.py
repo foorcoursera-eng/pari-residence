@@ -28,7 +28,7 @@ import unicodedata
 
 import numpy as np
 import pymupdf
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 SRC = os.environ.get('PARI_SHEETS', r'C:/Users/User/Downloads')
 BOOK = os.environ.get('PARI_BOOK', r'C:/Users/User/Downloads/Pari_буклет финал.pdf')
@@ -139,33 +139,55 @@ def pick(sheets, blocks):
     return sheets[0]
 
 
-def plan_box(page, im, scale):
-    """Габарит чертежа квартиры на листе.
+CAPTION = ('Блок', 'Блоки', 'этаж', 'этажа', 'этажей')
 
-    Раскладка листов плавает: роза инсоляции и схемы стоят то справа от чертежа,
-    то под ним, шапка есть не на всех. Поэтому границы не угадываются по
-    процентам страницы: лист размечается на связные пятна чернил и берётся самое
-    крупное — это всегда сам чертёж. Считаем по отрисованной странице, а не по
-    прямоугольникам путей: габарит пути охватывает и пустоту, из-за чего чертёж
-    склеивался с розой в одно пятно.
 
-    page  — страница PDF (по словам берём границы шапки и экспликации),
+def _caption_lines(words):
+    """Подписи схем «Блок 2 · с 2-го по 12-й этаж» — все слова с тех же строк.
+
+    Слова одной строки берутся по общей базовой линии: подпись набрана в две
+    строки разным кеглем, и вторая («с 2-го по 12-й этаж») сама по себе
+    ключевого слова не содержит."""
+    keys = [w for w in words if any(w[4].startswith(k) for k in CAPTION)]
+    out = []
+    for k in keys:
+        h = k[3] - k[1]
+        for w in words:
+            if abs(w[3] - k[3]) < h * 0.6 and abs(w[0] - k[0]) < h * 12:
+                out.append(w)
+    return out
+
+
+def card_crop(page, im, scale):
+    """Чертёж квартиры с листа — для карточки.
+
+    Раскладка листов плавает: экспликация стоит то под чертежом, то в правой
+    колонке рядом с ним, роза инсоляции и схемы — справа или снизу, а подписи
+    «Блок 2 · с 2-го по 12-й этаж» могут лежать вплотную к выносным линиям.
+    Поэтому границы не угадываются по долям страницы: лист размечается на
+    связные пятна чернил, самое крупное — сам чертёж; к нему добираются
+    подписи комнат и размеры рядом. Всё чужое, что попало в кадр краем
+    (обрезанная подпись схемы, дуга розы), закрашивается белым — на белом
+    листе этого не видно, а в карточке не остаётся половинок слов.
+
+    Раньше нижняя граница резалась по слову «Экспликация» где бы оно ни
+    стояло, и на листах с экспликацией в правой колонке чертёж терял нижние
+    комнаты — заказчик это заметил.
+
+    page  — страница PDF (по словам находим шапку, экспликацию, подписи),
     im    — та же страница, уже отрисованная,
     scale — пикселей на пункт.
     """
     W, H = page.rect.width, page.rect.height
     words = page.get_text('words')
 
+    # шапка: всё, что лежит в полосе строки «КВАРТИРА …», включая крупную площадь
     top = 0.0
     for w in words:
-        if 'КВАРТИРА' in w[4]:
-            near = [q[3] for q in words if q[1] > w[1] - 2 and q[1] < w[3] + H * 0.02]
-            top = (max(near) if near else w[3]) + H * 0.006
+        if 'КВАРТИРА' in w[4].upper():
+            band = [q for q in words if q[1] < w[3] + H * 0.03]
+            top = max(q[3] for q in band) + H * 0.006
             break
-    bottom = H
-    for w in words:
-        if w[4] == 'Экспликация':
-            bottom = min(bottom, w[1] - H * 0.008)
 
     SW = 420
     k = SW / im.width
@@ -175,42 +197,92 @@ def plan_box(page, im, scale):
     sh = a.shape[0]
     ink = a < 210
     ink[:max(0, int(top * scale * k)), :] = False
-    ink[min(sh, int(bottom * scale * k)):, :] = False
     ink[:, :3] = False
     ink[:, -3:] = False
 
-    boxes = _components(ink)
+    boxes, lab = _components(ink)
     if not boxes:
         return None
-    # самое крупное пятно — сам чертёж. Соседние пятна не приклеиваем: рядом
-    # стоит роза инсоляции, её лучи распадаются на такие же отдельные пятна.
     main = max(boxes, key=lambda key: boxes[key][4])
     x0, y0, x1, y1, _ = boxes[main]
 
-    # Подписи комнат стоят вплотную и держатся на выносных линиях. Сравниваем
-    # с исходным габаритом, а не с растущим: иначе подпись подтягивает соседнюю,
-    # та — следующую, и в кадр цепочкой заезжает вся правая колонка схем.
+    def to_small(w):
+        return (w[0] * scale * k, w[1] * scale * k, w[2] * scale * k, w[3] * scale * k)
+
+    # экспликация под чертежом режет кадр снизу; в правой колонке — не трогает
+    bottom = sh
+    for w in words:
+        if w[4].startswith('Экспликац'):
+            wx0, wy0, wx1, wy1 = to_small(w)
+            if x0 <= (wx0 + wx1) / 2 <= x1 and wy0 > y0:
+                bottom = min(bottom, wy0 - SW * 0.01)
+    y1 = min(y1, bottom)
+
+    # Чужие слова: подписи схем и сама экспликация — всё, что стоит ниже слова
+    # «Экспликация» в её колонке. В правой колонке названия комнат таблицы
+    # стоят вплотную к подписям чертежа и иначе прилипали к кадру.
+    foreign = set(id(w) for w in _caption_lines(words))
+    for e in words:
+        if e[4].startswith('Экспликац'):
+            for w in words:
+                if w[1] >= e[1] - 2 and w[2] > e[0] - W * 0.12:   # заголовок стоит по центру таблицы
+                    foreign.add(id(w))
+
+    # Подписи комнат и размеры стоят вплотную к чертежу. Сравниваем с исходным
+    # габаритом, а не с растущим: иначе подпись подтягивает соседнюю, та —
+    # следующую, и в кадр цепочкой заезжает вся правая колонка схем.
     reach = SW * 0.015
     base = (x0, y0, x1, y1)
     for w in words:
-        if w[1] < top or w[3] > bottom:
+        if w[1] < top or id(w) in foreign:
             continue
-        wx0, wy0 = w[0] * scale * k, w[1] * scale * k
-        wx1, wy1 = w[2] * scale * k, w[3] * scale * k
+        wx0, wy0, wx1, wy1 = to_small(w)
+        if wy1 > bottom:
+            continue
         if (wx0 > base[2] + reach or wx1 < base[0] - reach
                 or wy0 > base[3] + reach or wy1 < base[1] - reach):
             continue
         x0, y0 = min(x0, wx0), min(y0, wy0)
         x1, y1 = max(x1, wx1), max(y1, wy1)
 
-    pad = SW * 0.02
-    px = 1 / k                                        # обратно в пиксели картинки
-    return (max(0, (x0 - pad) * px), max(0, (y0 - pad) * px),
-            min(im.width, (x1 + pad) * px), min(im.height, (y1 + pad) * px))
+    pad = SW * 0.025
+    bx0, by0 = max(0, x0 - pad), max(0, y0 - pad)
+    bx1, by1 = min(SW, x1 + pad), min(sh, y1 + pad)
+
+    # чужие пятна, задевающие кадр краем: их пиксели — в белый
+    wipe = np.zeros(ink.shape, dtype=bool)
+    for key, (cx0, cy0, cx1, cy1, _) in boxes.items():
+        if key == main:
+            continue
+        inside = cx0 >= bx0 and cy0 >= by0 and cx1 <= bx1 and cy1 <= by1
+        touches = cx1 >= bx0 and cx0 <= bx1 and cy1 >= by0 and cy0 <= by1
+        if touches and not inside:
+            wipe |= lab == key
+    px = 1 / k
+    frame = (round(bx0 * px), round(by0 * px), round(bx1 * px), round(by1 * px))
+    crop = im.crop(frame)
+    if wipe.any():
+        m = Image.fromarray((wipe * 255).astype(np.uint8)).resize(im.size, Image.NEAREST)
+        m = m.filter(ImageFilter.MaxFilter(5)).crop(frame)
+        crop.paste((255, 255, 255), (0, 0), m)
+    # подписи схем, шапка и слова, чей центр за кадром, — тоже в белый по своим рамкам
+    draw = ImageDraw.Draw(crop)
+    for w in words:
+        wx0, wy0, wx1, wy1 = to_small(w)
+        cx, cy = (wx0 + wx1) / 2, (wy0 + wy1) / 2
+        touches = wx1 >= bx0 and wx0 <= bx1 and wy1 >= by0 and wy0 <= by1
+        if not touches:
+            continue
+        if id(w) in foreign or w[1] < top or not (bx0 <= cx <= bx1 and by0 <= cy <= by1):
+            draw.rectangle(((wx0 - bx0) * px - 3, (wy0 - by0) * px - 3,
+                            (wx1 - bx0) * px + 3, (wy1 - by0) * px + 3), fill=(255, 255, 255))
+    return crop
 
 
 def _components(ink):
-    """Связные пятна на булевой сетке: две строки меток с объединением."""
+    """Связные пятна на булевой сетке: две строки меток с объединением.
+
+    Возвращает габариты пятен и карту меток той же формы, что сетка."""
     h, w = ink.shape
     lab = np.zeros(ink.shape, dtype=np.int32)
     parent = [0]
@@ -260,7 +332,7 @@ def _components(ink):
             boxes[v] = (x, y, x, y, 1)
         else:
             boxes[v] = (min(b[0], x), min(b[1], y), max(b[2], x), max(b[3], y), b[4] + 1)
-    return boxes
+    return boxes, lab
 
 
 def sheet_box(page):
@@ -339,15 +411,29 @@ def from_book(pid, pno, side, book):
     ink = np.asarray(small) < 210
     ink[:int(ink.shape[0] * 0.05), :] = False
     ink[int(ink.shape[0] * 0.66):, :] = False
-    boxes = _components(ink)
+    boxes, lab = _components(ink)
     if boxes:
-        x0, y0, x1, y1, _ = max(boxes.values(), key=lambda b: b[4])
+        main = max(boxes, key=lambda key: boxes[key][4])
+        x0, y0, x1, y1, _ = boxes[main]
         pad = SW * 0.06          # подписи комнат тут не размечены — берём поле пошире
-        box = ((x0 - pad) / k, (y0 - pad) / k, (x1 + pad) / k, (y1 + pad) / k)
+        bx0, by0 = max(0, x0 - pad), max(0, y0 - pad)
+        bx1, by1 = min(SW, x1 + pad), min(ink.shape[0], y1 + pad)
+        # роза инсоляции стоит вплотную к чертежу и заезжает в кадр краем — стираем
+        wipe = np.zeros(ink.shape, dtype=bool)
+        for key, (cx0, cy0, cx1, cy1, _) in boxes.items():
+            inside = cx0 >= bx0 and cy0 >= by0 and cx1 <= bx1 and cy1 <= by1
+            touches = cx1 >= bx0 and cx0 <= bx1 and cy1 >= by0 and cy0 <= by1
+            if key != main and touches and not inside:
+                wipe |= lab == key
+        frame = (round(bx0 / k), round(by0 / k), round(bx1 / k), round(by1 / k))
+        crop = card.crop(frame)
+        if wipe.any():
+            m = Image.fromarray((wipe * 255).astype(np.uint8)).resize(card.size, Image.NEAREST)
+            m = m.filter(ImageFilter.MaxFilter(5)).crop(frame)
+            crop.paste((255, 255, 255), (0, 0), m)
     else:
-        box = (hw * 0.04, card.height * 0.10, hw * 0.72, card.height * 0.66)
-    draw = save(card.crop(tuple(round(v) for v in box)),
-                os.path.join(OUT, pid + '-800.webp'), CARD_W, 86)
+        crop = card.crop((round(hw * 0.04), round(card.height * 0.10), round(hw * 0.72), round(card.height * 0.66)))
+    draw = save(crop, os.path.join(OUT, pid + '-800.webp'), CARD_W, 86)
     return full, draw, 'буклет'
 
 
@@ -382,10 +468,10 @@ def main():
         full = save(im.crop(tuple(round(v * scale) for v in sheet)),
                     os.path.join(OUT, pid + '-1400.webp'), FULL_W, 84)
 
-        box = plan_box(page, im, scale)
-        if box is None:
-            box = (im.width * 0.05, im.height * 0.12, im.width * 0.68, im.height * 0.70)
-        crop = im.crop(tuple(round(v) for v in box))
+        crop = card_crop(page, im, scale)
+        if crop is None:
+            crop = im.crop((round(im.width * 0.05), round(im.height * 0.12),
+                            round(im.width * 0.68), round(im.height * 0.70)))
         draw = save(crop, os.path.join(OUT, pid + '-800.webp'), CARD_W, 86)
 
         print('%-10s %-7s %-22s %-24s лист %dx%d  чертёж %dx%d'

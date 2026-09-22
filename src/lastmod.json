@@ -1,106 +1,106 @@
 {
  "/": {
-  "sum": "5d407ca7b5a9",
-  "date": "2026-09-09"
+  "sum": "146761fb450b",
+  "date": "2026-09-22"
  },
  "/project/": {
-  "sum": "6882193749f9",
-  "date": "2026-09-09"
+  "sum": "dd48e0b1fb39",
+  "date": "2026-09-21"
  },
  "/apartments/": {
-  "sum": "337b70f9a8a9",
-  "date": "2026-09-09"
+  "sum": "bf684075748f",
+  "date": "2026-09-21"
  },
  "/select/": {
-  "sum": "873f5db8d7d5",
-  "date": "2026-09-09"
+  "sum": "da702e8d5cb6",
+  "date": "2026-09-21"
  },
  "/installment/": {
-  "sum": "636ff70a39a7",
-  "date": "2026-09-09"
+  "sum": "b28c32dcd9ce",
+  "date": "2026-09-21"
  },
  "/location/": {
-  "sum": "4ba9e8511a71",
-  "date": "2026-09-09"
+  "sum": "3a29070f46bf",
+  "date": "2026-09-21"
  },
  "/faq/": {
-  "sum": "c7b6d0cd684c",
-  "date": "2026-09-09"
+  "sum": "e1b3603b6e43",
+  "date": "2026-09-21"
  },
  "/contacts/": {
-  "sum": "a2013e84ecd3",
-  "date": "2026-09-09"
+  "sum": "a26659585702",
+  "date": "2026-09-21"
  },
  "/apartments/studio/": {
-  "sum": "e096775b8f1a",
-  "date": "2026-09-09"
+  "sum": "f6d23ee5f044",
+  "date": "2026-09-21"
  },
  "/apartments/1-room/": {
-  "sum": "a91e49302d1e",
-  "date": "2026-09-09"
+  "sum": "cdca9e5baa94",
+  "date": "2026-09-21"
  },
  "/apartments/2-room/": {
-  "sum": "50b58b09d9a2",
-  "date": "2026-09-09"
+  "sum": "c5345658a36f",
+  "date": "2026-09-21"
  },
  "/apartments/3-room/": {
-  "sum": "2291cb1bf0ca",
-  "date": "2026-09-09"
+  "sum": "8fc5cb0b1758",
+  "date": "2026-09-21"
  },
  "/apartments/4-room/": {
-  "sum": "a0cac14db43b",
-  "date": "2026-09-09"
+  "sum": "116a4a5e0a4c",
+  "date": "2026-09-21"
  },
  "/uz/": {
-  "sum": "6f5379cf7ac2",
-  "date": "2026-09-09"
+  "sum": "fafa56445d2c",
+  "date": "2026-09-22"
  },
  "/uz/project/": {
-  "sum": "6cd6f55766ca",
-  "date": "2026-09-09"
+  "sum": "5c8658ede5da",
+  "date": "2026-09-21"
  },
  "/uz/apartments/": {
-  "sum": "851ab4ac54d6",
-  "date": "2026-09-09"
+  "sum": "0b35bf6c9a77",
+  "date": "2026-09-21"
  },
  "/uz/select/": {
-  "sum": "ae18a13084b5",
-  "date": "2026-09-09"
+  "sum": "f402dbcc6dd9",
+  "date": "2026-09-21"
  },
  "/uz/installment/": {
-  "sum": "1340ee6f93cb",
-  "date": "2026-09-09"
+  "sum": "58277cb36894",
+  "date": "2026-09-21"
  },
  "/uz/location/": {
-  "sum": "184ee5a2a81b",
-  "date": "2026-09-09"
+  "sum": "8db3a842e57c",
+  "date": "2026-09-21"
  },
  "/uz/faq/": {
-  "sum": "06596f4b23ca",
-  "date": "2026-09-09"
+  "sum": "d10009b4aee9",
+  "date": "2026-09-21"
  },
  "/uz/contacts/": {
-  "sum": "8fc582fb8c1e",
-  "date": "2026-09-09"
+  "sum": "da0c78ddf682",
+  "date": "2026-09-21"
  },
  "/uz/apartments/studio/": {
-  "sum": "ccec717800fb",
-  "date": "2026-09-09"
+  "sum": "c7c6086acaf6",
+  "date": "2026-09-21"
  },
  "/uz/apartments/1-room/": {
-  "sum": "b6030adeabf3",
-  "date": "2026-09-09"
+  "sum": "cabf9167424d",
+  "date": "2026-09-21"
  },
  "/uz/apartments/2-room/": {
-  "sum": "89e7aca80ab1",
-  "date": "2026-09-09"
+  "sum": "6f7f12a49b0d",
+  "date": "2026-09-21"
  },
  "/uz/apartments/3-room/": {
-  "sum": "787c6b6b7170",
-  "date": "2026-09-09"
+  "sum": "c7bba717b7b3",
+  "date": "2026-09-21"
  },
  "/uz/apartments/4-room/": {
-  "sum": "74ec657a4aea",
-  "date": "2026-09-09"
+  "sum": "59b2ec75de33",
+  "date": "2026-09-21"
  }
 }

@@ -36,6 +36,18 @@ function imgSize(rel) {
   return out;
 }
 
+/* Стрелка кнопок и ссылок: одна на весь сайт, штрихом, наследует цвет. */
+const ARROW = '<svg class="i-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+/* Текстовая ссылка: первая линия уходит вправо, вторая (<i>) приходит слева. */
+/* Стрелки и точки под лентой (телефон): motion.js включает их, только когда
+   лента действительно прокручивается. */
+const railNav = (t) => `  <div class="rail-nav" data-strip-nav aria-label="${esc(t.ui.railHint)}">
+    <button class="rail-nav__btn" type="button" data-strip-prev aria-label="${esc(t.ui.railPrev)}">${ARROW}</button>
+    <span class="rail-dots" data-strip-dots role="tablist"></span>
+    <button class="rail-nav__btn rail-nav__btn--next" type="button" data-strip-next aria-label="${esc(t.ui.railNext)}">${ARROW}</button>
+  </div>`;
+const sLink = (href, label, extra) => `<a class="s-link${extra ? ' ' + extra : ''}" href="${href}">${esc(label)}<i></i>${ARROW}</a>`;
+
 const esc = (s) => String(s).replace(/&(?!#?\w+;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const url = (path) => site.origin.replace(/\/$/, '') + path;
 
@@ -46,36 +58,6 @@ const url = (path) => site.origin.replace(/\/$/, '') + path;
    собирается. */
 const swap = (path) => (path === '/404.html' ? '/uz/' : path.startsWith('/uz/') ? path.slice(3) || '/' : path === '/' ? '/uz/' : '/uz' + path);
 
-/* ── бабочка: один силуэт, используется четырежды ── */
-const WING = '<path class="w" d="M60 46C52 21 38 7 24 8 10 9 5 22 11 33 18 45 39 51 60 46Z"/>'
-  + '<path class="w" d="M60 50C48 50 32 56 27 66 22 77 31 87 41 82 52 76 58 63 60 50Z"/>'
-  + '<path class="spot" d="M24 14C16 16 12 23 14 29 20 25 22 19 24 14Z"/>'
-  + '<path class="spot" d="M33 71C29 74 28 79 31 81 34 79 34 74 33 71Z"/>'
-  + '<g class="vein"><path d="M57 45C46 38 34 27 26 14"/><path d="M57 46C46 42 34 38 14 31"/>'
-  + '<path d="M58 52C48 58 39 66 34 78"/></g>';
-
-const BUTTERFLY = '<svg viewBox="0 0 120 100">'
-  + `<g class="wing wing--l">${WING}</g>`
-  + `<g transform="translate(120,0) scale(-1,1)"><g class="wing wing--r">${WING}</g></g>`
-  + '<ellipse class="body" cx="60" cy="54" rx="2.6" ry="15"/><circle class="body" cx="60" cy="37" r="3.1"/>'
-  + '<path class="feeler" d="M58 35C55 27 50 21 44 17"/><circle class="club" cx="43.4" cy="16.4" r="1.5"/>'
-  + '<path class="feeler" d="M62 35c3-8 8-14 14-18"/><circle class="club" cx="76.6" cy="16.4" r="1.5"/>'
-  + '</svg>';
-
-const fly = (mod, id) =>
-  `<div class="fly fly--${mod}"${id ? ` id="${id}"` : ''} aria-hidden="true">`
-  + `<div class="fly__bob">${BUTTERFLY}</div></div>`;
-
-/* ── заставка первого захода: медальон, уезжающий вверх ── */
-function splash() {
-  return `<div class="splash" id="splash" aria-hidden="true">
-  <div class="splash__mark">
-    <img src="/assets/img/brand-frame.png" alt="" width="640" height="616">
-    <img class="splash__logo" src="/assets/img/pari-logo-400.webp" alt="" width="400" height="220">
-  </div>
-</div>
-`;
-}
 
 /* ── переключатель языка ── */
 function langSwitch(t, path, extraClass) {
@@ -126,14 +108,22 @@ function footerItems(t) {
 }
 
 function header(t, path) {
-  const items = navItems(t).map(([href, label]) => `      <a href="${href}">${esc(label)}</a>`).join('\n');
+  /* В строку шапки идут четыре пункта, а не все шесть: слева от логотипа
+     половина ширины, и шесть пунктов в разрядку переносились на две строки
+     уже на 1440. Полный список — в меню по кнопке и в подвале. */
+  const inline = new Set(['/project/', '/apartments/', '/installment/', '/contacts/']);
+  const items = navItems(t)
+    .filter(([href]) => inline.has(href.replace(/^\/uz/, '')))
+    .map(([href, label]) => `      <a href="${href}"${path.startsWith(href) ? ' class="is-current" aria-current="page"' : ''}>${esc(label)}</a>`).join(String.fromCharCode(10));
   /* Плотное состояние проставляем прямо в разметке всюду, кроме главной:
      там шапка выезжает после первого экрана, а на внутренних страницах она
      нужна с первого кадра. Раньше её показывал только скрипт — при
      неотработавшем JavaScript страница оставалась без логотипа, меню и
      телефона. */
   const inner = path !== '/' && path !== '/uz/';
-  return `<header class="bar${inner ? ' is-solid' : ''}" id="bar">
+  /* На главной шапка приходит последней в хореографии первого экрана
+     (класс is-intro снимает motion.js); без скрипта она видна сразу. */
+  return `<header class="bar${inner ? ' is-solid' : ''}" id="bar"${inner ? '' : ' data-bar-intro'}>
   <span class="bar__progress" aria-hidden="true"></span>
   <a class="bar__logo" href="${t.lang === 'ru' ? '/' : '/uz/'}" aria-label="${site.brand}">
     <!-- Лёгкая копия марки: полноразмерный PNG весил 53 КБ ради 96 px в шапке. -->
@@ -143,20 +133,24 @@ function header(t, path) {
   <nav class="bar__nav" aria-label="${esc(t.ui.navLabel)}">
 ${items}
   </nav>
+  ${langSwitch(t, path, 'bar__lang-phone')}
 
   <div class="bar__side">
     <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="${esc(t.ui.openMenu)}"><span></span><span></span></button>
     ${langSwitch(t, path)}
-    <a class="btn btn--call" href="tel:${site.phone.tel}" data-track="phone_click">
+    <a class="btn btn--call" href="tel:${site.phone.tel}" data-track="phone_click" aria-label="${esc(t.ui.call)} ${site.phone.display}">
       <span class="btn__text">${esc(t.ui.call)}</span>
       <span class="btn__num">${site.phone.display}</span>
+      <!-- На телефоне вместо номера — трубка: иначе правая группа шире
+           половины экрана и логотип не встаёт по центру. -->
+      <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5c.5 0 .9.3 1.1.7l1.5 3.4c.2.4.1.9-.2 1.2L7.6 10.2a12.6 12.6 0 0 0 6.2 6.2l1.4-1.4c.3-.3.8-.4 1.2-.2l3.4 1.5c.4.2.7.6.7 1.1v2.4c0 .7-.6 1.3-1.3 1.2C10.4 20.3 3.7 13.6 3 4.8c-.1-.7.5-1.3 1.2-1.3h2.4Z" fill="currentColor"/></svg>
     </a>
   </div>
 </header>`;
 }
 
 function mobileMenu(t, path) {
-  const items = menuItems(t).map(([href, label], i) => `        <a class="menu__link" href="${href}">
+  const items = menuItems(t).map(([href, label], i) => `        <a class="menu__link" href="${href}" style="--i:${i}"${path === href ? ' aria-current="page"' : ''}>
           <i>${String(i + 1).padStart(2, '0')}</i><span>${esc(label)}</span>
         </a>`).join('\n');
   return `<div class="menu" id="menu" hidden>
@@ -652,15 +646,6 @@ function inkPaths(svg, from) {
   return svg.replace(/<path /g, () => `<path pathLength="1" style="--i:${i++}" `);
 }
 
-function logoDraw(extra) {
-  const script = inkPaths(LOGO.script, 0);
-  const caption = inkPaths(LOGO.caption, 5);
-  return `<svg class="mark${extra ? ' ' + extra : ''}" viewBox="${LOGO.viewBox}" role="img" aria-label="${site.brand}">
-      <title>${site.brand}</title>
-      <g class="mark__word">${script}</g>
-      <g class="mark__cap">${caption}</g>
-    </svg>`;
-}
 
 /* ── подбор квартиры: комнатность и площадь ──
    Без JavaScript видны все планировки — отбор только сужает выдачу. */
@@ -879,6 +864,10 @@ ${page.noindex ? `<!-- Страница 404 не должна попадать �
      не известно. -->
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/cygre-regular.woff2" crossorigin>
 ${page.preload || ''}<link rel="stylesheet" href="/styles.css?v=${page.v}">
+<!-- Класс движения ставится до первой отрисовки: иначе блоки, которые
+     motion.js потом прячет и показывает, успевают мигнуть. При просьбе
+     убрать анимации класса нет — страница статична и видна сразу. -->
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('has-motion')}</script>
 <!-- Без JavaScript страница остаётся читаемой. Появление блоков по скроллу
      держится на классе, который ставит скрипт; до этого .reveal стоит
      opacity:0, и при отключённом или сломавшемся JS почти весь текст
@@ -924,6 +913,11 @@ ${dock(t, page)}
     <img alt="" data-viewer-img width="1600" height="1200">
   </div>
   <p class="viewer__hint">${esc(t.ui.viewerHint)}</p>
+  <div class="viewer__zoom" role="group" aria-label="${esc(t.ui.zoomLabel)}">
+    <button type="button" data-zoom-out aria-label="${esc(t.ui.zoomOut)}">−</button>
+    <button type="button" data-zoom-in aria-label="${esc(t.ui.zoomIn)}">+</button>
+    <button type="button" data-fit>${esc(t.ui.zoomFit)}</button>
+  </div>
 </div>
 
 <script src="/assets/js/lenis.min.js?v=${page.v}" defer></script>
@@ -948,605 +942,396 @@ ${dock(t, page)}
    короткая французская метка над русским названием, архитектурные листы
    как документы и каталог квартир строками, а не карточками. */
 
-/* ── шапка главы ── */
-function plate(t, key, light) {
-  const m = t.home.maison[key];
-  return `<header class="m-plate${light ? ' m-plate--light' : ''} reveal">
-      <span class="m-plate__index">${m.i}</span>
-      <span class="m-plate__label"><i lang="fr">${m.fr}</i><b>${esc(m.ru)}</b></span>
-    </header>`;
-}
+/* ══════════════ главная ══════════════
+   Собрана по гайдбуку PARI, раздел 5: у каждого экрана один визуальный центр
+   (§5.1), композиции двух типов — «фотографическая» (крупный кадр плюс
+   компактный текстовый блок на спокойной области, §5.3) и «чистая
+   типографическая» (светлое поле, крупный заголовок, короткий текст). Сетка
+   двенадцатиколоночная: текст занимает 3–5 колонок, кадр — 7–9 или выходит
+   за поле целиком (§5.2). Пропорция цвета — светлое поле, золото акцентом,
+   чёрный только в наборе (§3.2). Шрифты только два, по §4: Tenor Sans в
+   заголовках, Cygre в тексте — рукописного начертания в системе нет, и
+   §9.2 прямо не советует «сложную декоративную типографику».
 
-/* ── архитектурный лист ──
-   Чертёж — не иллюстрация, а документ: белое поле, тонкая линия, мелкая
-   подпись и честное указание источника листа. */
-function sheet(t, o) {
-  return `<figure class="m-sheet reveal">
-      <div class="m-sheet__frame">
-        <img src="${o.src}" srcset="${o.srcset}" sizes="(min-width:900px) 78vw, 100vw"
-             alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy" decoding="async">
-      </div>
-      <figcaption class="m-sheet__cap">
-        <span class="m-sheet__no">${esc(t.home.sheetWord)} ${o.no}</span>
-        <b>${esc(o.title)}</b>
-        <span class="m-sheet__note">${esc(o.note)}</span>
-      </figcaption>
-    </figure>`;
-}
+   Девять экранов вместо шестнадцати: первый экран → манифест → архитектура
+   с материалами → двор → входная группа → квартиры → район → создатели →
+   финал с заявкой. Всё, что не несло ни факта, ни кадра, снято. */
 
-/* ── строка каталога квартир ──
-   Крупный чертёж и подпись рядом — логика каталога коллекции, а не сетки
-   карточек. Кнопка открывает тот же просмотрщик, что и на странице квартир. */
-function catalogRow(t, x, i) {
-  const p = t.plans;
-  const size = imgSize(`assets/img/plans/${x.id}-800.webp`) || { w: 900, h: 1100 };
-  const rooms = x.studio ? p.studioWord : p.roomWord[x.rooms];
-  const blocks = `${p.blockWord[x.blocks.length > 1 ? 2 : 1]} ${x.blocks.join(', ')}`;
-  const label = `${rooms} · ${x.area} ${t.ui.sqm} · ${blocks}`;
-  return `      <article class="m-cat__row reveal">
-        <button class="m-cat__plan" type="button"
-                data-zoom="/assets/img/plans/${x.id}-1400.webp"
-                data-zoom-label="${esc(label)}"
-                aria-label="${esc(p.zoom)}: ${esc(label)}">
-          <img src="/assets/img/plans/${x.id}-800.webp"
-               srcset="/assets/img/plans/${x.id}-800.webp 800w, /assets/img/plans/${x.id}-1400.webp 1400w"
-               sizes="(min-width:900px) 30vw, 60vw" alt="${esc(label)}"
-               width="${size.w}" height="${size.h}" loading="lazy" decoding="async">
-        </button>
-        <div class="m-cat__meta">
-          <span class="m-cat__no">${String(i + 1).padStart(2, '0')}</span>
-          <!-- Заголовком строки идёт площадь: она и набрана крупнее всего, и
-               различает строки между собой, тогда как «2-комнатная» в каталоге
-               повторялась несколько раз подряд. -->
-          <h3 class="m-cat__area">${x.area}<span>${t.ui.sqm}</span></h3>
-          <p class="m-cat__rooms">${esc(rooms)}</p>
-          <p class="m-cat__block">${esc(blocks)}</p>
-          <span class="m-cat__link">${esc(t.home.catalogView)}</span>
-        </div>
-      </article>`;
+/* ── кадр во весь экран с текстовой панелью ──
+   «Фотографическая композиция» гайдбука: кадр занимает экран, текст лежит
+   на светлой панели в спокойном углу — панель и есть та «достаточно
+   спокойная область для размещения информации», которой требует §5.3, и на
+   любом кадре она гарантирована, а не зависит от того, где в рендере небо.
+   На телефоне панель уходит под кадр: накладывать текст на кадр в 375 px
+   значит прятать либо кадр, либо текст. */
+function frame(o) {
+  const widths = o.widths || [1280, 1920, 2560];
+  const srcset = widths.map((w) => `/assets/img/${o.img}-${w}.webp ${w}w`).join(', ');
+  const size = imgSize(`assets/img/${o.img}-${widths[widths.length - 1]}.webp`) || { w: 2560, h: 1429 };
+  return `<section class="s-frame${o.side === 'right' ? ' s-frame--right' : ''}${o.tall ? ' s-frame--tall' : ''}${o.grow ? ' s-frame--grow' : ''}" id="${o.id}">
+  <figure class="s-frame__media" data-drift${o.grow ? ' data-grow' : ''}>
+    <img src="/assets/img/${o.img}-${widths[Math.min(1, widths.length - 1)]}.webp"
+         srcset="${srcset}" sizes="100vw" alt="${esc(o.alt)}"
+         width="${size.w}" height="${size.h}" loading="lazy" decoding="async">
+  </figure>
+  <div class="s-frame__panel">
+    <p class="s-eyebrow reveal">${esc(o.eyebrow)}</p>
+    <h2 class="s-display s-display--md" data-lines>${o.title}</h2>
+    <p class="s-text reveal">${esc(o.text)}</p>
+${o.extra || ''}
+    ${o.href ? sLink(o.href, o.link, 'reveal') : ''}
+  </div>
+</section>`;
 }
 
 function home(t, page) {
   const h = t.home;
   const p = t.lang === 'ru' ? '' : '/uz';
+  const heroSloganLines = h.heroSlogan
+    .replace(/&nbsp;/g, ' ')
+    .split(/<br\s*\/?\s*>/i)
+    .map((line) => line.trim())
+    .filter(Boolean);
   const apartmentsHref = `${p}/apartments/`;
   const locationHref = `${p}/location/`;
   const projectHref = `${p}/project/`;
-  const genplanHref = `${p}/genplan/`;
   const contactsHref = `${p}/contacts/`;
 
-  /* Оглавление коллекции: пять слов сразу под первым экраном. */
-  const index = h.collection.map((c) => `      <a class="m-index__item" href="${c.href}">
-        <i lang="fr">${c.fr}</i><b>${esc(c.ru)}</b>
-      </a>`).join('\n');
-
-  /* Спецификация: показатели проекта строками, как лист технических данных. */
-  const spec = h.spec.map(([k, v]) => `        <div class="m-spec__row reveal">
+  /* Четыре главных числа — с анимацией счёта; остальная спецификация —
+     тихим списком, без повторов того, что уже стоит крупно. */
+  const stats = h.stats.map((x) => `      <div class="s-stat reveal">
+        <b><span data-count="${x.value}">${x.value}</span>${x.suffix ? `<i>${esc(x.suffix)}</i>` : ''}</b>
+        <span>${esc(x.label)}</span>
+      </div>`).join('\n');
+  const bigLabels = new Set(['Блоков', 'Квартир', 'Двор-парк', 'Озеленение и благоустройство',
+    'Bloklar', 'Xonadonlar', 'Hovli-bogʻ', 'Koʻkalamzorlashtirish va obodonlashtirish']);
+  const spec = h.spec.filter(([k]) => !bigLabels.has(k)).map(([k, v]) => `        <div class="s-spec__row reveal">
           <dt>${esc(k)}</dt><dd>${esc(v)}</dd>
         </div>`).join('\n');
 
-  /* Бульвар: галерея, входные группы и вид с высоты. Двор из ленты убран —
-     ему отведена собственная глава, а паркинг идёт отдельным разворотом. */
-  const cineItems = h.cine.filter((c) => c.img !== 'cine-parking' && c.img !== 'cine-yard');
-  const cine = cineItems.map((c) => {
-    const max = c.w[c.w.length - 1];
-    const set = c.w.map((w) => `/assets/img/${c.img}-w16-${w}.webp ${w}w`).join(', ');
-    return `        <figure class="frame">
-          <img src="/assets/img/${c.img}-w16-${c.w[0]}.webp" srcset="${set}"
-               sizes="100vw" alt="${esc(c.title)}" width="${max}" height="${Math.round(max / 1.6)}"
-               loading="lazy" decoding="async">
-          <figcaption class="frame__cap">
-            <b class="frame__name">${esc(c.title)}</b>
-            <span class="frame__text">${esc(c.text)}</span>
-          </figcaption>
-        </figure>`;
+  /* Кадры «дня»: утро — аркада первого этажа, день — галерея у улицы,
+     вечер — двор, ночь — вид с балкона. Подписи берутся из уже
+     утверждённых alt-текстов галереи. */
+  const gal = (img) => (h.gallery.find((g) => g.img === img) || {}).cap || '';
+  const dayShots = [
+    { img: 'gallery-corner', alt: h.cornerAlt, h: 1326 },
+    { img: 'line-day', alt: h.lineDayAlt, h: 720 },
+    { img: 'cine-yard-w16', alt: gal('cine-yard'), h: 800 },
+    { img: 'cine-balcony-w16', alt: gal('cine-balcony'), h: 800 },
+  ];
+
+  /* Двор: перечень того, что в нём есть, двумя колонками, и цифра парковки. */
+  const yardList = `    <ul class="s-list reveal">
+${h.hectareList.map((x) => `      <li>${esc(x)}</li>`).join('\n')}
+    </ul>
+    <p class="s-figure reveal"><b>${esc(h.parkStat)}</b><span>${esc(h.parkStatLabel)}</span></p>`;
+
+  /* Входная группа: два вертикальных рендера застройщика. Широкого кадра
+     лобби в настоящих материалах нет — есть восемь вертикальных, и два из
+     них рядом читаются как разворот буклета, а не как заплатка. */
+  const lobby = ['lobby-03', 'lobby-07'].map((img, i) => {
+    const cap = t.project.entryGallery.find((g) => g.img === img);
+    return `      <figure class="s-duo__shot figure-mask">
+        <img src="/assets/img/${img}-760.webp"
+             srcset="/assets/img/${img}-760.webp 760w, /assets/img/${img}-1180.webp 1180w"
+             sizes="(min-width:900px) 30vw, 46vw" alt="${esc(cap ? cap.cap : t.project.entryAlt)}"
+             width="760" height="1087" loading="lazy" decoding="async">
+      </figure>`;
   }).join('\n');
 
-  /* Макро-кадры архитектуры: один и тот же формат 0,93 у всех четырёх. */
-  const macro = h.arch.map((g) => `      <figure class="m-macro__item reveal">
-        <img src="/assets/img/${g.img}-sq-700.webp"
-             srcset="/assets/img/${g.img}-sq-700.webp 700w, /assets/img/${g.img}-sq-1100.webp 1100w, /assets/img/${g.img}-sq-1400.webp 1400w"
-             sizes="(min-width:900px) 23vw, 62vw" alt="${esc(g.cap)}"
-             width="1400" height="1501" loading="lazy" decoding="async">
-        <figcaption>${esc(g.cap)}</figcaption>
-      </figure>`).join('\n');
-
-  /* Каталог: шесть планировок строками. Весь список из тридцати трёх живёт
-     на странице квартир — там же фильтр по комнатности и площади. */
-  const catalog = h.homesPreview
+  /* Квартиры: четыре листа из тех, что отобраны для главной. */
+  const plans = h.homesPreview
     .map((id) => t.plans.items.find((x) => x.id === id))
-    .filter(Boolean)
-    .map((x, n) => catalogRow(t, x, n)).join('\n');
+    .filter(Boolean).slice(0, 4)
+    .map((x) => planCard(t, x)).join('\n');
 
-  /* Диапазон площадей берём из самих планировок: числа в тексте и в
-     каталоге разойтись не могут. */
-  const byArea = t.plans.items.slice().sort((a, b) =>
-    parseFloat(a.area.replace(',', '.')) - parseFloat(b.area.replace(',', '.')));
-  const areaFrom = byArea[0].area;
-  const areaTo = byArea[byArea.length - 1].area;
+  const makers = [
+    [h.makerDev, site.developer.name],
+    [h.makerArch, site.architect.name],
+    [t.apartments.termsBankTitle, site.bank.name],
+  ].map(([k, v]) => `      <div class="s-maker reveal">
+        <span>${esc(k)}</span><b>${esc(v)}</b>
+      </div>`).join('\n');
 
-  /* День квартала: четыре времени суток. */
-  const life = h.life.map((x) => `        <div class="m-life__row reveal">
-          <dt>${esc(x.time)}</dt><dd>${esc(x.text)}</dd>
-        </div>`).join('\n');
-
-  /* Зоны двора переключаются радиокнопками, без единой строки скрипта. */
-  const careRadios = h.care.map((c, i) => `      <input class="care__radio" type="radio" name="care" id="care-${i}"${i === 0 ? ' checked' : ''}>`).join('\n');
-  const careTabs = h.care.map((c, i) => `        <label class="care__tab" for="care-${i}">${esc(c.title)}</label>`).join('\n');
-  const carePanels = h.care.map((c) => `        <article class="care__panel">
-          <figure class="care__shot">
-            <img src="/assets/img/${c.img}-sv-900.webp"
-                 srcset="/assets/img/${c.img}-sv-900.webp 900w, /assets/img/${c.img}-sv-1400.webp 1400w"
-                 sizes="(min-width:900px) 56vw, 100vw" alt="${esc(c.title)}"
-                 width="1400" height="979" loading="lazy" decoding="async">
-          </figure>
-          <div class="care__note">
-            <h3 class="care__name">${esc(c.title)}</h3>
-            <p>${esc(c.text)}</p>
-          </div>
-        </article>`).join('\n');
-
-  /* Интерьеры попадают в разметку только когда появятся кадры: пустой
-     список не оставляет на странице ни одного лишнего узла.
-     TODO(владелец): интерьерные рендеры — конец сентября 2026. */
-  const interiors = !h.interiors.length ? '' : `
-<section class="m-chapter m-interiors" id="interieur">
-  <div class="m-wrap">
-    <p class="m-eyebrow reveal">${esc(h.interiorsEyebrow)}</p>
-    <h2 class="m-display" data-lines>${h.interiorsTitle}</h2>
-    <p class="m-lede reveal">${esc(h.interiorsText)}</p>
-  </div>
-  <div class="m-strip">
-${h.interiors.map((x) => `    <figure class="m-strip__item reveal">
-      <img src="/assets/img/${x.img}-w16-${x.w[0]}.webp"
-           srcset="${x.w.map((w) => `/assets/img/${x.img}-w16-${w}.webp ${w}w`).join(', ')}"
-           sizes="(min-width:900px) 62vw, 88vw" alt="${esc(x.cap)}"
-           width="${x.w[x.w.length - 1]}" height="${Math.round(x.w[x.w.length - 1] / 1.6)}"
-           loading="lazy" decoding="async">
-      <figcaption>${esc(x.cap)}</figcaption>
-    </figure>`).join('\n')}
-  </div>
-</section>
-`;
-
-  page.body = `<!-- ══════════════ ПЕРВЫЙ ЭКРАН ══════════════
-     Кадр рекламной кампании: архитектура во весь экран, текста минимум.
-     Логотип и слоган лежат в спокойной левой трети, куда уведена световая
-     вуаль, — гайдбук §2.6 запрещает ставить марку на детализированный
-     участок снимка, и здесь этот участок для неё осветлён до бумаги. -->
-<section class="m-hero" id="pari" aria-label="${site.brand}">
-  <figure class="m-hero__media">
-    <img class="m-hero__shot" src="/assets/img/opening-shot-1920.webp"
-         srcset="/assets/img/opening-shot-1280.webp 1280w, /assets/img/opening-shot-1920.webp 1920w, /assets/img/opening-shot-2560.webp 2560w"
-         sizes="100vw" alt="${esc(h.leadFrameAlt)}" width="2560" height="1429"
-         fetchpriority="high" decoding="async">
-    <!-- Промо-ролик ложится ровно на кадр и проявляется, только когда пошёл.
-         Кадр под ним остаётся и постером, и запасным вариантом: при экономии
-         трафика, на медленной сети и при выключенных анимациях ролик не
-         грузится вовсе, и первый экран выглядит ровно так же, как раньше.
-         Отрезок собирает tools/make-promo-loop.py из бренд-фильма; на
-         телефоне играет вертикальная петля — горизонтальный кадр 2:1 в
-         вертикальном окне обрезался бы до полоски. -->
-    <video class="m-hero__video" muted loop playsinline preload="none"
+  page.body = `<!-- ══════════════ первый экран ══════════════
+     Промо-петля во весь экран, текст в осветлённой левой трети — там, где
+     кадр спокоен (§2.6: марку и текст не ставят на детализированный участок).
+     Логотип здесь один — в шапке; второй на том же экране спорил бы с ним. -->
+<section class="s-hero" id="pari" aria-label="${site.brand}">
+  <figure class="s-hero__media" data-hero-media>
+    <!-- Постер — первый кадр монтажа, поэтому подмена на ролик не видна.
+         На телефоне и кадр, и ролик вертикальные: горизонтальный 2:1 в окне
+         390×840 показывал бы среднюю треть. -->
+    <picture>
+      <source media="(max-width:700px)" srcset="/assets/img/pari-hero-poster-mobile.webp" width="720" height="1280">
+      <img class="s-hero__shot" src="/assets/img/pari-hero-poster-1920.webp"
+           srcset="/assets/img/pari-hero-poster-1280.webp 1280w, /assets/img/pari-hero-poster-1920.webp 1920w"
+           sizes="100vw" alt="${esc(h.leadFrameAlt)}" width="1920" height="960"
+           fetchpriority="high" decoding="async">
+    </picture>
+    <!-- Hero-монтаж из фирменного фильма: пять планов встык, 9,7 с, без
+         звука, без людей и текста в кадре. Собирает tools/make-hero-edit.py.
+         Ролик ложится ровно на постер и проявляется, только когда пошёл; при
+         экономии трафика и на медленной сети остаётся постер. -->
+    <video class="s-hero__video" muted loop playsinline preload="none"
            aria-hidden="true" tabindex="-1"
-           data-widths="1280,1920,2096"
-           data-webm="/assets/video/promo-hero-{w}.webm?v=${page.v}"
-           data-mp4="/assets/video/promo-hero-{w}.mp4?v=${page.v}"
-           data-webm-portrait="/assets/video/hero-portrait.webm?v=${page.v}"
-           data-mp4-portrait="/assets/video/hero-portrait.mp4?v=${page.v}"></video>
+           data-widths="1280,1920"
+           data-webm="/assets/video/pari-hero-{w}.webm?v=${page.v}"
+           data-mp4="/assets/video/pari-hero-{w}.mp4?v=${page.v}"
+           data-webm-portrait="/assets/video/pari-hero-mobile.webm?v=${page.v}"
+           data-mp4-portrait="/assets/video/pari-hero-mobile.mp4?v=${page.v}"></video>
   </figure>
-  <div class="m-hero__veil" aria-hidden="true"></div>
+  <div class="s-hero__veil" aria-hidden="true"></div>
 
-  <div class="m-hero__inner" data-open-head>
-    <p class="m-hero__place" lang="uz">${h.heroEyebrow}</p>
-    ${logoDraw('m-hero__mark')}
-    <h1 class="m-hero__title">
-      <!-- Строка внутри H1. Раньше здесь стояло «PARI Residence · Samarkand»,
-           и весь заголовок главной не содержал ни одного слова, по которому
-           её ищут: ни «квартиры», ни «Самарканд» в падеже запроса. При этом
-           title страницы говорил ровно об этом. Набор мелкий и разряженный,
-           слоган не тронут — на вид меняется одна подпись. -->
-      <span class="m-hero__name">${esc(h.heroName)}</span>
-      <span class="m-hero__slogan script" data-write="heroSlogan">${h.heroSlogan}</span>
-    </h1>
-    <p class="m-hero__sub" lang="${t.lang === 'ru' ? 'uz' : 'ru'}">${esc(h.heroSub)}</p>
-    <div class="m-hero__cta">
-      <a class="pill" href="${apartmentsHref}" data-track="cta_click">${esc(t.ui.pick)}</a>
-      <a class="ghost" href="${projectHref}">${esc(h.heroSecond)}</a>
+  <!-- Уход при прокрутке и глубина от курсора ведут всю обёртку, а не панель:
+       у панели не должно быть transform — на телефоне кнопки позиционируются
+       от обёртки по нижним углам. -->
+  <div class="s-hero__inner" data-open-head data-hero-panel>
+    <div class="s-hero__panel">
+      <!-- Марка на панели, как просил владелец; логотип в шапке главной
+           появляется, когда первый экран уходит вверх. -->
+      <img class="s-hero__mark" src="/assets/img/pari-logo-vector.png" alt="${site.brand}" width="1872" height="1031" data-hero-step decoding="async">
+      <p class="s-eyebrow s-eyebrow--hero" lang="uz" data-hero-step>${h.heroEyebrow}</p>
+      <h1 class="s-hero__title">
+        <span class="s-hero__name" data-hero-step>${esc(h.heroName)}</span>
+        <!-- Слоган — настоящий текст в h1, строки выходят из-под маски
+             (data-lines), а не рисуются штрихом семь секунд. -->
+        <span class="s-hero__slogan" data-lines data-hero-lines>${h.heroSlogan.replace(/&nbsp;/g, ' ')}</span>
+      </h1>
+      <p class="s-hero__sub" lang="${t.lang === 'ru' ? 'uz' : 'ru'}" data-hero-step>${esc(h.heroSub)}</p>
+      <div class="s-actions" data-hero-step>
+        <a class="pill" href="${apartmentsHref}" data-track="cta_click" data-magnet>${esc(t.ui.pick)}${ARROW}</a>
+        <a class="ghost" href="${projectHref}">${esc(h.heroSecond)}</a>
+      </div>
     </div>
   </div>
 
-  <div class="m-hero__foot">
-    <a class="m-hero__scroll" href="#maison">
-      <span aria-hidden="true"></span>${esc(h.leadScroll)}
-    </a>
-    <a class="m-hero__call" href="tel:${site.phone.tel}" data-track="phone_click">
-      <span class="m-hero__call-label">${esc(t.ui.call)}</span>
-      <span class="m-hero__call-num">${site.phone.display}</span>
-    </a>
-  </div>
+  <a class="s-hero__scroll" href="#maison" data-hero-scroll><span aria-hidden="true"></span>${esc(h.leadScroll)}</a>
 </section>
 
-<!-- ══════════════ ОГЛАВЛЕНИЕ КОЛЛЕКЦИИ ══════════════
-     Пять слов, которые описывают проект целиком, и они же — переходы. -->
-<nav class="m-index" aria-label="${esc(h.collectionTitle)}">
-  <p class="m-index__title" lang="fr">${esc(h.collectionTitle)}</p>
-  <div class="m-index__list">
-${index}
-  </div>
-</nav>
-
-<!-- ══════════════ I · LA MAISON ══════════════
-     Сначала образ, потом цифры: спецификация подана как лист технических
-     данных коллекции, а не как четыре кружка с иконками. -->
-<section class="m-chapter" id="maison">
-  <div class="m-wrap">
-    ${plate(t, 'house')}
-    <h2 class="m-display m-display--xl" data-lines>${h.houseLead}</h2>
-
-    <div class="m-house">
-      <div class="m-house__text">
-        <p class="m-lede reveal">${esc(h.aboutText)}</p>
-        <p class="m-body reveal">${esc(h.aboutText2)}</p>
-        <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
-      </div>
-
-      <div class="m-spec">
-        <p class="m-spec__title reveal">${esc(h.specTitle)}</p>
-        <dl class="m-spec__rows">
+<!-- ══════════════ манифест ══════════════
+     Чистая типографическая композиция: светлое поле, один крупный заголовок,
+     короткий текст и четыре числа. -->
+<section class="s-manifest" id="maison">
+  <div class="s-wrap">
+    <p class="s-eyebrow reveal">${esc(h.aboutEyebrow)}</p>
+    <h2 class="s-display s-display--xl" data-lines>${h.houseLead}</h2>
+    <div class="s-manifest__cols">
+      <p class="s-lede reveal">${esc(h.aboutText)}</p>
+      <p class="s-text reveal">${esc(h.aboutText2)}</p>
+    </div>
+    <div class="s-stats">
+${stats}
+    </div>
+    <dl class="s-spec">
 ${spec}
-        </dl>
-        <p class="m-spec__note reveal">${esc(h.specNote)}</p>
+    </dl>
+    <p class="s-note reveal">${esc(h.specNote)}</p>
+  </div>
+</section>
+
+<!-- ══════════════ концепция: Париж × Самарканд → PARI ══════════════
+     Два мира по краям — камень и латунь Парижа, свет и город Самарканда, —
+     по мере прокрутки сходятся к центру, где на светлой панели рождается
+     PARI (motion.js, закреплённая сцена; на телефоне — три кадра подряд).
+     Кадры — только свои: деталь балкона из рендеров и Самарканд на рассвете
+     из фирменного фильма. -->
+<section class="s-concept" id="idee" aria-labelledby="idee-h">
+  <div class="s-concept__stage" data-concept>
+    <figure class="s-concept__side s-concept__side--paris" data-concept-side="paris">
+      <img src="/assets/img/arch-balcony-1280.webp"
+           srcset="/assets/img/arch-balcony-1280.webp 1280w, /assets/img/arch-balcony-1920.webp 1920w"
+           sizes="(min-width:900px) 50vw, 100vw" alt="${esc(h.arch[3].cap)}"
+           width="1920" height="1071" loading="lazy" decoding="async">
+      <figcaption class="s-concept__word">Paris<small>${esc(h.conceptParisWord || '')}</small></figcaption>
+    </figure>
+    <div class="s-concept__core" data-concept-core>
+      <p class="s-eyebrow">${esc(h.conceptEyebrow)}</p>
+      <h2 class="s-display" id="idee-h">${h.conceptTitle}</h2>
+      <div class="s-concept__cols">
+        <p class="s-text"><b>Paris</b>${esc(h.conceptLeft)}</p>
+        <p class="s-text"><b>Samarqand</b>${esc(h.conceptRight)}</p>
       </div>
+      <p class="s-concept__whisper">${esc(h.conceptWhisper)}</p>
     </div>
-  </div>
-
-  <figure class="m-full m-full--tall">
-    <img src="/assets/img/complex-aerial-1280.webp"
-         srcset="/assets/img/complex-aerial-1280.webp 1280w, /assets/img/complex-aerial-1920.webp 1920w, /assets/img/complex-aerial-2560.webp 2560w"
-         sizes="100vw" alt="${esc(h.sceneAlt)}" width="2560" height="1244"
-         loading="lazy" decoding="async">
-  </figure>
-</section>
-
-<!-- ══════════════ II · L’IDÉE ══════════════
-     Самый длинный акт страницы — так же, как у образца, где история дома
-     занимает пятую часть полотна. Три движения: Париж, Самарканд и то, что
-     рождается на их встрече. Ни одного придуманного факта: обе фразы взяты
-     из платформы бренда, третье движение договаривает слоганом. -->
-<section class="m-chapter m-chapter--act" id="idee">
-  <div class="m-wrap">
-    ${plate(t, 'idea')}
-    <h2 class="m-display m-display--xl" data-lines>${h.conceptTitle}</h2>
-    <p class="m-whisper reveal">${esc(h.conceptWhisper)}</p>
-  </div>
-
-  <!-- движение 1 · Париж -->
-  <article class="m-act m-act--paris">
-    <figure class="m-act__media reveal">
-      <img src="/assets/img/relief-bicycle.webp" alt="${esc(h.placeReliefAlt)}"
-           width="926" height="1076" loading="lazy" decoding="async">
+    <figure class="s-concept__side s-concept__side--samarkand" data-concept-side="samarkand">
+      <!-- Самарканд — единственный кадр в материалах — открывающий план
+           бренд-фильма: рассвет над Регистаном, стая птиц. Как стоп-кадр он
+           мягкий (видео, дымка), поэтому играет коротким живым отрезком, а
+           резкий кадр под ним — постер и запасной вариант. Отрезок грузится,
+           когда разворот подходит к экрану (tools/make-concept-clip.py). -->
+      <img src="/assets/img/samarkand-dawn-1920.webp"
+           srcset="/assets/img/samarkand-dawn-1280.webp 1280w, /assets/img/samarkand-dawn-1920.webp 1920w, /assets/img/samarkand-dawn-2096.webp 2096w"
+           sizes="(min-width:900px) 50vw, 100vw" alt="${esc(h.ideaCityAlt)}"
+           width="2096" height="1048" loading="lazy" decoding="async">
+      <video class="s-concept__video" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"
+             data-lazy-loop data-widths="1280"
+             data-webm="/assets/video/samarkand-dawn-{w}.webm?v=${page.v}"
+             data-mp4="/assets/video/samarkand-dawn-{w}.mp4?v=${page.v}"></video>
+      <figcaption class="s-concept__word">Samarqand<small>${esc(h.conceptSamarkandWord || '')}</small></figcaption>
     </figure>
-    <div class="m-act__text">
-      <p class="m-act__label reveal" lang="fr">Paris</p>
-      <p class="m-act__line reveal">${esc(h.conceptLeft)}</p>
-    </div>
-  </article>
-
-  <!-- движение 2 · Самарканд -->
-  <article class="m-act m-act--full">
-    <figure class="m-act__bg">
-      <img src="/assets/img/hero-poster-1024.webp"
-           srcset="/assets/img/hero-poster-1024.webp 1024w, /assets/img/hero-poster-1600.webp 1600w"
-           sizes="100vw" alt="${esc(h.ideaCityAlt)}" width="1600" height="800"
-           loading="lazy" decoding="async">
-    </figure>
-    <div class="m-act__over">
-      <p class="m-act__label m-act__label--light">Samarkand</p>
-      <p class="m-act__line m-act__line--light">${esc(h.conceptRight)}</p>
-    </div>
-  </article>
-
-  <!-- движение 3 · PARI -->
-  <article class="m-act m-act--full m-act--pari">
-    <figure class="m-act__bg">
-      <img src="/assets/img/arch-line-1280.webp"
-           srcset="/assets/img/arch-line-1280.webp 1280w, /assets/img/arch-line-1920.webp 1920w, /assets/img/arch-line-2560.webp 2560w"
-           sizes="100vw" alt="${esc(h.ideaPariAlt)}" width="2560" height="1429"
-           loading="lazy" decoding="async">
-    </figure>
-    <div class="m-act__over">
-      <p class="m-act__label m-act__label--light">PARI</p>
-      <p class="m-act__slogan script">${h.heroSlogan}</p>
-    </div>
-  </article>
-</section>
-
-<!-- ══════════════ ВСТАВКА · ФИЛЬМ ══════════════
-     Единственная тёмная пауза перед архитектурой. Ролик идёт петлёй без
-     звука и не грузится при экономии трафика. -->
-<section class="film" id="film">
-  <video class="film__video" id="heroVideo" muted loop playsinline
-         preload="none" aria-hidden="true" tabindex="-1"
-         poster="/assets/img/hero-poster-1600.webp"
-         data-webm="/assets/video/hero-loop-{w}.webm?v=${page.v}"
-         data-mp4="/assets/video/hero-loop-{w}.mp4?v=${page.v}"
-         data-webm-portrait="/assets/video/hero-portrait.webm?v=${page.v}"
-         data-mp4-portrait="/assets/video/hero-portrait.mp4?v=${page.v}"></video>
-  <div class="film__veil" aria-hidden="true"></div>
-  <div class="film__inner">
-    <p class="eyebrow eyebrow--light reveal">${esc(h.filmEyebrow)}</p>
-    <h2 class="display display--light" data-lines>${h.filmTitle}</h2>
-    <p class="film__note reveal">${esc(h.filmNote)}</p>
   </div>
 </section>
 
-<!-- ══════════════ III · L’ARCHITECTURE ══════════════
-     Фасад во весь экран → материалы → макро-кадры → чертёж. -->
-<section class="m-chapter" id="architecture">
-  <div class="m-wrap">
-    ${plate(t, 'arch')}
-    <h2 class="m-display m-display--xl" data-lines>${h.archTitle}</h2>
-    <p class="m-lede reveal">${esc(h.archText)}</p>
-  </div>
-
-  <figure class="m-full">
-    <img src="/assets/img/arch-facade-1280.webp"
-         srcset="/assets/img/arch-facade-1280.webp 1280w, /assets/img/arch-facade-1920.webp 1920w, /assets/img/arch-facade-2560.webp 2560w"
-         sizes="100vw" alt="${esc(h.archWideAlt)}" width="2560" height="1429"
-         loading="lazy" decoding="async">
-  </figure>
-
-  <div class="m-wrap">
-    <div class="m-macro">
-${macro}
-    </div>
-
-    ${sheet(t, {
-      src: '/assets/img/opening-line-1600.webp',  /* лист чертежа */
-      srcset: '/assets/img/opening-line-1600.webp 1600w, /assets/img/opening-line-2400.webp 2400w',
-      w: 2400, h: 1339, no: 'I',
-      alt: h.leadPlanAlt, title: h.sheetFacadeTitle, note: h.sheetFacadeNote,
-    })}
-
-    <a class="link-call reveal" href="${projectHref}">${esc(h.archLink)}</a>
-  </div>
-
-  <!-- Материалы фасада крупно, на чёрном: у образца ровно здесь стоит тёмная
-       полоса о материалах, и именно она задаёт странице ритм светлое → тёмное
-       → светлое. Перечень тот же, что назван в заголовке и подписях кадров. -->
-  <div class="m-matter">
-    <div class="m-wrap">
-      <p class="m-matter__label">${esc(h.materialsLabel)}</p>
-      <ul class="m-matter__list">
-${h.archMaterials.map((m) => `        <li class="reveal">${esc(m)}</li>`).join('\n')}
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════ IV · LE JARDIN ══════════════
-     Гектар без машин — главный аргумент проекта: панорама во всю ширину. -->
-<section class="m-chapter m-chapter--milk m-chapter--open" id="jardin">
-  <!-- Единственная глава, которая начинается кадром, а не заголовком: двор
-       сначала показывают, потом называют. -->
-  <figure class="m-full m-full--tall m-full--top figure-mask">
-    <img src="/assets/img/cine-yard-w16-1280.webp"
-         srcset="/assets/img/cine-yard-w16-1280.webp 1280w, /assets/img/cine-yard-w16-1600.webp 1600w, /assets/img/cine-yard-w16-2048.webp 2048w"
-         sizes="100vw" alt="${esc(h.hectareAlt)}" width="2048" height="1280"
-         loading="lazy" decoding="async">
-  </figure>
-
-  <div class="m-wrap">
-    ${plate(t, 'garden')}
-    <h2 class="m-display m-display--xl" data-lines>${h.hectareTitle}</h2>
-  </div>
-
-  <div class="m-wrap">
-    <div class="m-two">
-      <p class="m-display m-display--sm reveal">${esc(h.hectareLead)}</p>
-      <div>
-        <p class="m-body reveal">${esc(h.hectareText)}</p>
-        <ul class="m-list">
-${h.hectareList.map((x) => `          <li class="reveal">${esc(x)}</li>`).join('\n')}
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════ V · LE BOULEVARD ══════════════
-     Аркады первых этажей: галерея, входные группы, вид с высоты.
-     Механику ленты ведёт script.js — классы cine__* трогать нельзя. -->
-<section class="m-boulevard cine" id="boulevard" data-cine
-         aria-roledescription="carousel" aria-label="${esc(h.cineLabel)}">
-  <div class="m-wrap">
-    ${plate(t, 'boulevard', true)}
-    <h2 class="m-display m-display--xl m-display--light" data-lines>${h.cineTitle}</h2>
-  </div>
-
-  <div class="cine__stage">
-    <div class="cine__track">
-${cine}
-    </div>
-
-    <button class="cine__arrow cine__arrow--prev" type="button" data-cine-prev aria-label="${esc(h.cinePrev)}"></button>
-    <button class="cine__arrow cine__arrow--next" type="button" data-cine-next aria-label="${esc(h.cineNext)}"></button>
-
-    <div class="cine__dots" role="tablist" aria-label="${esc(h.cineLabel)}">
-${cineItems.map((c, i) => `      <button class="cine__dot${i === 0 ? ' is-on' : ''}" type="button" role="tab" data-cine-go="${i}" aria-label="${esc(c.title)}"${i === 0 ? ' aria-selected="true"' : ''}><i></i></button>`).join('\n')}
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════ V · продолжение: паркинг ══════════════ -->
-<section class="m-chapter m-chapter--tight" id="parking">
-  <div class="m-wrap">
-    <div class="m-spread m-spread--right">
-      <figure class="m-spread__media figure-mask">
-        <img src="/assets/img/cine-parking-p23-700.webp"
-             srcset="/assets/img/cine-parking-p23-700.webp 700w"
-             sizes="(min-width:900px) 38vw, 100vw" alt="${esc(h.parkAlt)}"
-             width="700" height="1049" loading="lazy" decoding="async">
+<!-- ══════════════ архитектура ══════════════ -->
+${frame({
+    id: 'architecture', img: 'arch-facade', alt: h.archWideAlt,
+    eyebrow: h.archEyebrow, title: h.archTitle, text: h.archText,
+    href: projectHref, link: h.archLink,
+  })}
+<!-- Материалы — асимметричный разворот: крупный кадр входной группы держит
+     семь колонок, камень и латунь стоят лесенкой справа; каждый кадр выходит
+     из-под маски в свою сторону. -->
+<section class="s-matter" aria-label="${esc(h.materialsLabel)}">
+  <div class="s-wrap">
+    <p class="s-eyebrow reveal">${esc(h.materialsLabel)}</p>
+    <div class="s-matter__grid">
+      <figure class="s-matter__big" data-mask="up">
+        <img src="/assets/img/arch-entrance-sq-1100.webp"
+             srcset="/assets/img/arch-entrance-sq-700.webp 700w, /assets/img/arch-entrance-sq-1100.webp 1100w, /assets/img/arch-entrance-sq-1400.webp 1400w"
+             sizes="(min-width:900px) 56vw, 100vw" alt="${esc(h.arch[1].cap)}"
+             width="1400" height="1501" loading="lazy" decoding="async">
+        <figcaption>${esc(h.arch[1].cap)}</figcaption>
       </figure>
-      <div class="m-spread__text">
-        <p class="m-eyebrow reveal">${esc(h.parkEyebrow)}</p>
-        <h2 class="m-display" data-lines>${h.parkTitle}</h2>
-        <p class="m-body reveal">${esc(h.parkText)}</p>
-        <p class="m-figure reveal">
-          <b data-count="${h.parkStat}">${h.parkStat}</b>
-          <span>${esc(h.parkStatLabel)}</span>
-        </p>
+      <div class="s-matter__small">
+        <figure data-mask="left">
+          <img src="/assets/img/arch-stone-1280.webp"
+               srcset="/assets/img/arch-stone-1280.webp 1280w, /assets/img/arch-stone-1920.webp 1920w"
+               sizes="(min-width:900px) 38vw, 50vw" alt="${esc(h.arch[2].cap)}"
+               width="1920" height="1071" loading="lazy" decoding="async">
+          <figcaption>${esc(h.arch[2].cap)}</figcaption>
+        </figure>
+        <figure data-mask="right">
+          <img src="/assets/img/arch-balcony-sq-700.webp"
+               srcset="/assets/img/arch-balcony-sq-700.webp 700w, /assets/img/arch-balcony-sq-1100.webp 1100w"
+               sizes="(min-width:900px) 30vw, 50vw" alt="${esc(h.arch[3].cap)}"
+               width="1100" height="1179" loading="lazy" decoding="async">
+          <figcaption>${esc(h.arch[3].cap)}</figcaption>
+        </figure>
+      </div>
+    </div>
+    <ul class="s-matter__list" data-stagger>
+${h.archMaterials.map((m) => `      <li>${esc(m)}</li>`).join('\n')}
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════ двор ══════════════
+     Единственный кадр на сайте, который раскрывается из рамки в полный
+     экран при прокрутке (data-grow, motion.js). -->
+${frame({
+    id: 'jardin', img: 'arch-yard', alt: h.yardAlt, side: 'right', grow: true,
+    eyebrow: h.yardEyebrow, title: h.hectareTitle, text: h.hectareLead,
+    extra: yardList,
+  })}
+
+<!-- ══════════════ день, рассказанный кварталом ══════════════
+     Четыре ступени дня из утверждённого текста; кадр слева закреплён и
+     меняется по мере подхода к ступени. Кадры — свои рендеры: аркада,
+     галерея, двор, лобби. -->
+<section class="s-day" id="vivre" aria-labelledby="vivre-h">
+  <div class="s-wrap">
+    <p class="s-eyebrow reveal">${esc(h.maison.life.fr)} · ${esc(h.maison.life.ru)}</p>
+    <h2 class="s-display s-display--xl" id="vivre-h" data-lines>${h.lifeTitle}</h2>
+    <div class="s-day__grid" data-day>
+      <figure class="s-day__media" data-mask="up">
+${dayShots.map((x, i) => `        <img src="/assets/img/${x.img}-1280.webp" alt="${esc(x.alt)}" width="1280" height="${x.h}" loading="lazy" decoding="async" data-day-img="${i}"${i === 0 ? ' class="is-on"' : ''}>`).join('\n')}
+        <span class="s-day__index" data-day-index>01 / 0${h.life.length}</span>
+      </figure>
+      <div class="s-day__steps">
+${h.life.map((x, i) => `        <div class="s-day__step${i === 0 ? ' is-on' : ''}" data-day-step="${i}">
+          <figure class="s-day__shot"><img src="/assets/img/${dayShots[i].img}-1280.webp" alt="${esc(dayShots[i].alt)}" width="1280" height="${dayShots[i].h}" loading="lazy" decoding="async"></figure>
+          <p class="s-day__time">${esc(x.time)}</p>
+          <p class="s-text">${esc(x.text)}</p>
+        </div>`).join('\n')}
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════ VI · L’ART DE VIVRE ══════════════
-     Четыре времени суток. Каждая строка опирается на подтверждённое:
-     аркады, расстояния, двор без машин, панорама с верхних этажей. -->
-<section class="m-chapter" id="vivre">
-  <div class="m-wrap">
-    ${plate(t, 'life')}
-  </div>
-
-  <!-- Кадр выходит за поле к левому краю экрана, текст остаётся в поле:
-       разворот, а не две одинаковые колонки. -->
-  <div class="m-bleed">
-    <figure class="m-bleed__media figure-mask">
-      <img src="/assets/img/yard-w16-1280.webp"
-           srcset="/assets/img/yard-w16-1280.webp 1280w, /assets/img/yard-w16-1600.webp 1600w"
-           sizes="(min-width:1000px) 52vw, 100vw" alt="${esc(h.yardAlt)}"
-           width="1600" height="1000" loading="lazy" decoding="async">
-    </figure>
-    <div class="m-bleed__text">
-      <h2 class="m-display m-display--xl" data-lines>${h.lifeTitle}</h2>
-      <dl class="m-life">
-${life}
-      </dl>
+<!-- ══════════════ входная группа ══════════════
+     Два вертикальных рендера и текст: кадры занимают семь колонок, текст —
+     четыре, как в §5.2. -->
+<section class="s-duo" id="entree">
+  <div class="s-wrap s-duo__grid">
+    <div class="s-duo__text">
+      <p class="s-eyebrow reveal">${esc(t.nav.project)}</p>
+      <h2 class="s-display s-display--md" data-lines>${esc(t.project.entryTitle)}</h2>
+      <p class="s-text reveal">${esc(t.project.entryText)}</p>
+      ${sLink(projectHref + '#entry', h.archLink, 'reveal')}
+    </div>
+    <div class="s-duo__shots">
+${lobby}
     </div>
   </div>
 </section>
 
-<!-- ══════════════ VII · LES APPARTEMENTS ══════════════
-     Каталог строками: крупный чертёж и подпись рядом. -->
-<section class="m-chapter m-chapter--milk" id="appartements">
-  <div class="m-wrap">
-    ${plate(t, 'homes')}
-    <h2 class="m-display m-display--xl" data-lines>${h.homesTitle}</h2>
-    <p class="m-lede reveal">${esc(h.catalogLead)}</p>
-
-    <div class="m-counts">
-      <p class="m-figure reveal"><b>${areaFrom} – ${areaTo}<span>${t.ui.sqm}</span></b><span>${esc(t.ui.areaWord)}</span></p>
-      <p class="m-figure reveal"><b data-count="${t.plans.items.length}">${t.plans.items.length}</b><span>${esc(t.ui.plansWord)}</span></p>
+<!-- ══════════════ квартиры ══════════════ -->
+<section class="s-homes" id="appartements">
+  <div class="s-wrap">
+    <p class="s-eyebrow reveal">${esc(h.homesEyebrow)}</p>
+    <h2 class="s-display s-display--xl" data-lines>${h.homesTitle}</h2>
+    <p class="s-lede reveal">${esc(h.catalogLead)}</p>
+    <nav class="rooms-nav reveal" aria-label="${esc(t.rooms.byRooms)}">
+${roomsCatalogue(t, null)}
+    </nav>
+    <!-- На телефоне лента листается пальцем и стрелками: стрелка «дальше»
+         подмигивает, пока ленту не тронули (motion.js, только узкие экраны). -->
+    <div class="plans plans--few" data-strip>
+${plans}
     </div>
-
-    <div class="m-cat">
-${catalog}
-    </div>
-
-    <p class="m-note reveal">${esc(h.homesNote)}</p>
-    <!-- Третья ссылка — на рассрочку. Внутри главной на неё не вело ничего,
-         кроме пункта меню, хотя после каталога квартир это ровно следующий
-         вопрос покупателя: сколько и как платить. -->
-    <div class="m-actions reveal">
-      <a class="pill" href="${apartmentsHref}" data-track="cta_click">${esc(h.catalogAll)}</a>
+${railNav(t)}
+    <p class="s-note reveal">${esc(h.homesNote)}</p>
+    <div class="s-actions reveal">
+      <a class="pill" href="${apartmentsHref}" data-track="cta_click" data-magnet>${esc(h.catalogAll)}${ARROW}</a>
       <a class="ghost" href="${p}/select/">${esc(t.nav.select)}</a>
       <a class="ghost" href="${p}/installment/">${esc(t.nav.instal)}</a>
     </div>
   </div>
 </section>
-${interiors}
-<!-- ══════════════ VIII · LE PLAN ══════════════
-     Глава с листом генплана снята вместе с самим разделом: он в разработке.
-     Разметка главы лежит в git, возвращать её вместе со страницей. -->
 
-<!-- ══════════════ IX · LA VILLE ══════════════ -->
-<section class="m-chapter" id="ville">
-  <div class="m-wrap">
-    ${plate(t, 'city')}
-    <h2 class="m-display m-display--xl" data-lines>${h.placeTitle}</h2>
-  </div>
+<!-- ══════════════ район ══════════════ -->
+${frame({
+    id: 'ville', img: 'complex-aerial', alt: h.sceneAlt,
+    eyebrow: h.masterEyebrow, title: h.masterTitle, text: h.masterText,
+    href: locationHref, link: h.masterLink,
+  })}
 
-  <div class="place">
-    <div class="place__inner">
-      <div>
-        ${distanceList(t)}
-        <p class="place__addr reveal">${esc(addressLine(t))}</p>
-        <a class="link-call reveal" href="${locationHref}">${esc(t.nav.location)}</a>
-      </div>
-      ${localMap(t)}
+<!-- ══════════════ создатели ══════════════ -->
+<section class="s-makers" id="createurs">
+  <div class="s-wrap s-makers__grid">
+    <div>
+      <p class="s-eyebrow reveal">${esc(h.makerEyebrow)}</p>
+      <h2 class="s-display s-display--md" data-lines>${h.makerTitle}</h2>
+      <p class="s-text reveal">${esc(h.makerText)}</p>
     </div>
-  </div>
-
-  <div class="m-wrap">
-    <p class="m-eyebrow reveal">${esc(h.masterEyebrow)}</p>
-    <h3 class="m-display" data-lines>${h.masterTitle}</h3>
-    <p class="m-body reveal">${esc(h.masterText)}</p>
-    ${masterplan(t)}
-    <a class="link-call reveal" href="${locationHref}">${esc(h.masterLink)}</a>
-  </div>
-</section>
-
-<!-- ══════════════ X · LES DÉTAILS ══════════════
-     Зоны двора переключаются радиокнопками: раздел работает и без JS. -->
-<section class="m-chapter m-chapter--milk care" id="details">
-  <div class="m-wrap">
-    ${plate(t, 'details')}
-    <h2 class="m-display m-display--xl" data-lines>${h.careTitle}</h2>
-
-    <div class="care__body">
-${careRadios}
-      <div class="care__tabs">
-${careTabs}
-      </div>
-      <div class="care__panels">
-${carePanels}
-      </div>
+    <div class="s-makers__list">
+${makers}
     </div>
   </div>
 </section>
 
-<!-- ══════════════ XI · LES CRÉATEURS ══════════════ -->
-<section class="m-chapter" id="createurs">
-  <div class="m-wrap">
-    ${plate(t, 'makers')}
-    <!-- Здесь крупным набран не заголовок, а имена: так подписывают авторов
-         коллекции. Заголовок остаётся в разметке для структуры страницы. -->
-    <h2 class="m-credits__h">${esc(h.makerTitle.replace(/<br\s*\/?>/gi, ' '))}</h2>
-    <p class="m-lede reveal">${esc(h.makerText)}</p>
-
-    <dl class="m-credits m-credits--loud">
-      <div class="m-credits__row reveal">
-        <dt lang="fr">Développeur</dt>
-        <dd><b>${esc(site.developer.name)}</b><span>${esc(h.makerDev)}</span></dd>
-      </div>
-      <div class="m-credits__row reveal">
-        <dt lang="fr">Architecture</dt>
-        <dd><b>${esc(site.architect.name)}</b><span>${esc(h.makerArch)}</span></dd>
-      </div>
-    </dl>
-  </div>
-</section>
-
-<!-- ══════════════ XII · VOTRE PARI ══════════════
-     Последний кадр: квартал целиком, одно предложение и два действия. -->
-<section class="m-final" id="votre">
-  <figure class="m-final__media">
-    <!-- Без srcset атрибут sizes браузер игнорирует, и телефон качал полный
-         кадр 1920 на 462 КБ — самую тяжёлую картинку сайта. -->
-    <img src="/assets/img/hero-aerial-1920.webp" srcset="/assets/img/hero-aerial-960.webp 960w, /assets/img/hero-aerial-1280.webp 1280w, /assets/img/hero-aerial-1920.webp 1920w" sizes="100vw"
-         alt="${esc(h.finalAlt)}" width="1920" height="1080"
-         loading="lazy" decoding="async">
+<!-- ══════════════ финал ══════════════ -->
+<section class="s-final" id="votre">
+  <!-- Финал — первая линия на рассвете (рендер второй партии): светлый и
+       спокойный кадр под спокойное завершение, вместо тёмной аэросъёмки. -->
+  <figure class="s-final__media" data-drift>
+    <img src="/assets/img/line-dawn-1920.webp"
+         srcset="/assets/img/line-dawn-1280.webp 1280w, /assets/img/line-dawn-1920.webp 1920w, /assets/img/line-dawn-2560.webp 2560w"
+         sizes="100vw" alt="${esc(h.finalAlt)}" width="2560" height="1440" loading="lazy" decoding="async">
   </figure>
-  <div class="m-final__inner">
-    ${plate(t, 'yours', true)}
-    <p class="m-final__lead">${h.finalLead}</p>
-    <p class="m-final__slogan script">${h.sceneTitle}</p>
-    <div class="m-actions">
-      <a class="pill" href="${apartmentsHref}" data-track="cta_click">${esc(t.ui.pick)}</a>
-      <a class="ghost ghost--light" href="${contactsHref}" data-track="cta_click">${esc(h.finalVisit)}</a>
-      <a class="ghost ghost--light" href="${p}/faq/">${esc(t.nav.faq)}</a>
+  <!-- Текст на светлой панели, как на первом экране: аэросъёмка — самый
+       детализированный кадр на сайте, и заголовок прямо на ней не читался
+       ни на широком экране, ни на телефоне (§2.6). -->
+  <div class="s-final__inner">
+    <div class="s-final__panel">
+      <p class="s-eyebrow reveal">${esc(h.finalEyebrow)}</p>
+      <h2 class="s-display s-display--xl" data-lines>${h.finalLead}</h2>
+      <div class="s-actions reveal">
+        <a class="pill" href="${apartmentsHref}" data-track="cta_click" data-magnet>${esc(t.ui.pick)}${ARROW}</a>
+        <a class="ghost" href="${contactsHref}" data-track="cta_click">${esc(h.finalVisit)}</a>
+        <a class="ghost" href="${p}/faq/">${esc(t.nav.faq)}</a>
+      </div>
     </div>
   </div>
 </section>
@@ -1556,7 +1341,6 @@ ${leadSection(t, {})}
 ${rail(t)}`;
   return page;
 }
-
 
 /* ── ряд «квартиры по комнатности» ──
    Один и тот же блок стоит на /apartments/, на страницах комнатности и на
@@ -1609,8 +1393,17 @@ function select(t, page) {
 
   /* Какие этажи вообще нарисованы: у полусотни квартир из выгрузки чертежа
      нет (см. src/flats.js), и предлагать «показать на плане» там нечестно. */
+  /* Для каждого подъезда — этажи и номера квартир, которые есть на схеме.
+     Кнопка «На плане» появляется только при точном совпадении номера:
+     у подъездов 8–13 нумерация на схемах и в выгрузке расходится. */
   const drawn = {};
-  list.forEach((x) => { drawn[x.podil] = x.floors; });
+  fs.readdirSync(path.join(__dirname, '..', 'assets', 'floors'))
+    .filter((f) => /^p\d+\.json$/.test(f))
+    .forEach((f) => {
+      const j = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'assets', 'floors', f), 'utf8'));
+      drawn[j.podil] = {};
+      Object.keys(j.floors).forEach((fl) => { drawn[j.podil][fl] = j.floors[fl].flats.map((x) => x.num); });
+    });
 
   const rooms = [
     ['', s.filterAny],
@@ -1646,6 +1439,7 @@ function select(t, page) {
          data-word-rooms="${esc(s.roomsN.join('|'))}"
          data-word-flat="${esc(s.flat)}"
          data-word-go="${esc(s.showOnPlan)}"
+         data-word-floor-only="${esc(s.floorOnly)}"
          data-word-noplan="${esc(s.noPlan)}">
 
       <div class="fl__row">
@@ -1709,7 +1503,8 @@ ${roomsCatalogue(t, null)}
   <div class="page__inner" id="plan">
     <div class="chooser" data-chooser data-total="${total}"
          data-entrance-word="${esc(s.entrance)}" data-floor-word="${esc(s.floorShort)}"
-         data-flat-word="${esc(s.flat)}" data-counted-word="${esc(s.counted)}">
+         data-flat-word="${esc(s.flat)}" data-counted-word="${esc(s.counted)}"
+         data-plan-num-word="${esc(s.planNum)}">
       <div class="chooser__row">
         <p class="chooser__label">${esc(s.entrance)}</p>
         <div class="chooser__set" role="group" aria-label="${esc(s.pickEntrance)}">
@@ -1728,21 +1523,24 @@ ${tabs}
     <figure class="floor" data-floor-stage>
       <!-- На телефоне план шире экрана и ездит вбок: в 333 px чертёж с мебелью
            не прочитать, а квартиры не нащупать пальцем. -->
-      <div class="floor__scroll">
+      <div class="floor__scroll" data-floor-scroll>
+        <span class="floor__hint" aria-hidden="true">${esc(s.swipe)}</span>
         <div class="floor__frame">
           <img class="floor__plan" alt="" data-tpl="${esc(s.planAlt)}" width="885" height="561" decoding="async">
           <svg class="floor__flats" viewBox="0 0 885 561" preserveAspectRatio="none" aria-hidden="true"></svg>
         </div>
       </div>
       <figcaption class="floor__cap" data-floor-cap>${esc(s.pickFlat)}</figcaption>
+      <button class="floor__fit" type="button" data-floor-fit data-label-fit="${esc(s.fitAll)}" data-label-zoom="${esc(s.fitZoom)}" aria-pressed="false">${esc(s.fitAll)}</button>
     </figure>
 
     <aside class="floor__card" data-floor-card hidden aria-live="polite">
       <p class="eyebrow">${esc(s.flat)} <b data-flat-num></b></p>
       <p class="floor__area" data-flat-area hidden></p>
       <p class="floor__where"><span data-flat-where></span></p>
+      <p class="floor__note floor__note--mismatch" data-flat-mismatch hidden>${esc(s.noMatch)}</p>
       <p class="floor__note">${esc(s.note)}</p>
-      <a class="pill" href="tel:${site.phone.tel}" data-track="phone_click">${esc(s.ask)}</a>
+      <a class="pill" href="tel:${site.phone.tel}" data-track="phone_click" data-magnet>${esc(s.ask)}${ARROW}</a>
     </aside>
 
     <p class="plans__note">${esc(s.source)}</p>
@@ -1835,7 +1633,7 @@ ${blocks.map((b) => `        <span class="gp__tag" data-tag="${b.id}"
 
   <div class="page__inner">
     <h2 class="page__h2">${esc(g.legendTitle)}</h2>
-    <ul class="figures">
+    <ul class="figures" data-stagger>
 ${g.legend.map(([v, l]) => `      <li class="figures__item"><b>${esc(v)}</b><span>${esc(l)}</span></li>`).join('\n')}
     </ul>
     <p class="plans__note">${esc(g.source)}</p>
@@ -1922,6 +1720,29 @@ ${site.stages.map((st) => `      <li class="terms__item reveal">
   </div>
 </section>
 
+<!-- ══════════════ интерьеры ══════════════
+     Четыре вертикальных кадра из материалов PARI — пример возможной отделки.
+     Квартиры передаются в white-box, и подпись говорит об этом прямо. -->
+<section class="lobby" aria-labelledby="interiors-h">
+  <div class="page__inner">
+    <p class="eyebrow reveal">${esc(t.home.interiorsEyebrow)}</p>
+    <h2 class="lobby__h" id="interiors-h">${esc(a.interiorsTitle)}</h2>
+    <p class="page__text reveal">${esc(a.interiorsText)}</p>
+  </div>
+  <div class="lobby__grid" data-strip>
+${a.interiors.map((g, i) => `    <figure class="lobby__shot" data-mask="${i % 2 ? 'right' : 'left'}">
+      <img src="/assets/img/${g.img}-760.webp" srcset="/assets/img/${g.img}-760.webp 760w, /assets/img/${g.img}-960.webp 960w"
+           sizes="(min-width:1100px) 24vw, (min-width:620px) 46vw, 100vw" alt="${esc(g.cap)}"
+           width="960" height="1280" loading="lazy" decoding="async">
+      <figcaption><i>0${i + 1}</i>${esc(g.cap)}</figcaption>
+    </figure>`).join('\n')}
+  </div>
+  <div class="page__inner">
+${railNav(t)}
+    <p class="plans__note">${esc(a.interiorsNote)}</p>
+  </div>
+</section>
+
 ${leadSection(t, { formId: 'apartments', title: t.cta.primary, text: t.contacts.visitText, eyebrow: t.nav.contacts })}`;
   return page;
 }
@@ -1969,10 +1790,11 @@ ${j.facts.map((f) => `      <li class="reveal"><b>${esc(f.value)}</b><span>${esc
     <p class="page__text">${esc(j.archText2)}</p>
     ${marks(j.archList)}
   </div>
-  <div class="gallery__grid">
+  <div class="gallery__grid" data-strip>
 ${shotGrid(j.archGallery, '(min-width:900px) 58vw, 100vw')}
   </div>
   <div class="page__inner">
+${railNav(t)}
     <a class="link-call reveal" href="${p}/apartments/">${esc(j.plansLink)}</a>
   </div>
 </section>
@@ -1997,8 +1819,11 @@ ${shotGrid(j.archGallery, '(min-width:900px) 58vw, 100vw')}
   <div class="page__inner">
     <h3 class="lobby__h" id="lobby-h">${esc(j.entryTitle)}</h3>
   </div>
-  <div class="lobby__grid">
+  <div class="lobby__grid" data-strip>
 ${lobbyGrid(j.entryGallery)}
+  </div>
+  <div class="page__inner">
+${railNav(t)}
   </div>
 </section>
 
@@ -2010,8 +1835,11 @@ ${lobbyGrid(j.entryGallery)}
     <p class="page__text">${esc(j.yardText2)}</p>
     ${marks(j.yardList)}
   </div>
-  <div class="gallery__grid">
+  <div class="gallery__grid" data-strip>
 ${shotGrid(j.yardGallery, '(min-width:900px) 58vw, 100vw')}
+  </div>
+  <div class="page__inner">
+${railNav(t)}
   </div>
 </section>
 
@@ -2188,7 +2016,7 @@ ${plans.map((x) => planCard(t, x)).join('\n')}
   <div class="page__inner">
     <h3 class="rf__h3">${esc(r.pickTitle)}</h3>
     <p>${esc(r.pickText)}</p>
-    <p class="rf__cta"><a class="pill" href="${p}/select/#plan">${esc(r.pickCta)}</a></p>
+    <p class="rf__cta"><a class="pill" href="${p}/select/#plan" data-magnet>${esc(r.pickCta)}${ARROW}</a></p>
 
     <h3 class="rf__h3">${esc(r.byRooms)}</h3>
     <nav class="rooms-nav" aria-label="${esc(r.byRooms)}">
@@ -2292,7 +2120,7 @@ ${how}
 
     <h3 class="rf__h3">${esc(n.pickTitle)}</h3>
     <p>${esc(n.pickText)}</p>
-    <p class="rf__cta"><a class="pill" href="${p}/select/#plan">${esc(t.rooms.pickCta)}</a></p>
+    <p class="rf__cta"><a class="pill" href="${p}/select/#plan" data-magnet>${esc(t.rooms.pickCta)}${ARROW}</a></p>
   </div>
   </div>
 </section>

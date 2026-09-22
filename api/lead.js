@@ -39,7 +39,8 @@ module.exports = async (req, res) => {
     return res.status(405).json({ ok: false, error: 'method_not_allowed' });
   }
 
-  const body = typeof req.body === 'string' ? safeParse(req.body) : (req.body || {});
+  const parsed = typeof req.body === 'string' ? safeParse(req.body) : req.body;
+  const body = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
 
   /* honeypot: скрытое поле заполняют только боты — отвечаем как обычно, но никуда не шлём */
   if (typeof body.company === 'string' && body.company.trim() !== '') {

@@ -51,6 +51,16 @@ console.info = () => {};
   assert.strictEqual((await call({ name: 'Азиз', phone: '123' })).code, 400);
   console.log('✓ короткое имя и неполный номер отклоняются');
 
+  /* JSON может быть корректным, но не содержать объект заявки. */
+  sent.length = 0;
+  for (const body of ['null', '123', 'true', '[]', '"text"', '{', null, 123, true, []]) {
+    const invalid = await call(body);
+    assert.strictEqual(invalid.code, 400, `отклоняем тело ${JSON.stringify(body)}`);
+    assert.strictEqual(invalid.payload.ok, false);
+  }
+  assert.strictEqual(sent.length, 0, 'невалидные тела не отправляются в CRM');
+  console.log('✓ невалидное тело запроса отклоняется без сбоя и доставки');
+
   /* 3. ловушка для ботов: отвечаем 200, но ничего не отправляем */
   sent.length = 0;
   const bot = await call({ name: 'Bot', phone: '901234567', company: 'spam' });

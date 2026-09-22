@@ -4,8 +4,20 @@
     {
       "name": "pari-dist",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["tools/serve.py"],
+      "runtimeArgs": [
+        "tools/serve.py"
+      ],
       "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "pari-node",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "serve"
+      ],
+      "port": 5174,
       "autoPort": true
     }
   ]

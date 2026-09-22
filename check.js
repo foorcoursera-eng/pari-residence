@@ -49,14 +49,22 @@ pages.forEach((file) => {
     v.split(',').forEach((part) => push(part.trim().split(/\s+/)[0]));
     return m;
   });
-  html.replace(/data-(?:webm|mp4|src)="([^"]+)"/g, (m, v) => (push(v), m));
+  /* Ступени ролика перечисляет его собственный data-widths: у hero их две-три,
+     у короткого отрезка в концепции — одна. Подстановка {w} идёт по ним. */
+  const widthsOf = {};
+  html.replace(/<video[^>]*>/g, (tag) => {
+    const w = (tag.match(/data-widths="([^"]+)"/) || [])[1];
+    tag.replace(/data-(?:webm|mp4)(?:-portrait)?="([^"]+)"/g, (m, v) => { if (w) { widthsOf[v.trim()] = w.split(','); } return m; });
+    return tag;
+  });
+  html.replace(/data-(?:webm|mp4|src)(?:-portrait)?="([^"]+)"/g, (m, v) => (push(v), m));
 
   refs.forEach((raw) => {
     if (/^(#|tel:|mailto:|data:|https?:|\/\/)/.test(raw)) { return; }
     const ref = raw.split('#')[0];          /* якорь проверяем отдельно, файла он не меняет */
     if (!ref) { return; }
     const candidates = ref.includes('{w}')
-      ? [ref.replace('{w}', '1280'), ref.replace('{w}', '1920')]
+      ? (widthsOf[raw.trim()] || ['1280', '1920']).map((w) => ref.replace('{w}', w))
       : [ref];
     candidates.forEach((c) => {
       const target = c.endsWith('/') ? c + 'index.html' : c;

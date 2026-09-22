@@ -77,6 +77,7 @@ const orgLd = (t) => ({
     streetAddress: t.lang === 'ru' ? site.address.street : site.address.streetUz,
     addressLocality: t.lang === 'ru' ? site.address.city : site.address.cityUz,
     addressRegion: t.lang === 'ru' ? 'Самаркандская область' : 'Samarqand viloyati',
+    postalCode: site.address.postalCode,
     addressCountry: site.address.country,
   },
 });
@@ -97,7 +98,7 @@ const complexLd = (t) => ({
   '@id': T.url('/#complex'),
   name: site.brand,
   url: T.url(t.lang === 'ru' ? '/' : '/uz/'),
-  image: T.url('/assets/img/opening-shot-1920.webp'),
+  image: T.url('/assets/img/pari-hero-poster-1920.webp'),
   description: t.meta.home.description,
   numberOfAccommodationUnits: site.facts.apartments,
   telephone: site.phone.intl,
@@ -289,10 +290,12 @@ function pagesFor(t) {
      рендер квартала: он занимает правые две трети экрана и почти всегда
      оказывается самым крупным элементом первой отрисовки (LCP). Чертёж
      ушёл в подложку левого поля и грузится обычным порядком. */
-  const preloadHome = '<link rel="preload" as="image" href="/assets/img/opening-shot-1920.webp"'
-    + ' imagesrcset="/assets/img/opening-shot-1280.webp 1280w, /assets/img/opening-shot-1920.webp 1920w,'
-    + ' /assets/img/opening-shot-2560.webp 2560w"'
-    + ' imagesizes="100vw" fetchpriority="high">';
+  /* С v7 первый кадр — постер hero-монтажа; на телефоне свой вертикальный
+     кадр, и предзагрузка идёт по тем же медиазапросам, что и <picture>. */
+  const preloadHome = '<link rel="preload" as="image" href="/assets/img/pari-hero-poster-1920.webp"'
+    + ' imagesrcset="/assets/img/pari-hero-poster-1280.webp 1280w, /assets/img/pari-hero-poster-1920.webp 1920w"'
+    + ' imagesizes="100vw" media="(min-width:701px)" fetchpriority="high">'
+    + '<link rel="preload" as="image" href="/assets/img/pari-hero-poster-mobile.webp" media="(max-width:700px)" fetchpriority="high">';
 
   return [
     {
@@ -375,7 +378,7 @@ function build() {
      версии полсотни мегабайт не жалко — сборка идёт раз в деплой. */
   const v = [
     'styles.css', 'script.js', path.join('assets', 'js', 'motion.js'),
-    path.join('assets', 'video', 'promo-hero-1920.webm'),
+    path.join('assets', 'video', 'pari-hero-1920.webm'),
   ].map((f) => hash(path.join(root, f))).join('-');
   const written = [];
   const urls = [];
