@@ -260,6 +260,8 @@ test.describe('готовые файлы', () => {
     const html = readFileSync(dist('404.html'), 'utf8');
     expect(html).toContain('<meta name="robots" content="noindex">');
     expect(html).not.toMatch(/<link[^>]+rel="canonical"|<link[^>]+rel="alternate"[^>]+hreflang=/);
+    /* переключатель языка на 404 — на главные страницы языков, а не на /en/404/ (такой страницы нет) */
+    expect(html).not.toMatch(/href="\/(?:uz\/|en\/|fr\/)?404\/"/);
   });
   test('в sitemap нет даты сборки вместо даты изменения', () => {
     expect(readFileSync(dist('sitemap.xml'), 'utf8')).not.toContain('<lastmod>');

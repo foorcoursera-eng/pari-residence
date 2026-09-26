@@ -13,6 +13,8 @@ interface Props { lang?: string; path?: string }
 const { lang = 'ru', path = '/' } = Astro.props;
 const u = t(lang).ui;
 const closeLabel = t(lang).form.close;
+/* переключатель языка ведёт на ту же страницу на другом языке; у 404 языковых версий нет — на главную */
+const langPath = path === '/404/' ? '/' : path;
 /* «Контакты» — футер этой же страницы (отдельной страницы контактов пока нет) */
 ---
 <a class="header-logo theme_on-color" href={path === '/' ? '#hero' : href(lang, '/')} aria-label={u.logoLabel} data-header-logo>
@@ -43,7 +45,7 @@ const closeLabel = t(lang).form.close;
   </a>
   <nav class="header-nav_lang l2" aria-label={u.langLabel}>
     {LANGS.map((l) => (
-      <a href={href(l, path)} hreflang={t(l).ui.htmlLang} lang={t(l).ui.htmlLang} aria-current={l === lang ? 'true' : undefined} aria-label={t(l).ui.name} data-lang-link={l}>{l.toUpperCase()}</a>
+      <a href={href(l, langPath)} hreflang={t(l).ui.htmlLang} lang={t(l).ui.htmlLang} aria-current={l === lang ? 'true' : undefined} aria-label={t(l).ui.name} data-lang-link={l}>{l.toUpperCase()}</a>
     ))}
   </nav>
   <button class="nav-item header-nav_menu" type="button" aria-expanded="false" aria-controls="mnav" aria-label={u.openMenu} data-menu-btn data-label-open={u.menu} data-label-close={closeLabel}>
@@ -61,7 +63,7 @@ const closeLabel = t(lang).form.close;
   </nav>
   <nav class="mnav_lang l2" aria-label={u.langLabel}>
     {LANGS.map((l) => (
-      <a href={href(l, path)} hreflang={t(l).ui.htmlLang} lang={t(l).ui.htmlLang} aria-current={l === lang ? 'true' : undefined} aria-label={t(l).ui.name} data-lang-link={l}>{l.toUpperCase()}</a>
+      <a href={href(l, langPath)} hreflang={t(l).ui.htmlLang} lang={t(l).ui.htmlLang} aria-current={l === lang ? 'true' : undefined} aria-label={t(l).ui.name} data-lang-link={l}>{l.toUpperCase()}</a>
     ))}
   </nav>
 </div>
