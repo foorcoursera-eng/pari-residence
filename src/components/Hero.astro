@@ -54,21 +54,21 @@ const pins = [
                 ))}
               </div>
               <div class="hero-s_logo_a" data-hero-a2>
-                <h2 class="a2"><span>{d.hero.script}</span></h2>
+                <p class="a2"><span>{d.hero.script}</span></p>
               </div>
             </div>
           </div>
           <div class="u-48"></div>
           <div class="grid">
-            <h3 class="hero-s_title h5">
+            <div class="hero-s_title h5">
               <span class="a-left" data-hero-line><span class="line-mask"><span class="line">{d.hero.left}</span></span></span>
               <div class="hero-s_tabs" data-hero-tabs hidden={!nightBase}>
-                <a class="nav-item is-active" href="#" data-theme-btn="day" aria-label={u.day}><span class="nav-item_label"><span class="nav-item_label_text l1">{u.day}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.day}</span></span></a>
-                <div class="hero-s_tabs_divider is-day"></div>
-                <a class="nav-item" href="#" data-theme-btn="night" aria-label={u.night}><span class="nav-item_label"><span class="nav-item_label_text l1">{u.night}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.night}</span></span></a>
+                <button class="nav-item is-active" type="button" data-theme-btn="day" aria-pressed="true"><span class="nav-item_label"><span class="nav-item_label_text l1">{u.day}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.day}</span></span></button>
+                <div class="hero-s_tabs_divider is-day" aria-hidden="true"></div>
+                <button class="nav-item" type="button" data-theme-btn="night" aria-pressed="false"><span class="nav-item_label"><span class="nav-item_label_text l1">{u.night}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.night}</span></span></button>
               </div>
               <span class="a-right" data-hero-line><span class="line-mask"><span class="line">{d.hero.right}</span></span></span>
-            </h3>
+            </div>
           </div>
         </div>
 

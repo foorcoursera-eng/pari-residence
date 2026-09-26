@@ -60,7 +60,6 @@ const fontPreload = ['cormorant-garamond-500-latin', ...(lang === 'ru' ? ['cormo
       (window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=112092528','ym');
       ym(112092528,'init',{ssr:true,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/112092528" style="position:absolute;left:-9999px" alt="" /></div></noscript>
     <script is:inline>
       /* До первой отрисовки: has-motion — анимации включены (при reduced-motion страница статична);
          pre-skip — загрузочный экран в этой сессии уже был: при переходах по сайту он не показывается */
@@ -73,11 +72,12 @@ const fontPreload = ['cormorant-garamond-500-latin', ...(lang === 'ru' ? ['cormo
     <noscript><style>.preloader{display:none!important}</style></noscript>
   </head>
   <body class="body">
-    <a class="visually-hidden" href="#main">{d.ui.skip}</a>
+    <noscript><div><img src="https://mc.yandex.ru/watch/112092528" style="position:absolute;left:-9999px" alt="" /></div></noscript>
+    <a class="visually-hidden skip-link" href="#main">{d.ui.skip}</a>
     <Preloader lang={lang} />
     <Header lang={lang} path={path} />
     {scrollbar && <Scrollbar lang={lang} />}
-    {crumbs && <Crumbs items={crumbs} />}
+    {crumbs && <Crumbs items={crumbs} label={d.ui.crumbs} />}
     <main id="main" class="main">
       <slot />
     </main>

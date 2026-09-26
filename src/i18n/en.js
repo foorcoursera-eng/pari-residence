@@ -130,6 +130,7 @@ export const form = {
   fail: 'We could not send your request. Please try again or call us.',
   nameErr: 'Please tell us how to address you',
   phoneErr: 'Please check the phone number',
+  consentErr: 'Please confirm your consent to data processing',
   close: 'Close',
 };
 
@@ -146,6 +147,7 @@ export const ui = {
   lang: 'en', htmlLang: 'en', locale: 'en_US', name: 'English',
   skip: 'Skip to content',
   langLabel: 'Site language',
+  crumbs: 'Breadcrumbs',
   logoLabel: 'PARI Residence — home',
   pick: 'Select an apartment', pickLines: ['Select', 'an apartment'],
   meeting: 'Book a meeting',

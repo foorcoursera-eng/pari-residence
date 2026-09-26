@@ -392,29 +392,86 @@ function leadContext() {
   return ctx;
 }
 
+/* прокрутка страницы на время окна и меню: Lenis стоит, нативная прокрутка закрыта в CSS */
+const lockScroll = (on) => { const l = window.__lenis; if (l) { if (on) l.stop(); else l.start(); } };
+
+/* ---------- меню телефона ----------
+   Открыто — страница под ним недоступна (inert): Tab ходит только по меню и шапке;
+   Escape закрывает и возвращает фокус на кнопку «Меню». */
+const menuBtn = $('[data-menu-btn]');
+const menuNav = $('[data-mnav]');
+const behind = () => $$('main, [data-scrollbar], [data-crumbs], .skip-link');
+let toggleMenu = () => {};
+if (menuBtn && menuNav) {
+  const labels = $$('[data-menu-label]', menuBtn);
+  const openLabel = menuBtn.getAttribute('aria-label');
+  let tHide = 0;
+  toggleMenu = (on, { focusBtn = false } = {}) => {
+    if (on === root.classList.contains('is-menu-open')) return;
+    menuBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    menuBtn.setAttribute('aria-label', on ? menuBtn.dataset.labelClose : openLabel);
+    labels.forEach((l) => { l.textContent = on ? menuBtn.dataset.labelClose : menuBtn.dataset.labelOpen; });
+    root.classList.toggle('is-menu-open', on);
+    behind().forEach((el) => { el.inert = on; });
+    lockScroll(on);
+    clearTimeout(tHide);
+    if (on) { menuNav.hidden = false; requestAnimationFrame(() => menuNav.classList.add('is-open')); }
+    else { menuNav.classList.remove('is-open'); tHide = setTimeout(() => { if (!menuNav.classList.contains('is-open')) menuNav.hidden = true; }, 400); }
+    if (focusBtn) menuBtn.focus();
+  };
+  menuBtn.addEventListener('click', () => toggleMenu(menuBtn.getAttribute('aria-expanded') !== 'true'));
+  menuNav.addEventListener('click', (e) => { if (e.target.closest('a, button')) toggleMenu(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('is-menu-open')) toggleMenu(false, { focusBtn: true }); });
+  matchMedia('(min-width: 992px)').addEventListener('change', (e) => { if (e.matches) toggleMenu(false); });
+}
+
 /* ---------- окно «Записаться на встречу» (ERA initModalCta) ---------- */
 {
   const dlg = $('[data-dialog]');
   if (dlg) {
-    const open = () => {
+    const form = $('[data-lead-form]', dlg);
+    const status = $('[data-status]', form);
+    const submit = $('[data-submit]', form);
+    let opener = null, sending = false, tClose = 0;
+    const open = (from) => {
+      clearTimeout(tClose);
       if (dlg.open) return;
+      /* открыли из меню телефона: кнопка в меню спрячется, фокус потом вернётся на «Меню» */
+      opener = from && from.closest('[data-mnav]') ? menuBtn : from;
+      if (!sending) status.textContent = '';                       /* старое «Спасибо» или ошибка — от прошлого раза */
       dlg.showModal();
+      lockScroll(true);
       track('lead_form_open');
       requestAnimationFrame(() => dlg.classList.add('is-open'));
       $('#lead-name', dlg)?.focus();
     };
-    const close = () => { dlg.classList.remove('is-open'); setTimeout(() => { if (dlg.open) dlg.close(); }, 400); };
+    const close = () => {
+      dlg.classList.remove('is-open');
+      clearTimeout(tClose);
+      tClose = setTimeout(() => {
+        if (dlg.open) dlg.close();
+        lockScroll(root.classList.contains('is-menu-open'));
+        if (opener && opener.isConnected) opener.focus({ preventScroll: true });
+      }, 400);
+    };
     document.addEventListener('click', (e) => {
       const t = e.target.closest('[data-open-dialog]');
-      if (t) { e.preventDefault(); open(); }
+      if (t) { e.preventDefault(); open(t); }
     });
     $('[data-close-dialog]', dlg)?.addEventListener('click', close);
     dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
     dlg.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
 
-    const form = $('[data-lead-form]', dlg);
-    const status = $('[data-status]', form);
-    const submit = $('[data-submit]', form);
+    /* ошибки полей: текст под полем связан с ним (aria-describedby), поле помечено aria-invalid */
+    const fieldOf = (input) => input.closest('.mdlg_field, .mdlg_consent');
+    const setError = (input, bad) => {
+      const box = fieldOf(input);
+      const err = box.querySelector('.mdlg_err');
+      box.classList.toggle('is-error', bad);
+      /* текст ошибки связан с полем только пока ошибка есть: скрытый текст иначе читался бы всегда */
+      if (bad) { input.setAttribute('aria-invalid', 'true'); if (err) input.setAttribute('aria-describedby', err.id); }
+      else { input.removeAttribute('aria-invalid'); input.removeAttribute('aria-describedby'); }
+    };
     /* телефон: +998 XX XXX XX XX по мере ввода; больше 12 цифр ввести нельзя.
        Без кода страны — до 9 цифр (XX XXX XX XX), код +998 сервер добавит сам. */
     const phoneEl = form.elements.phone;
@@ -430,30 +487,39 @@ function leadContext() {
       d = d.slice(0, 9);
       return [d.slice(0, 2), d.slice(2, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean).join(' ');
     };
-    phoneEl.addEventListener('input', () => {
-      phoneEl.value = fmtPhone(phoneEl.value);
-      phoneEl.closest('.mdlg_field').classList.remove('is-error');
-    });
-    form.elements.name.addEventListener('input', () => form.elements.name.closest('.mdlg_field').classList.remove('is-error'));
-    form.elements.consent.addEventListener('change', () => form.elements.consent.closest('.mdlg_consent').classList.remove('is-error'));
+    phoneEl.addEventListener('input', () => { phoneEl.value = fmtPhone(phoneEl.value); setError(phoneEl, false); });
+    form.elements.name.addEventListener('input', () => setError(form.elements.name, false));
+    form.elements.consent.addEventListener('change', () => setError(form.elements.consent, false));
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (sending) return;
       const { name, phone, consent, company } = form.elements;
       const digits = phone.value.replace(/\D/g, '');
       const okName = name.value.trim().length >= 2;
       const okPhone = digits.length === 9 || (digits.length === 12 && digits.startsWith('998'));
-      name.closest('.mdlg_field').classList.toggle('is-error', !okName);
-      phone.closest('.mdlg_field').classList.toggle('is-error', !okPhone);
-      consent.closest('.mdlg_consent').classList.toggle('is-error', !consent.checked);
-      if (!okName || !okPhone || !consent.checked) { track('lead_error', { reason: 'validation' }); return; }
+      setError(name, !okName);
+      setError(phone, !okPhone);
+      setError(consent, !consent.checked);
+      if (!okName || !okPhone || !consent.checked) {
+        status.textContent = '';
+        (!okName ? name : !okPhone ? phone : consent).focus();       /* фокус на первое поле с ошибкой: её текст прочтётся */
+        track('lead_error', { reason: 'validation' });
+        return;
+      }
       if (company.value) return;                                   /* ловушка для ботов */
+      sending = true;
       submit.disabled = true;
+      form.setAttribute('aria-busy', 'true');
       status.textContent = status.dataset.sending;
       track('lead_form_submit');
+      /* сервер не ответил за 15 с — не держим человека: сообщаем об ошибке, можно повторить или позвонить */
+      const ctl = 'AbortController' in window ? new AbortController() : null;
+      const tm = setTimeout(() => ctl && ctl.abort(), 15000);
       try {
         const res = await fetch('/api/lead/', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: name.value.trim(), phone: digits, company: company.value, ...leadContext() }),
+          signal: ctl ? ctl.signal : undefined,
         });
         if (!res.ok) throw new Error(String(res.status));
         status.textContent = status.dataset.ok;                    /* успех — только по ответу сервера */
@@ -461,31 +527,14 @@ function leadContext() {
         form.reset();
       } catch (err) {
         status.textContent = status.dataset.fail;
-        track('lead_error', { reason: 'network' });
+        track('lead_error', { reason: err && err.name === 'AbortError' ? 'timeout' : 'network' });
       } finally {
+        clearTimeout(tm);
+        sending = false;
         submit.disabled = false;
+        form.removeAttribute('aria-busy');
       }
     });
-  }
-}
-
-/* ---------- меню телефона ---------- */
-{
-  const btn = $('[data-menu-btn]');
-  const nav = $('[data-mnav]');
-  if (btn && nav) {
-    const labels = $$('[data-menu-label]', btn);
-    const toggle = (on) => {
-      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-      labels.forEach((l) => { l.textContent = on ? btn.dataset.labelClose : btn.dataset.labelOpen; });
-      root.classList.toggle('is-menu-open', on);
-      if (on) { nav.hidden = false; requestAnimationFrame(() => nav.classList.add('is-open')); }
-      else { nav.classList.remove('is-open'); setTimeout(() => { if (!nav.classList.contains('is-open')) nav.hidden = true; }, 400); }
-    };
-    btn.addEventListener('click', () => toggle(btn.getAttribute('aria-expanded') !== 'true'));
-    nav.addEventListener('click', (e) => { if (e.target.closest('a, button')) toggle(false); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('is-menu-open')) toggle(false); });
-    matchMedia('(min-width: 992px)').addEventListener('change', (e) => { if (e.matches) toggle(false); });
   }
 }
 

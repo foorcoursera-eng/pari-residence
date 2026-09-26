@@ -130,6 +130,7 @@ export const form = {
   fail: 'La demande n’a pas pu être envoyée. Réessayez ou appelez-nous.',
   nameErr: 'Indiquez comment vous appeler',
   phoneErr: 'Vérifiez le numéro de téléphone',
+  consentErr: 'Veuillez confirmer votre consentement au traitement des données',
   close: 'Fermer',
 };
 
@@ -146,6 +147,7 @@ export const ui = {
   lang: 'fr', htmlLang: 'fr', locale: 'fr_FR', name: 'Français',
   skip: 'Aller au contenu',
   langLabel: 'Langue du site',
+  crumbs: 'Fil d’Ariane',
   logoLabel: 'PARI Residence — accueil',
   pick: 'Choisir un appartement', pickLines: ['Choisir', 'un appartement'],
   meeting: 'Prendre rendez-vous',

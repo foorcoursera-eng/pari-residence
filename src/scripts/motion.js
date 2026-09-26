@@ -137,17 +137,21 @@ const loadNight = () => {
   return img;
 };
 Promise.resolve(window.__pariLoader).then(() => setTimeout(() => (window.requestIdleCallback || setTimeout)(loadNight), 2500));
-$$('[data-theme-btn]').forEach((btn) => {
+const themeBtns = $$('[data-theme-btn]');
+const setTheme = (btn) => {
+  themeBtns.forEach((b) => { const on = b === btn; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+};
+themeBtns.forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     const night = btn.dataset.themeBtn === 'night';
+    setTheme(btn);
     if (night) {
       const img = loadNight();
       /* кадр ещё грузится — переключаем, когда он готов (без мигания пустоты) */
-      if (img && !img.complete) { img.addEventListener('load', () => { if (btn.classList.contains('is-active')) heroImg.classList.add('is-night'); }, { once: true }); $$('[data-theme-btn]').forEach((b) => b.classList.toggle('is-active', b === btn)); return; }
+      if (img && !img.complete) { img.addEventListener('load', () => { if (btn.classList.contains('is-active')) heroImg.classList.add('is-night'); }, { once: true }); return; }
     }
     if (heroImg) heroImg.classList.toggle('is-night', night);
-    $$('[data-theme-btn]').forEach((b) => b.classList.toggle('is-active', b === btn));
   });
 });
 
