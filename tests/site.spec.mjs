@@ -3,6 +3,7 @@
    Счётчики (GA, Метрика) в тестах отключены. */
 import { test, expect } from '@playwright/test';
 import { readFileSync, existsSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 const MOBILE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
 
@@ -255,7 +256,9 @@ test.describe('страница планировки', () => {
 });
 
 test.describe('готовые файлы', () => {
-  const dist = (p) => new URL(`../dist/${p}`, import.meta.url);
+  /* та же сборка, что раздаёт сервер тестов (DIST — другая сборка для сравнения) */
+  const root = process.env.DIST ? pathToFileURL(process.env.DIST.replace(/\/?$/, '/')) : new URL('../dist/', import.meta.url);
+  const dist = (p) => new URL(p, root);
   test('404 не индексируется и не ссылается на несуществующие языковые версии', () => {
     const html = readFileSync(dist('404.html'), 'utf8');
     expect(html).toContain('<meta name="robots" content="noindex">');
