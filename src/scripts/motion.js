@@ -6,8 +6,10 @@
    touchMultiplier 2; hero: контент уходит вверх, фон сдвигается на «хвост»
    картинки, затем масштаб до 2 в точку 50 % 75 %; рамка медальона вращается
    при прокрутке (30°/с + скорость) и в покое возвращается к знаку; магнит с упругим возвратом.
+   Загрузочный экран и его раскрытие — components/Preloader.astro (встроенный скрипт):
+   здесь только появление первого экрана, когда экран начинает раскрываться.
    ========================================================================== */
-import { animate, stagger } from 'motion';
+import { animate } from 'motion';
 import Lenis from 'lenis';
 import { onFrame, progress } from './ticker.js';
 
@@ -18,7 +20,6 @@ const FINE = matchMedia('(pointer: fine)').matches && matchMedia('(hover: hover)
 
 const DUR = { s: .4, m: .8, l: 1.2 };
 const EASE_OUT = [.25, 1, .5, 1];
-const EASE_IN_OUT = [.76, 0, .24, 1];
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -51,10 +52,13 @@ const btnCircle = $('[data-btn-circle]');
 const headerLogo = $('[data-header-logo]');
 const headerNav = $('[data-header-nav]');
 const ring = $('[data-logo-ring]');
-const preloader = $('[data-preloader]');
 
-/* ---------- исходные состояния интро (только при движении) ---------- */
-if (MOTION && hero) {
+/* ---------- интро первого экрана (как animateTextH / animateTextA / animateTextP референса) ----------
+   Играет, только если загрузочный экран ещё закрывает страницу: тогда исходные состояния
+   (буквы спрятаны) ставятся невидимо. Если модуль пришёл позже раскрытия (медленная сеть)
+   или экрана в этой сессии не было — первый экран остаётся как есть, без мигания. */
+const INTRO = MOTION && !!hero && !!$('[data-preloader]') && !root.classList.contains('is-revealed') && !root.classList.contains('pre-skip');
+if (INTRO) {
   if (h1Wrap) h1Wrap.style.perspective = '1000px';
   h1Chars.forEach((c) => { c.style.opacity = '0'; c.style.transform = 'translateY(50%) rotateY(90deg)'; });
   if (a2) { a2.style.opacity = '0'; a2.style.transform = 'translateX(10rem) rotateX(90deg)'; }
@@ -62,57 +66,22 @@ if (MOTION && hero) {
   [btnCircle, headerLogo, headerNav].forEach((el) => { if (el) el.style.opacity = '0'; });
 }
 
-/* ---------- интро первого экрана (как animateTextH / animateTextA / animateTextP референса) ---------- */
-let introDone = false;
 function heroIntro() {
-  if (introDone || !MOTION || !hero) return;
-  introDone = true;
   /* после появления снимаем с букв transform и перспективу: иначе каждая буква остаётся
      отдельным 3D-слоем и браузер пересобирает сотни слоёв на каждом кадре прокрутки */
   animate(h1Chars, { opacity: [0, 1], transform: ['translateY(50%) rotateY(90deg)', 'translateY(0%) rotateY(0deg)'] },
-    { duration: DUR.l, delay: stagger(.05, { startDelay: .3 }), ease: EASE_OUT })
-    .then(() => setTimeout(() => { h1Chars.forEach((c) => { c.style.transform = ''; c.style.opacity = ''; }); if (h1Wrap) h1Wrap.style.perspective = ''; }));
+    { duration: DUR.l, delay: (i) => .15 + i * .05, ease: EASE_OUT })
+    .then(() => setTimeout(() => { h1Chars.forEach((c) => { c.style.transform = ''; c.style.opacity = ''; c.style.willChange = 'auto'; }); if (h1Wrap) h1Wrap.style.perspective = ''; }));
   if (a2) animate(a2, { opacity: [0, 1], transform: ['translateX(10rem) rotateX(90deg)', 'translateX(0rem) rotateX(0deg)'] },
-    { duration: DUR.l, delay: .7, ease: EASE_OUT }).then(() => setTimeout(() => { a2.style.transform = ''; a2.style.opacity = ''; }));
+    { duration: DUR.l, delay: .5, ease: EASE_OUT }).then(() => setTimeout(() => { a2.style.transform = ''; a2.style.opacity = ''; a2.style.willChange = 'auto'; }));
   if (lines.length) animate(lines, { transform: ['translateY(110%)', 'translateY(0%)'] },
-    { duration: DUR.l, delay: stagger(.1, { startDelay: .9 }), ease: EASE_OUT }).then(() => setTimeout(() => lines.forEach((l) => { l.style.transform = ''; })));
+    { duration: DUR.l, delay: (i) => .65 + i * .1, ease: EASE_OUT }).then(() => setTimeout(() => lines.forEach((l) => { l.style.transform = ''; l.style.willChange = 'auto'; })));
   [headerLogo, headerNav, btnCircle].forEach((el, i) => {
-    if (el) animate(el, { opacity: [0, 1] }, { duration: DUR.m, delay: 1 + i * .1, ease: EASE_OUT });
+    if (el) animate(el, { opacity: [0, 1] }, { duration: DUR.m, delay: .75 + i * .1, ease: EASE_OUT }).then(() => { el.style.opacity = ''; });
   });
 }
-
-/* ---------- прелоадер → окно-рамка → интро ---------- */
-function runPreloader() {
-  if (!preloader) { heroIntro(); return; }
-  /* прогресс считает встроенный скрипт загрузочного экрана (components/Preloader.astro):
-     разметка, шрифты, фото первого экрана; здесь — только раскрытие, когда всё готово */
-  const ready = window.__pariLoader || Promise.resolve();
-  let seen = false;
-  try { seen = sessionStorage.getItem('pari-preloaded') === '1'; } catch (e) { /* приватный режим */ }
-  ready.then(() => {
-    try { sessionStorage.setItem('pari-preloaded', '1'); } catch (e) { /* приватный режим */ }
-    const finish = () => { preloader.classList.add('is-done'); heroIntro(); };
-    if (!MOTION) { finish(); return; }
-    if (seen) { animate(preloader, { opacity: [1, 0] }, { duration: DUR.s, ease: EASE_OUT }).then(finish); return; }
-    /* окно в форме рамки растёт из прорисованной рамки в центре (у ERA здесь арка); знак,
-       подпись и линия гаснут. Конечный размер — с запасом на диагональ экрана:
-       у рамки между лепестками «талия». */
-    setTimeout(heroIntro, 700);
-    const ctn = $('[data-preloader-ctn]', preloader);
-    const frame = $('[data-preloader-frame]', preloader);
-    const start = frame ? frame.getBoundingClientRect().width : 0;
-    const end = Math.hypot(window.innerWidth, window.innerHeight) * 2.1;
-    preloader.style.setProperty('--hole', `${start.toFixed(1)}px`);
-    preloader.classList.add('is-opening');
-    if (ctn) animate(ctn, { opacity: [1, 0] }, { duration: DUR.s, ease: EASE_OUT });
-    /* в Motion 13 animate(fn, …) колбэк не вызывает — только animate(from, to, { onUpdate }) */
-    animate(0, 1, {
-      duration: DUR.l * 1.15, ease: EASE_IN_OUT,
-      onUpdate: (p) => preloader.style.setProperty('--hole', `${(start + p * (end - start)).toFixed(1)}px`),
-    }).then(finish);
-  });
-}
-runPreloader();
+/* раскрытие окном рамки длится 1 с: буквы начинают появляться, когда окно открыло треть экрана */
+if (INTRO) Promise.resolve(window.__pariLoader).then(() => setTimeout(heroIntro, 250));
 
 /* ---------- скролл первого экрана ----------
    Замер и запись в одном кадре с Lenis: фон и текст не отстают от прокрутки. */

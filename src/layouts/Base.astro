@@ -1,6 +1,6 @@
 ---
 /* Оболочка страницы: метаданные, шрифты (Cormorant Garamond + Pinyon Script +
-   Inter — документ «Этап 1»), прелоадер и шапка по референсу, класс
+   Inter — документ «Этап 1», файлы в public/fonts), прелоадер и шапка по референсу, класс
    has-motion до первой отрисовки, моушн-скрипт после контента.
    lang — язык страницы (ru / uz / en / fr), path — путь без языкового префикса:
    по нему шапка строит ссылки на ту же страницу на других языках, а в <head>
@@ -18,9 +18,15 @@ const { title, description, lang = 'ru', path = '/', crumbs, scrollbar = true } 
 const d = t(lang);
 const origin = 'https://pari-residence.uz';
 const canonical = new URL(href(lang, path), origin).href;
+/* каллиграфия (Pinyon Script) есть на первом экране только у главной: на других страницах её не ждём */
+const scriptFont = path === '/';
+/* предзагрузка — только Cormorant (крупные заголовки первого экрана: их подмена заметна глазу). Каждый лишний
+   файл в начале делит канал с самой страницей (с пятью предзагрузками первая отрисовка на медленной сети
+   сдвигалась на четверть секунды); Inter и каллиграфию браузер запрашивает сам по встроенным правилам */
+const fontPreload = ['cormorant-garamond-500-latin', ...(lang === 'ru' ? ['cormorant-garamond-500-cyrillic'] : [])];
 ---
 <!doctype html>
-<html lang={d.ui.htmlLang}>
+<html lang={d.ui.htmlLang} data-script-font={scriptFont ? '' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -37,12 +43,9 @@ const canonical = new URL(href(lang, path), origin).href;
     <meta name="theme-color" content="#F9F8F6" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- шрифты не блокируют первую отрисовку: загрузочный экран виден сразу, подмену шрифтов он же и скрывает -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" /></noscript>
+    <!-- шрифты первого экрана — со своего домена и сразу (правила @font-face — в styles/global.css);
+         на русских страницах нужны и кириллица, и латиница (цифры, PARI), на остальных — латиница -->
+    {fontPreload.map((f) => <link rel="preload" as="font" type="font/woff2" href={`/fonts/${f}.woff2`} crossorigin />)}
 
     <!-- счётчики — те же, что на прежнем сайте pari-residence.uz: статистика продолжается без разрыва -->
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-MM3J82QQXB"></script>
@@ -59,9 +62,15 @@ const canonical = new URL(href(lang, path), origin).href;
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/112092528" style="position:absolute;left:-9999px" alt="" /></div></noscript>
     <script is:inline>
-      /* has-motion ставится до первой отрисовки; при reduced-motion страница статична */
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('has-motion');
+      /* До первой отрисовки: has-motion — анимации включены (при reduced-motion страница статична);
+         pre-skip — загрузочный экран в этой сессии уже был: при переходах по сайту он не показывается */
+      (function (r) {
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) r.classList.add('has-motion');
+        try { if (sessionStorage.getItem('pari-preloaded') === '1') r.classList.add('pre-skip'); } catch (e) { /* приватный режим */ }
+      })(document.documentElement);
     </script>
+    <!-- без JavaScript загрузочный экран не показывается вовсе: он не должен закрывать страницу -->
+    <noscript><style>.preloader{display:none!important}</style></noscript>
   </head>
   <body class="body">
     <a class="visually-hidden" href="#main">{d.ui.skip}</a>
