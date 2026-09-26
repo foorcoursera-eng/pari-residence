@@ -5,7 +5,8 @@
    lang — язык страницы (ru / uz / en / fr), path — путь без языкового префикса:
    по нему шапка строит ссылки на ту же страницу на других языках, а в <head>
    пишутся hreflang-альтернативы. crumbs — «хлебные крошки» слева (ERA
-   header-cramps, на внутренних страницах вместо индикатора прокрутки). */
+   header-cramps, на внутренних страницах вместо индикатора прокрутки).
+   noindex — служебная страница (404): без canonical и языковых альтернатив, с запретом индексации. */
 import '../styles/global.css';
 import Preloader from '../components/Preloader.astro';
 import Header from '../components/Header.astro';
@@ -13,8 +14,8 @@ import Scrollbar from '../components/Scrollbar.astro';
 import MeetingDialog from '../components/MeetingDialog.astro';
 import Crumbs from '../components/Crumbs.astro';
 import { t, href, LANGS } from '../i18n/index.js';
-interface Props { title: string; description: string; lang?: string; path?: string; crumbs?: { t: string; href?: string }[]; scrollbar?: boolean }
-const { title, description, lang = 'ru', path = '/', crumbs, scrollbar = true } = Astro.props;
+interface Props { title: string; description: string; lang?: string; path?: string; crumbs?: { t: string; href?: string }[]; scrollbar?: boolean; noindex?: boolean }
+const { title, description, lang = 'ru', path = '/', crumbs, scrollbar = true, noindex = false } = Astro.props;
 const d = t(lang);
 const origin = 'https://pari-residence.uz';
 const canonical = new URL(href(lang, path), origin).href;
@@ -32,9 +33,13 @@ const fontPreload = ['cormorant-garamond-500-latin', ...(lang === 'ru' ? ['cormo
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {LANGS.map((l) => <link rel="alternate" hreflang={t(l).ui.htmlLang} href={new URL(href(l, path), origin).href} />)}
-    <link rel="alternate" hreflang="x-default" href={new URL(path, origin).href} />
+    {noindex ? <meta name="robots" content="noindex" /> : <>
+      <link rel="canonical" href={canonical} />
+      {LANGS.map((l) => <link rel="alternate" hreflang={t(l).ui.htmlLang} href={new URL(href(l, path), origin).href} />)}
+      <link rel="alternate" hreflang="x-default" href={new URL(path, origin).href} />
+      <meta property="og:url" content={canonical} />
+    </>}
+    <meta property="og:site_name" content="PARI Residence" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={`${origin}/img/og-cover.jpg`} />
