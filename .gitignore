@@ -33,3 +33,6 @@ deploy/.vercel/
 .vercel/
 .vscode/
 
+# Playwright (npm test)
+test-results/
+playwright-report/

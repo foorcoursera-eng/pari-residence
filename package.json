@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "node deploy.mjs"
+    "deploy": "node deploy.mjs",
+    "test": "astro build && playwright test"
   },
   "dependencies": {
     "astro": "^7.3.3",
@@ -19,5 +20,8 @@
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
   }
 }
