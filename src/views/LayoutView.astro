@@ -15,6 +15,7 @@ import FinalCta from '../components/FinalCta.astro';
 import Footer from '../components/Footer.astro';
 import { layouts, FLOORS } from '../data/flats.js';
 import { t, href, fill, fmtArea, plural } from '../i18n/index.js';
+import { webpSize } from '../data/imagesize.js';
 
 interface Props { lang: string; id: string }
 const { lang, id } = Astro.props;
@@ -33,10 +34,20 @@ const near = all.filter((x) => x.id !== L.id).sort((a, b) =>
 const similar = near.slice(0, 3);
 
 const opts = flats.map((f) => ({ v: f.id, t: `${fill(A.entFmt, { n: f.ent })} · ${fill(A.floorFmt, { n: f.floor })} · ${fill(A.noFmt, { n: f.num })}` }));
+/* лист планировки: полный вариант (-1400, 1600 px: чертёж, экспликация, роза ветров, схема) и он же
+   в 900 px (-s900). Вариант -800 — другой кадр (плотная обрезка для карточек каталога), в srcset
+   его ставить нельзя: на экранах с плотностью 1 страница показывала обрезку без экспликации.
+   Размер листа — в width/height: место под чертёж занято заранее, страница не прыгает. */
+const sheet = L.plan ? webpSize(`/img/plans/${L.plan}-1400.webp`) : null;
+/* пропорции планов этажей: место под план занято до загрузки картинки */
+const floorSize: Record<string, [number, number]> = {};
+flats.forEach((f) => { const sz = webpSize(`/img/floors/p${f.ent}-f${f.floor}.webp`); if (sz) floorSize[`${f.ent}-${f.floor}`] = [sz.w, sz.h]; });
+const f0Size = floorSize[`${f0.ent}-${f0.floor}`];
 const data = {
   flats: flats.map((f) => ({ id: f.id, e: f.ent, f: f.floor, n: f.num })),
   floors: FLOORS,
-  s: { noFmt: A.noFmt, entFmt: A.entFmt, floorFmt: A.floorFmt, floorNone: F.floorNone, floorAlt: d.ui.alt.floor, floorTitle: F.floorPlan },
+  sizes: floorSize,
+  s: { noFmt: A.noFmt, entFmt: A.entFmt, floorFmt: A.floorFmt, floorNone: F.floorNone, floorAlt: d.ui.alt.floor, floorTitle: F.floorPlan, flatGo: `${A.types[L.type]} · {flat}` },
 };
 /* интерьеры 25.09.2026: гостиная, спальня с барельефом, гостиная с текстилем; семейным — ещё детская */
 const gallery = ['live-1', 'live-3', 'live-2', ...(L.rooms >= 3 && !L.studio ? ['live-4'] : [])];
@@ -57,7 +68,8 @@ const catalog = href(lang, '/apartments/');
           {L.plan ? (
             <figure class="apt_plan" data-reveal-w>
               <figcaption class="l2 reg">{F.plan}</figcaption>
-              <img src={`/img/plans/${L.plan}-1400.webp`} srcset={`/img/plans/${L.plan}-800.webp 800w, /img/plans/${L.plan}-1400.webp 1400w`} sizes="(max-width: 991px) 92vw, 52vw"
+              <img src={`/img/plans/${L.plan}-1400.webp`} srcset={`/img/plans/${L.plan}-s900.webp 900w, /img/plans/${L.plan}-1400.webp ${sheet ? sheet.w : 1600}w`} sizes="(max-width: 991px) 92vw, 52vw"
+                width={sheet ? sheet.w : undefined} height={sheet ? sheet.h : undefined}
                 alt={fill(d.ui.alt.plan, { type: typeName, area })} decoding="async" fetchpriority="high" />
             </figure>
           ) : (
@@ -65,7 +77,7 @@ const catalog = href(lang, '/apartments/');
           )}
           <figure class="apt_floor" data-floor>
             <figcaption class="l2 reg" data-floor-title>{F.floorPlan}</figcaption>
-            <div class="apt_floor_w">
+            <div class="apt_floor_w" style={f0Size ? `aspect-ratio:${f0Size[0]} / ${f0Size[1]}` : undefined}>
               <img data-floor-img alt="" decoding="async" loading="lazy" />
               <svg data-floor-svg aria-hidden="true"></svg>
             </div>
@@ -164,22 +176,28 @@ const catalog = href(lang, '/apartments/');
   .apt_top{height:calc(120rem/var(--s))}
   .apt_grid{align-items:start}
   .apt_media{grid-column:2 / 8;display:flex;flex-direction:column;gap:calc(32rem/var(--s))}
-  .apt_info{grid-column:8 / 11;position:sticky;top:calc(215rem/var(--s));padding-left:calc(16rem/var(--s))} /* ниже меню шапки */
+  .apt_info{grid-column:8 / 11;position:sticky;top:calc(215rem/var(--s));padding-left:calc(16rem/var(--s));display:flex;flex-direction:column} /* ниже меню шапки */
+  /* закреплённая колонка выше экрана почти на любом мониторе (размеры идут от ширины): кнопка заявки —
+     сразу после выбора квартиры, вкладки «Инфо / Преимущества» — ниже; параметры — сеткой 2×2 */
+  .apt_info>.pill{order:1;align-self:flex-start}
+  .apt_info>.apt_tabs+.u-32{order:2}
+  .apt_info>.apt_tabs{order:3}
   .apt_plan,.apt_floor{margin:0;position:relative;background:#fff;padding:calc(48rem/var(--s)) calc(40rem/var(--s)) calc(40rem/var(--s))}
   .apt_plan figcaption,.apt_floor figcaption{position:absolute;left:calc(40rem/var(--s));top:calc(24rem/var(--s))}
   .apt_plan img{width:100%;height:auto;max-height:82vh;object-fit:contain;display:block;margin:0 auto}
   .apt_plan-none{max-width:calc(560rem/var(--s))}
   .apt_floor_w{position:relative}
-  .apt_floor_w img{width:100%;height:auto;display:block}
+  .apt_floor_w img{width:100%;height:100%;object-fit:contain;display:block}
   .apt_floor_w svg{position:absolute;inset:0;width:100%;height:100%}
   .apt_floor_w path{fill:transparent;stroke:transparent;stroke-width:2;transition:fill var(--dur-s) var(--ease-out),stroke var(--dur-s) var(--ease-out)}
   .apt_floor_w path.is-same{fill:rgba(197,160,89,.12);stroke:rgba(197,160,89,.7);stroke-dasharray:6 5;cursor:pointer}
-  .apt_floor_w path.is-same:hover{fill:rgba(197,160,89,.28)}
+  .apt_floor_w path.is-same:hover,.apt_floor_w path.is-same:focus-visible{fill:rgba(197,160,89,.28)}
+  .apt_floor_w path:focus-visible{outline:none;stroke:var(--base-1000);stroke-width:3}
   .apt_floor_w path.is-cur{fill:rgba(197,160,89,.5);stroke:var(--accent);stroke-dasharray:none}
   .apt_img{overflow:hidden;aspect-ratio:1.6}
   .apt_img img{width:100%;height:100%;object-fit:cover}
   .apt_no{text-transform:none}
-  .apt_params{margin:0;display:grid;gap:calc(24rem/var(--s))}
+  .apt_params{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(24rem/var(--s)) calc(16rem/var(--s))}
   .apt_params div{display:flex;flex-direction:column;gap:calc(6rem/var(--s))}
   .apt_params dd{margin:0}
   .apt_pick .fsel_drop{min-width:calc(360rem/var(--s))}
@@ -209,6 +227,7 @@ const catalog = href(lang, '/apartments/');
     .apt_top{height:calc(60rem/var(--s))}
     .apt_media,.apt_info{grid-column:1 / 5}
     .apt_info{position:relative;top:auto;padding-left:0;order:-1;margin-bottom:calc(32rem/var(--s))}
+    .apt_info>.pill,.apt_info>.apt_tabs+.u-32,.apt_info>.apt_tabs{order:0}
     .apt_plan,.apt_floor{padding:calc(40rem/var(--s)) calc(16rem/var(--s)) calc(16rem/var(--s))}
     .apt-sim_list{grid-template-columns:1fr;width:100%}
   }

@@ -11,10 +11,17 @@
 .acard:hover .acard_shadow{opacity:1}
 .acard_c{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
 .acard_img{position:relative;aspect-ratio:1 / .92;margin:calc(16rem/var(--s)) 0;display:flex;align-items:center;justify-content:center}
+/* min-height:0 — область 1:0,92 не растягивается до высоты картинки (у блока с aspect-ratio минимальная
+   высота по умолчанию — высота содержимого): высокие планы после загрузки удлиняли карточку на 300 px,
+   ряды сетки становились разной высоты, и вся сетка сдвигалась; object-fit:contain вписывает план в область */
+.acard_img{min-height:0}
+.acard_img>img,.acard_img>.acard_floor{min-width:0;min-height:0}
 .acard_img>img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;transition:transform var(--dur-l) var(--ease-out)}
 .acard:hover .acard_img>img{transform:scale(1.03)}
-.acard_floor{position:relative;width:100%}
-.acard_floor img{width:100%;height:auto;display:block;mix-blend-mode:multiply}
+/* план этажа вписан в ту же область, что и чертёж: высокий план не растягивает карточку после загрузки
+   (сдвиг сетки при прокрутке и неточный возврат к месту в каталоге); контур квартиры — тем же вписыванием (meet) */
+.acard_floor{position:relative;width:100%;height:100%}
+.acard_floor img{width:100%;height:100%;object-fit:contain;display:block;mix-blend-mode:multiply}
 .acard_floor svg{position:absolute;inset:0;width:100%;height:100%}
 .acard_floor path{fill:rgba(197,160,89,.42);stroke:var(--accent);stroke-width:2}
 .acard_none{width:40%;aspect-ratio:1;background:url(/img/brand/frame-solid.svg) center / contain no-repeat;opacity:.08}

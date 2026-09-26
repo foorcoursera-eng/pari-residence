@@ -197,6 +197,7 @@ export const apts = {
   types: { s: 'Studiya', 1: 'Bir xonali', 2: 'Ikki xonali', 3: 'Uch xonali', 4: 'Toʻrt xonali' },
   sort: { rel: 'Tavsiya etilgan', asc: 'Kichik maydon', desc: 'Katta maydon' },
   reset: 'Tozalash',
+  found: 'Topilgan xonadonlar: {n}',
   more: 'Yana koʻrsatish',
   empty: 'Bunday xonadonlar yoʻq. Filtrlarni oʻzgartiring yoki tozalang.',
   finish: 'Pardoz: white-box',

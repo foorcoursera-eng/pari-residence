@@ -196,6 +196,7 @@ export const apts = {
   types: { s: 'Studio', 1: '1 pièce', 2: '2 pièces', 3: '3 pièces', 4: '4 pièces' },
   sort: { rel: 'Recommandés', asc: 'Surface croissante', desc: 'Surface décroissante' },
   reset: 'Réinitialiser',
+  found: 'Appartements trouvés : {n}',
   more: 'Afficher plus',
   empty: 'Aucun appartement ne correspond. Modifiez ou réinitialisez les filtres.',
   finish: 'Finition : white-box',

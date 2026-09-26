@@ -196,6 +196,7 @@ export const apts = {
   types: { s: 'Studio', 1: '1-room', 2: '2-room', 3: '3-room', 4: '4-room' },
   sort: { rel: 'Recommended', asc: 'Smallest area', desc: 'Largest area' },
   reset: 'Reset',
+  found: 'Apartments found: {n}',
   more: 'Show more',
   empty: 'No apartments match. Change or reset the filters.',
   finish: 'Finish: white-box',
