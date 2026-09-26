@@ -55,6 +55,9 @@ const u = tr(lang).ui;
     .masterplan{height:120vw;cursor:auto}
     .masterplan_drag{width:180vw;left:-40vw;top:0}
     .masterplan_place{grid-column:1 / 5}
+    /* подпись — внизу кадра, в зоне затемнения: посередине она лежала на светлых крышах и не читалась */
+    .masterplan_label{bottom:calc(20rem/var(--s))}
+    .masterplan_grad{height:60%}
     .masterplan_cursor{display:none}
   }
   @media (hover:none){.masterplan_cursor{display:none}}

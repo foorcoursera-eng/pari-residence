@@ -122,6 +122,25 @@ if (MOTION && scrollArea && heroBg && heroS) {
   });
 }
 
+/* круглая кнопка первого экрана не ложится на слоган: в почти квадратном окне ≤991 px места под
+   слоганом не хватает — кнопка сдвигается ниже (раскладка без transform: offsetTop, а не прямоугольники) */
+{
+  const title = $('.hero-s_title');
+  const b = $('.hero-s_b');
+  if (heroS && heroBg && title && b) {
+    let v = -1, shift = 0;
+    onFrame('read', () => {
+      if (layoutVersion() === v) return;
+      v = layoutVersion();
+      const btn = b.firstElementChild || b;
+      const low = heroS.offsetTop + title.offsetTop + title.offsetHeight + 16;
+      const top = heroBg.offsetTop + b.offsetTop + btn.offsetTop;         /* offsetTop не видит transform: сдвиг не мешает замеру */
+      const want = Math.max(0, Math.ceil(low - top));
+      if (want !== shift) { shift = want; b.style.transform = shift ? `translateY(${shift}px)` : ''; }
+    });
+  }
+}
+
 /* первый экран вне видимости — бесконечный пульс меток ставим на паузу (класс hero-off) */
 if (hero) new IntersectionObserver(([e]) => hero.classList.toggle('hero-off', !e.isIntersecting)).observe(hero);
 

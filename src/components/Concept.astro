@@ -75,7 +75,7 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
       </h2>
       <div class="concept-path" data-path>
         <div class="concept-path_map">
-        <svg viewBox={`0 0 ${W} ${H}`} aria-label={u.pathLabel}>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={u.pathLabel}>
           <path class="concept-path_line" d={pathD} fill="none" stroke="currentColor" stroke-width="1.4" />
           {dots.map((p) => (
             <circle class="concept-path_pt" cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="4" fill="currentColor" />
@@ -125,7 +125,9 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
   .concept-city{left:calc(3780rem/var(--s));top:calc(262rem/var(--s));width:calc(960rem/var(--s));display:flex;flex-direction:column;align-items:center}
   .concept-city_a{position:relative;z-index:2;margin:calc(-40rem/var(--s)) 0 calc(-52rem/var(--s));text-transform:none;letter-spacing:0;color:var(--accent);transform:rotate(-6deg)}
   .concept-path{left:calc(3664rem/var(--s));top:calc(700rem/var(--s));width:calc(1200rem/var(--s));color:var(--base-1000)}
-  .concept-path svg{width:100%;height:auto;overflow:visible}
+  /* только сама карта во всю ширину: вложенный svg знака PARI держит свои 52×32 (раньше правило
+     растягивало и его — знак уезжал на правый край поверх «Аэропорта» и меню) */
+  .concept-path_map>svg{display:block;width:100%;height:auto;overflow:visible}
   .concept-path_line{clip-path:inset(0 var(--draw,0%) 0 0)}
   .concept-path_map{position:relative}
   .concept-path_lbl{position:absolute;transform:translate(-50%,calc(-100% - 14px));display:flex;flex-direction:column;align-items:center;white-space:nowrap;text-align:center}

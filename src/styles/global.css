@@ -105,6 +105,10 @@ h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
 .a-center{text-align:center}.a-left{text-align:left}.a-right{text-align:right}
 
 /* ---------- отступы и сетка референса ---------- */
+/* u-4 / u-12 / u-16 стояли в разметке каталога и карточки, но не были объявлены (высота 0) */
+.u-4{height:calc(4rem/var(--s))}
+.u-12{height:calc(12rem/var(--s))}
+.u-16{height:calc(16rem/var(--s))}
 .u-24{height:calc(24rem/var(--s))}
 .u-32{height:calc(32rem/var(--s))}
 .u-48{height:calc(48rem/var(--s))}
