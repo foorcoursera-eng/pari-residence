@@ -1,0 +1,40 @@
+---
+/* Выпадающий фильтр — как .filter_select у ERA: подпись l2, значение l2 с
+   двойной надписью при наведении, стрелка; список — светлая панель с тенью,
+   активный пункт залит графитом. Управляется scripts/apartments.js. */
+interface Props { name: string; label: string; options: { v: string; t: string }[]; value?: string; ariaLabel?: string }
+const { name, label, options, value = options[0]?.v, ariaLabel } = Astro.props;
+const cur = options.find((o) => o.v === value) || options[0];
+---
+<div class="fsel" data-select={name}>
+  <button class="fsel_btn" type="button" aria-haspopup="listbox" aria-expanded="false" data-select-btn>
+    {label && <span class="l2 reg">{label}</span>}
+    <span class="nav-item fsel_val">
+      <span class="nav-item_label"><span class="nav-item_label_text l2" data-select-value>{cur.t}</span><span class="nav-item_label_text is-2 l2" aria-hidden="true" data-select-value>{cur.t}</span></span>
+    </span>
+    <svg class="fsel_ico" viewBox="0 0 12 12" fill="none" stroke="currentColor" aria-hidden="true"><path d="m2.5 4.5 3.5 3.5 3.5-3.5" /></svg>
+  </button>
+  <div class="fsel_drop" role="listbox" aria-label={label || ariaLabel} data-select-drop>
+    {options.map((o) => (
+      <button class={`fsel_item l1 ${o.v === cur.v ? 'is-active' : ''}`} type="button" role="option" aria-selected={o.v === cur.v ? 'true' : 'false'} data-select-item={o.v}>{o.t}</button>
+    ))}
+  </div>
+</div>
+
+<style>
+  .fsel{position:relative}
+  .fsel_btn{display:flex;align-items:center;gap:calc(10rem/var(--s));min-height:32px;padding:0}
+  .fsel_ico{width:max(10px,calc(12rem/var(--s)));height:auto;transition:transform var(--dur-s) var(--ease-out)}
+  .fsel.is-open .fsel_ico{transform:rotate(180deg)}
+  .fsel_drop{
+    position:absolute;left:calc(-16rem/var(--s));top:calc(100% + 12rem/var(--s));z-index:30;min-width:calc(264rem/var(--s));max-height:min(60vh,calc(520rem/var(--s)));overflow:auto;
+    display:flex;flex-direction:column;gap:2px;padding:calc(8rem/var(--s));background:var(--base-0);
+    box-shadow:0 224px 63px 0 rgba(0,0,0,0),0 143px 57px 0 rgba(0,0,0,.01),0 81px 48px 0 rgba(0,0,0,.04),0 36px 36px 0 rgba(0,0,0,.07),0 9px 20px 0 rgba(0,0,0,.08);
+    opacity:0;visibility:hidden;transform:translateY(calc(32rem/var(--s)));
+    transition:opacity var(--dur-s) var(--ease-out),transform var(--dur-m) var(--ease-out),visibility 0s linear var(--dur-s);
+  }
+  .fsel.is-open .fsel_drop{opacity:1;visibility:visible;transform:none;transition:opacity var(--dur-s) var(--ease-out),transform var(--dur-m) var(--ease-out)}
+  .fsel_item{text-align:left;padding:calc(12rem/var(--s)) calc(16rem/var(--s));border-radius:calc(4rem/var(--s));min-height:36px;transition:background-color var(--dur-s) var(--ease-out),color var(--dur-s) var(--ease-out)}
+  .fsel_item:hover{background:rgba(26,26,26,.06)}
+  .fsel_item.is-active{background:var(--base-1000);color:var(--base-0)}
+</style>

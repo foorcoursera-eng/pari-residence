@@ -1,0 +1,68 @@
+---
+/* Сцена 10 ERA (section.clip, ~3400 px): закреплённый кадр; сверху огромное слово
+   «Architecture» поверх изображения, ветки по бокам; на скролле кадр раскрывается
+   из колонки 75vw на весь экран, слово уходит, внизу слева появляется h5 +
+   авторы l1 и круглая кнопка «Book a call». */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { architecture } = tr(lang);
+const u = tr(lang).ui;
+import Flower from './Flower.astro';
+import BtnCircle from './BtnCircle.astro';
+---
+<section class="section clip theme_on-light archi" data-ui="light" data-archi>
+  <div class="archi_w">
+    <div class="archi_frame" data-archi-frame data-ui-m="dark">
+      <img src="/img/scenes/architecture-1920.webp" srcset="/img/scenes/architecture-1280.webp 1280w, /img/scenes/architecture-1920.webp 1920w, /img/scenes/architecture-2400.webp 2400w" sizes="100vw"
+        alt={u.alt.architecture} loading="lazy" decoding="async" width="1920" height="2105" data-archi-img />
+      <div class="archi_grad" aria-hidden="true"></div>
+    </div>
+    <!-- ветка только справа: слева вверху знак в шапке (охранное поле), слева внизу текст -->
+    <Flower side="r" style="left:calc(1100rem/var(--s));top:calc(300rem/var(--s));width:calc(560rem/var(--s))" />
+    <h2 class="h1 a-center archi_word theme_on-color" style={`--chars:${architecture.title.length}`} data-archi-word>{architecture.title}</h2>
+    <div class="container archi_text theme_on-color" data-archi-text data-no-reveal>
+      <div class="grid">
+        <div class="archi_copy">
+          <h3 class="h5 archi_lead">{architecture.lead}</h3>
+          <div class="u-24"></div>
+          <p class="p1 archi_p">{architecture.text}</p>
+          <div class="u-32"></div>
+          <div class="archi_credits">
+            {architecture.credits.map(([k, v]) => <div><div class="l1">{k}</div><div class="l1 reg">{v}</div></div>)}
+          </div>
+        </div>
+        <div class="archi_btn"><BtnCircle label={architecture.cta} dialog size="m" /></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .archi{height:calc(100vh + 160vw)}
+  .archi_w{position:sticky;top:0;height:100vh;overflow:hidden}
+  /* ширина кадра — scaleX (scripts/scenes.js), картинка внутри получает обратный масштаб */
+  .archi_frame{position:absolute;left:50%;top:0;width:100vw;height:100%;transform:translateX(-50%) scaleX(.75);overflow:hidden;will-change:transform}
+  .archi_frame img{position:absolute;left:0;top:calc((100% - 109.64vw) * .3);width:100%;height:auto;max-width:none;transform-origin:50% 30%;transform:scale(1,.75);will-change:transform}
+  /* верхняя полоса под словом «Архитектура» — всегда; нижнее пятно под текстом — по мере раскрытия кадра */
+  .archi_frame::after{content:'';position:absolute;inset:0 0 auto 0;height:40%;background:linear-gradient(rgba(0,0,0,.34),rgba(0,0,0,0));pointer-events:none}
+  .archi_lead{text-transform:none;letter-spacing:0;line-height:1.1}
+  .archi_grad{position:absolute;inset:0;background:radial-gradient(120% 90% at 20% 100%,rgba(0,0,0,.72) 0%,rgba(0,0,0,.45) 35%,rgba(0,0,0,0) 65%),linear-gradient(rgba(0,0,0,.18),rgba(0,0,0,0) 30%);opacity:var(--grad,0);pointer-events:none}
+  /* слово ниже шапки: буквы не заходят под меню и знак */
+  .archi_word{position:absolute;left:0;right:0;top:calc(196rem/var(--s));font-size:min(calc(160rem/var(--s)),calc(70vw / (var(--chars) * .6)));white-space:nowrap;z-index:5;will-change:transform,opacity}
+  .archi_text{position:absolute;left:0;right:0;bottom:calc(120rem/var(--s));z-index:5;opacity:var(--txt,0);transform:translateY(calc((1 - var(--txt,0)) * 40px))}
+  .archi_copy{grid-column:2 / 6}
+  .archi_p{max-width:calc(420rem/var(--s))}
+  .archi_credits{display:flex;gap:calc(40rem/var(--s));padding-left:calc(115rem/var(--s))}
+  .archi_btn{grid-column:7 / 8;display:flex;align-items:end}
+  @media (max-width:991px){
+    .archi{height:auto}
+    .archi_w{position:relative;height:auto;overflow:visible;padding-bottom:calc(40rem/var(--s))}
+    .archi_frame{position:relative;left:auto;transform:none;width:100%;height:auto;aspect-ratio:.91}
+    .archi_frame img{position:static;width:100%;height:100%;object-fit:cover;object-position:50% 30%;transform:none}
+    .archi_word{font-size:min(calc(58rem/var(--s)),calc(88vw / (var(--chars) * .64)));top:calc(24rem/var(--s))}
+    .archi_text{position:relative;bottom:auto;opacity:1;transform:none;color:var(--base-1000);--c-text:var(--base-1000);--c-line:var(--base-1000-line);margin-top:calc(32rem/var(--s))}
+    .archi_copy,.archi_btn{grid-column:1 / 5}
+    .archi_credits{padding-left:0}
+    .archi :global(.flower){display:none}
+  }
+</style>

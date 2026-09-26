@@ -1,0 +1,153 @@
+---
+/* Загрузочный экран. Композиция по референсу: тёмная тема, знак PARI вверху,
+   внизу — подпись «Загрузка», линия прогресса и счётчик 00–100. В центре рамка-арабеска
+   (гайдбук §6.1: «окно или вырубка») прорисовывается по мере загрузки; когда всё готово,
+   страница раскрывается через окно ровно этой рамки (scripts/motion.js).
+
+   Почему так (замечание заказчика 26.09 «люди должны понимать, что сайт загружается»):
+   - стили экрана — прямо здесь, в разметке: он виден с первого кадра, не дожидаясь
+     CSS-файлов и шрифтов Google (раньше на медленной сети был белый экран);
+   - счётчик идёт от настоящей загрузки: разметка, шрифты, фото первого экрана —
+     и не стоит на месте, пока ждём (раньше «00» до события load, потом 1,2 с анимации);
+   - рамка слегка «дышит», даже если сеть надолго замерла.
+   Скрипт ниже — обычный inline: выполняется сразу, до модулей. Готовность отдаёт
+   в window.__pariLoader (Promise), дальше раскрытие делает motion.js.
+   При повторном заходе в рамках сессии — то же ожидание, но затем быстрое затухание. */
+import brand from '../data/logo-brand.json';
+import { t } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const label = t(lang).ui.loading;
+const frameSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${brand.frameBox}"><path d="${brand.frameOuter}" fill="#000"/></svg>`;
+const frameUri = `url("data:image/svg+xml,${encodeURIComponent(frameSvg)}")`;
+const [, , fw, fh] = brand.frameBox.split(' ').map(Number);
+---
+<style is:inline>
+  .preloader{position:fixed;inset:0;z-index:11000;display:block;background:#1A1A1A;color:#fff}
+  .preloader.is-opening{
+    -webkit-mask:linear-gradient(#000 0 0),var(--frame) 50% 50% / var(--hole) auto no-repeat;-webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0),var(--frame) 50% 50% / var(--hole) auto no-repeat;mask-composite:exclude;
+  }
+  .preloader.is-done{display:none}
+  .preloader_ctn{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:0 3vw}
+  .preloader_t{display:flex;justify-content:center;padding-top:3vw}
+  .preloader_logo{width:max(96px,8vw);aspect-ratio:408.48 / 160.81}
+  .preloader_logo svg,.preloader_frame svg{display:block;width:100%;height:100%;overflow:visible}
+  .preloader_frame{position:absolute;left:50%;top:50%;width:max(120px,10vw);transform:translate(-50%,-50%)}
+  .preloader_frame path{fill:none;stroke:currentColor;stroke-width:1;vector-effect:non-scaling-stroke}
+  .preloader_frame_base{opacity:.14;animation:preBreath 2.4s ease-in-out infinite}
+  .preloader_frame_draw{stroke-dasharray:1 1;stroke-dashoffset:1}
+  @keyframes preBreath{50%{opacity:.34}}
+  .preloader_b{display:flex;align-items:center;gap:max(12px,1vw);padding-bottom:3vw;font:600 12px/1.33 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.2em;text-transform:uppercase}
+  .preloader_progress{flex:1;height:1px;background:rgba(255,255,255,.16);overflow:hidden}
+  .preloader_progress_bar{width:100%;height:100%;background:#fff;transform:scaleX(0);transform-origin:0 50%}
+  .preloader_count{min-width:3.2em;text-align:right;font-variant-numeric:tabular-nums}
+  .preloader_label{opacity:.6}
+  @media (max-width:991px){
+    .preloader_ctn{padding:0 5.77vw}
+    .preloader_t{padding-top:calc(5.77vw + env(safe-area-inset-top,0px))}
+    .preloader_logo{width:30vw}
+    .preloader_frame{width:34vw}
+    .preloader_b{padding-bottom:calc(5.77vw + env(safe-area-inset-bottom,0px));gap:3vw}
+  }
+  @media (prefers-reduced-motion:reduce){.preloader_frame_base{animation:none}}
+</style>
+<div class="preloader" data-preloader style={`--hole:0px;--frame:${frameUri}`} role="progressbar" aria-label={label} aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="preloader_ctn" data-preloader-ctn>
+    <div class="preloader_t">
+      <div class="preloader_logo" aria-hidden="true">
+        <svg viewBox={brand.pariBox} fill="currentColor">{brand.pari.map((d) => <path d={d} />)}</svg>
+      </div>
+    </div>
+    <div class="preloader_frame" data-preloader-frame aria-hidden="true" style={`aspect-ratio:${fw} / ${fh}`}>
+      <svg viewBox={brand.frameBox}>
+        <path class="preloader_frame_base" d={brand.frameOuter} />
+        <path class="preloader_frame_draw" d={brand.frameOuter} pathLength="1" data-preloader-draw />
+      </svg>
+    </div>
+    <div class="preloader_b" aria-hidden="true">
+      <span class="preloader_label">{label}</span>
+      <div class="preloader_progress"><div class="preloader_progress_bar" data-preloader-bar></div></div>
+      <span class="preloader_count" data-preloader-count>00</span>
+    </div>
+  </div>
+</div>
+<script is:inline>
+  (function () {
+    var el = document.querySelector('[data-preloader]');
+    if (!el) return;
+    var bar = el.querySelector('[data-preloader-bar]');
+    var cnt = el.querySelector('[data-preloader-count]');
+    var draw = el.querySelector('[data-preloader-draw]');
+    var resolve;
+    window.__pariLoader = new Promise(function (r) { resolve = r; });
+
+    /* этапы и их вес: разметка и стили, шрифты, фото первого экрана */
+    var W = { dom: .3, fonts: .2, hero: .35 };
+    var got = { dom: 0, fonts: 0, hero: 0 };
+    var base = .05, target = base, shown = 0, tStage = performance.now(), t0 = tStage, ready = false, last = t0, fin = 0;
+    var stage = function (k) {
+      if (got[k]) return;
+      got[k] = 1; tStage = performance.now();
+      target = base + W.dom * got.dom + W.fonts * got.fonts + W.hero * got.hero;
+      if (got.dom && got.fonts && got.hero) ready = true;
+    };
+
+    var onDom = function () { stage('dom'); };
+    /* шрифты: ждём именно наши начертания (до прихода CSS Google fonts.ready пуст и «готов» сразу).
+       Таблица шрифтов подключена без блокировки (media=print → all) и уже есть в <head> — следим сразу. */
+    var f = document.fonts;
+    var css = document.querySelector('link[rel="stylesheet"][href*="fonts.googleapis"]');
+    var loadFonts = function () {
+      Promise.all([f.load('500 1em "Cormorant Garamond"'), f.load('1em "Pinyon Script"'), f.load('600 1em Inter')])
+        .then(function () { return f.ready; }).then(function () { stage('fonts'); }, function () { stage('fonts'); });
+    };
+    if (f && f.load) {
+      if (!css || css.sheet) loadFonts();
+      else { css.addEventListener('load', loadFonts, { once: true }); css.addEventListener('error', function () { stage('fonts'); }, { once: true }); }
+      setTimeout(function () { stage('fonts'); }, 6000);          /* шрифты не пришли — показываем запасные */
+    } else stage('fonts');
+    /* фото первого экрана: загружено и раскодировано (без «пустого» кадра после раскрытия).
+       Ищем его в каждом кадре, пока разбирается разметка: DOMContentLoaded на медленной сети
+       ждёт модули скриптов, а картинка к этому времени может быть давно готова. */
+    var heroSeen = false;
+    var watchHero = function () {
+      if (heroSeen) return;
+      var img = document.querySelector('img[data-critical]');
+      if (!img) { if (document.readyState !== 'loading') { heroSeen = true; stage('hero'); } return; }
+      heroSeen = true;
+      var ok = function () { (img.decode ? img.decode() : Promise.resolve()).then(function () { stage('hero'); }, function () { stage('hero'); }); };
+      if (img.complete && img.naturalWidth) ok();
+      else { img.addEventListener('load', ok, { once: true }); img.addEventListener('error', function () { stage('hero'); }, { once: true }); }
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDom, { once: true });
+    else onDom();
+    setTimeout(function () { ready = true; }, 20000);               /* совсем плохая сеть — не держим дольше 20 с */
+
+    var tick = function (now) {
+      var dt = Math.min(.1, (now - last) / 1000); last = now;
+      watchHero();
+      var cap;
+      if (ready && now - t0 > 900) cap = 1;                          /* не мелькаем: экран виден хотя бы ~1 с */
+      else {
+        /* пока ждём, счётчик понемногу ползёт к следующему этапу, но не доходит до него */
+        var rest = (got.dom ? 0 : W.dom) + (got.fonts ? 0 : W.fonts) + (got.hero ? 0 : W.hero);
+        cap = Math.min(.97, target + rest * .6 * (1 - Math.exp(-(now - tStage) / 2500)));
+      }
+      shown += (cap - shown) * Math.min(1, dt * (cap === 1 ? 7 : 3.2));
+      if (cap === 1 && 1 - shown < .004) shown = 1;
+      var pct = Math.floor(shown * 100);
+      cnt.textContent = pct < 10 ? '0' + pct : String(pct);
+      bar.style.transform = 'scaleX(' + shown.toFixed(4) + ')';
+      if (draw) draw.style.strokeDashoffset = String((1 - shown).toFixed(4));
+      el.setAttribute('aria-valuenow', String(pct));
+      if (shown === 1) {
+        if (!fin) { fin = now; }
+        if (now - fin > 180) { resolve(); return; }                  /* «100» задерживается на мгновение */
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    /* страховка: если модуль раскрытия не загрузился, экран не должен висеть вечно */
+    window.__pariLoader.then(function () { setTimeout(function () { if (!el.classList.contains('is-done') && !el.classList.contains('is-opening')) el.classList.add('is-done'); }, 4000); });
+  })();
+</script>

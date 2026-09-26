@@ -1,0 +1,159 @@
+{
+  "cleanUrls": false,
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/_astro/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(img|video|data)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/apartments/studio/",
+      "destination": "/apartments/?type=s",
+      "permanent": true
+    },
+    {
+      "source": "/apartments/1-room/",
+      "destination": "/apartments/?type=1",
+      "permanent": true
+    },
+    {
+      "source": "/apartments/2-room/",
+      "destination": "/apartments/?type=2",
+      "permanent": true
+    },
+    {
+      "source": "/apartments/3-room/",
+      "destination": "/apartments/?type=3",
+      "permanent": true
+    },
+    {
+      "source": "/apartments/4-room/",
+      "destination": "/apartments/?type=4",
+      "permanent": true
+    },
+    {
+      "source": "/select/",
+      "destination": "/apartments/",
+      "permanent": true
+    },
+    {
+      "source": "/genplan/",
+      "destination": "/#masterplan",
+      "permanent": true
+    },
+    {
+      "source": "/location/",
+      "destination": "/#masterplan",
+      "permanent": true
+    },
+    {
+      "source": "/contacts/",
+      "destination": "/#contacts",
+      "permanent": true
+    },
+    {
+      "source": "/project/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/uz/apartments/studio/",
+      "destination": "/uz/apartments/?type=s",
+      "permanent": true
+    },
+    {
+      "source": "/uz/apartments/1-room/",
+      "destination": "/uz/apartments/?type=1",
+      "permanent": true
+    },
+    {
+      "source": "/uz/apartments/2-room/",
+      "destination": "/uz/apartments/?type=2",
+      "permanent": true
+    },
+    {
+      "source": "/uz/apartments/3-room/",
+      "destination": "/uz/apartments/?type=3",
+      "permanent": true
+    },
+    {
+      "source": "/uz/apartments/4-room/",
+      "destination": "/uz/apartments/?type=4",
+      "permanent": true
+    },
+    {
+      "source": "/uz/select/",
+      "destination": "/uz/apartments/",
+      "permanent": true
+    },
+    {
+      "source": "/uz/genplan/",
+      "destination": "/uz/#masterplan",
+      "permanent": true
+    },
+    {
+      "source": "/uz/location/",
+      "destination": "/uz/#masterplan",
+      "permanent": true
+    },
+    {
+      "source": "/uz/contacts/",
+      "destination": "/uz/#contacts",
+      "permanent": true
+    },
+    {
+      "source": "/uz/project/",
+      "destination": "/uz/",
+      "permanent": true
+    },
+    {
+      "source": "/faq/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/installment/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/uz/faq/",
+      "destination": "/uz/",
+      "permanent": true
+    },
+    {
+      "source": "/uz/installment/",
+      "destination": "/uz/",
+      "permanent": true
+    }
+  ]
+}

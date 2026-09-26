@@ -1,0 +1,76 @@
+---
+/* Окно «Записаться на встречу» (ERA initModalCta): открывается поверх страницы
+   из любой кнопки с data-open-dialog. Тексты — «Этап 1», блок 13. Успех
+   показывается только после ответа сервера /api/lead.
+   Декор — кадрированная линия рамки-арабески (гайдбук §6.1 «декоративная линия»,
+   §6.2 кадрирование): вершины и изгибы рамки срезаны краями окна, поля формы
+   остаются внутри рамки. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { form } = tr(lang);
+const u = tr(lang).ui;
+import brand from '../data/logo-brand.json';
+---
+<dialog class="mdlg theme_on-light" data-dialog data-lenis-prevent aria-labelledby="mdlg-title">
+  <div class="mdlg_card" data-dialog-card>
+    <svg class="mdlg_frame" viewBox={brand.frameBox} preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d={brand.frameOuter} fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke" /></svg>
+    <button class="mdlg_close l2" type="button" data-close-dialog>{form.close}</button>
+    <p class="a2 mdlg_script" aria-hidden="true">{form.script}</p>
+    <h2 class="h4 mdlg_title" id="mdlg-title">{form.title}</h2>
+    <form class="mdlg_form" data-lead-form novalidate>
+      <label class="mdlg_field">
+        <span class="l1 reg">{form.name}</span>
+        <input class="p1" type="text" name="name" id="lead-name" autocomplete="name" placeholder={form.namePh} required />
+        <span class="l2 mdlg_err" data-err="name">{form.nameErr}</span>
+      </label>
+      <label class="mdlg_field">
+        <span class="l1 reg">{form.phone}</span>
+        <input class="p1" type="tel" name="phone" id="lead-phone" autocomplete="tel" inputmode="tel" placeholder={form.phonePh} required />
+        <span class="l2 mdlg_err" data-err="phone">{form.phoneErr}</span>
+      </label>
+      <label class="mdlg_consent">
+        <input type="checkbox" name="consent" id="lead-consent" required />
+        <span class="p1">{form.consent} (<a href={href(lang, '/consent/')}>{u.consentLink}</a>)</span>
+      </label>
+      <input type="text" name="company" tabindex="-1" autocomplete="off" class="visually-hidden" aria-hidden="true" />
+      <button class="pill l1 mdlg_submit" type="submit" data-submit>{form.submit}</button>
+      <p class="p1 mdlg_status" role="status" aria-live="polite" data-status data-sending={form.sending} data-ok={form.ok} data-fail={form.fail}></p>
+    </form>
+  </div>
+</dialog>
+
+<style>
+  .mdlg{border:0;padding:0;background:transparent;max-width:none;max-height:none;width:100%;height:100%;color:var(--base-1000)}
+  .mdlg::backdrop{background:rgba(26,26,26,.55);opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .mdlg[open]::backdrop{opacity:1}
+  .mdlg_card{position:absolute;right:calc(48rem/var(--s));top:50%;width:calc(560rem/var(--s));max-width:calc(100vw - 32px);background:var(--base-0);padding:calc(48rem/var(--s));transform:translateY(-50%) perspective(1000px) rotateY(-8deg) scale(.96);opacity:0;transition:transform var(--dur-m) var(--ease-out),opacity var(--dur-m) var(--ease-out)}
+  .mdlg.is-open .mdlg_card{transform:translateY(-50%) perspective(1000px) rotateY(0) scale(1);opacity:1}
+  .mdlg_card{overflow:hidden}
+  .mdlg_card>:not(.mdlg_frame):not(.mdlg_close){position:relative;z-index:1}
+  .mdlg_frame{position:absolute;left:50%;top:50%;width:196%;max-width:none;height:auto;transform:translate(-50%,-50%);color:var(--accent);opacity:.55;pointer-events:none;overflow:visible}
+  .mdlg_close{position:absolute;z-index:2;right:calc(24rem/var(--s));top:calc(24rem/var(--s));min-height:32px}
+  .mdlg_script{color:var(--accent);font-size:calc(72rem/var(--s))}
+  .mdlg_title{margin-top:calc(8rem/var(--s));text-transform:none}
+  .mdlg_form{display:flex;flex-direction:column;gap:calc(20rem/var(--s));margin-top:calc(32rem/var(--s))}
+  .mdlg_field{display:flex;flex-direction:column;gap:calc(6rem/var(--s))}
+  .mdlg_field input{font-size:16px;border:0;border-bottom:1px solid var(--base-1000-line);background:transparent;padding:calc(10rem/var(--s)) 0;color:inherit;outline:none;transition:border-color var(--dur-s) var(--ease-out)}
+  .mdlg_field input:focus{border-color:var(--base-1000)}
+  .mdlg_err{color:#9a3b3b;display:none}
+  .mdlg_field.is-error .mdlg_err{display:block}
+  .mdlg_field.is-error input{border-color:#9a3b3b}
+  .mdlg_consent{display:flex;gap:calc(10rem/var(--s));align-items:flex-start}
+  .mdlg_consent a{text-decoration:underline}
+  .mdlg_consent.is-error{color:#9a3b3b}
+  .mdlg_submit{align-self:flex-start;min-height:44px}
+  .mdlg_submit[disabled]{opacity:.5;pointer-events:none}
+  .mdlg_status:empty{display:none}
+  @media (max-width:991px){
+    /* карточка центрируется полями auto внутри прокручиваемого окна: на низком экране
+       (альбом, открытая клавиатура) верх не уходит за край, до «Закрыть» можно докрутить */
+    .mdlg[open]{display:flex;overflow-y:auto;overscroll-behavior:contain;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+    .mdlg_card{position:relative;top:auto;left:auto;right:auto;margin:auto;width:100%;max-width:520px;padding:24px;transform:translateY(24px)}
+    .mdlg.is-open .mdlg_card{transform:none}
+    .mdlg_script{font-size:44px}
+  }
+  :global(html:has(.mdlg[open])){overflow:hidden}
+</style>

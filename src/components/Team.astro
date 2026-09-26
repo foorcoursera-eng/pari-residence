@@ -1,0 +1,44 @@
+---
+/* Сцена 11 ERA: рефрен, затем столбец строк h3 со звёздочкой (Developer* /
+   Sales & Marketing* / License obtained* / 2026*); при наведении под строкой
+   появляется подсказка p1, остальные строки приглушаются. Ветка справа вверху. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { team } = tr(lang);
+const u = tr(lang).ui;
+import Flower from './Flower.astro';
+---
+<section class="section clip theme_on-light team" data-ui="light">
+  <Flower side="r" style="left:calc(1120rem/var(--s));top:calc(-300rem/var(--s));width:calc(520rem/var(--s))" />
+  <div class="container team_in" data-reveal-w>
+    <p class="l1 a-center team_label" data-reveal>{team.label}</p>
+    <div class="team_line" aria-hidden="true"></div>
+    <ul class="team_list">
+      {team.rows.map(([k, v]) => (
+        <li class="team_row" tabindex="0">
+          <h4 class="h3 a-center">{k}<sup class="team_star">*</sup></h4>
+          <p class="p1 a-center team_tip">{v}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .team{min-height:calc(909rem/var(--s))}
+  .team_in{display:flex;flex-direction:column;align-items:center;padding-top:calc(48rem/var(--s));padding-bottom:calc(160rem/var(--s))}
+  .team_label{width:calc(260rem/var(--s))}
+  .team_line{width:1px;height:calc(220rem/var(--s));background:var(--base-1000-line);margin:calc(32rem/var(--s)) 0}
+  .team_list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;align-items:center}
+  .team_row{position:relative;cursor:default;outline:none;transition:opacity var(--dur-m) var(--ease-out)}
+  .team_list:has(.team_row:hover) .team_row:not(:hover),.team_list:has(.team_row:focus-visible) .team_row:not(:focus-visible){opacity:.2}
+  .team_star{font-size:.35em;vertical-align:top;position:relative;top:.35em;margin-left:.05em;color:var(--accent)}
+  .team_tip{position:absolute;left:50%;top:calc(100% + 4rem/var(--s));width:calc(592rem/var(--s));transform:translate(-50%,8px);opacity:0;pointer-events:none;z-index:3;transition:opacity var(--dur-m) var(--ease-out),transform var(--dur-m) var(--ease-out)}
+  .team_row:hover .team_tip,.team_row:focus-visible .team_tip{opacity:1;transform:translate(-50%,0)}
+  @media (hover:none),(max-width:991px){
+    .team_row{margin-bottom:calc(20rem/var(--s))}
+    .team_tip{position:static;transform:none;opacity:.7;width:auto;margin-top:calc(8rem/var(--s))}
+    .team :global(.flower){width:calc(150rem/var(--s))!important;left:auto!important;right:calc(-40rem/var(--s));top:calc(-60rem/var(--s))!important}
+    .team_row :global(.h3),.team_row h4{font-size:calc(40rem/var(--s))}
+  }
+</style>

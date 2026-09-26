@@ -1,0 +1,10 @@
+---
+/* Страница планировки на узбекском, английском и французском */
+import LayoutView from '../../../views/LayoutView.astro';
+import { layouts } from '../../../data/flats.js';
+export function getStaticPaths() {
+  return ['uz', 'en', 'fr'].flatMap((lang) => layouts().map((l) => ({ params: { lang, layout: l.id } })));
+}
+const { lang, layout } = Astro.params;
+---
+<LayoutView lang={lang} id={layout} />

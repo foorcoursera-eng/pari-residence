@@ -1,0 +1,18 @@
+---
+/* Ветка вишни — аналог видео бугенвиллеи ERA. У картинки срезана одна сторона:
+   side="l"  — срез слева-сверху, ставим к левому краю экрана (или за фото слева);
+   side="r"  — срез справа-сверху, к правому краю;
+   side="lb" / "rb" — то же, срез снизу.
+   Покачивание идёт вокруг линии среза, поэтому срезанный край остаётся на месте.
+   style задаёт положение и ширину; z — слой (например, под фотографией);
+   depth — глубина для параллакса (scripts/blossom.js): < 0 — передний план,
+   едет быстрее ленты/страницы; > 0 — дальний, медленнее. */
+interface Props { style: string; side?: 'l' | 'r' | 'lb' | 'rb'; z?: number; depth?: number }
+const { style, side = 'l', z, depth } = Astro.props;
+const origin = { l: '0% 35%', r: '100% 35%', lb: '0% 65%', rb: '100% 65%' }[side];
+const css = style + ';--fo:' + origin + (z !== undefined ? ';z-index:' + z : '');
+const base = '/img/scenes/flower-' + side;
+---
+<div class={'flower is-' + side} style={css} aria-hidden="true" data-flower data-depth={depth}>
+  <img src={base + '-900.webp'} srcset={base + '-300.webp 300w, ' + base + '-600.webp 600w, ' + base + '-900.webp 900w'} sizes="(max-width: 991px) 36vw, 40vw" alt="" loading="lazy" decoding="async" width="900" height="1360" />
+</div>

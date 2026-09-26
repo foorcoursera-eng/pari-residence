@@ -1,0 +1,81 @@
+---
+/* Оболочка страницы: метаданные, шрифты (Cormorant Garamond + Pinyon Script +
+   Inter — документ «Этап 1»), прелоадер и шапка по референсу, класс
+   has-motion до первой отрисовки, моушн-скрипт после контента.
+   lang — язык страницы (ru / uz / en / fr), path — путь без языкового префикса:
+   по нему шапка строит ссылки на ту же страницу на других языках, а в <head>
+   пишутся hreflang-альтернативы. crumbs — «хлебные крошки» слева (ERA
+   header-cramps, на внутренних страницах вместо индикатора прокрутки). */
+import '../styles/global.css';
+import Preloader from '../components/Preloader.astro';
+import Header from '../components/Header.astro';
+import Scrollbar from '../components/Scrollbar.astro';
+import MeetingDialog from '../components/MeetingDialog.astro';
+import Crumbs from '../components/Crumbs.astro';
+import { t, href, LANGS } from '../i18n/index.js';
+interface Props { title: string; description: string; lang?: string; path?: string; crumbs?: { t: string; href?: string }[]; scrollbar?: boolean }
+const { title, description, lang = 'ru', path = '/', crumbs, scrollbar = true } = Astro.props;
+const d = t(lang);
+const origin = 'https://pari-residence.uz';
+const canonical = new URL(href(lang, path), origin).href;
+---
+<!doctype html>
+<html lang={d.ui.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {LANGS.map((l) => <link rel="alternate" hreflang={t(l).ui.htmlLang} href={new URL(href(l, path), origin).href} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(path, origin).href} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${origin}/img/og-cover.jpg`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={d.ui.locale} />
+    <meta name="theme-color" content="#F9F8F6" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- шрифты не блокируют первую отрисовку: загрузочный экран виден сразу, подмену шрифтов он же и скрывает -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=Inter:wght@400;500;600&display=swap" /></noscript>
+
+    <!-- счётчики — те же, что на прежнем сайте pari-residence.uz: статистика продолжается без разрыва -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-MM3J82QQXB"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || []; function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date()); gtag('config', 'G-MM3J82QQXB');
+      window.PARI_ANALYTICS = { metrika: 112092528 };
+      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+      for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+      (window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=112092528','ym');
+      ym(112092528,'init',{ssr:true,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/112092528" style="position:absolute;left:-9999px" alt="" /></div></noscript>
+    <script is:inline>
+      /* has-motion ставится до первой отрисовки; при reduced-motion страница статична */
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('has-motion');
+    </script>
+  </head>
+  <body class="body">
+    <a class="visually-hidden" href="#main">{d.ui.skip}</a>
+    <Preloader lang={lang} />
+    <Header lang={lang} path={path} />
+    {scrollbar && <Scrollbar lang={lang} />}
+    {crumbs && <Crumbs items={crumbs} />}
+    <main id="main" class="main">
+      <slot />
+    </main>
+    <MeetingDialog lang={lang} />
+    <script>
+      import '../scripts/motion.js';
+      import '../scripts/scenes.js';
+    </script>
+  </body>
+</html>

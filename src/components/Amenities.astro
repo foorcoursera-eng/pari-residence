@@ -1,0 +1,77 @@
+---
+/* Сцена 8 ERA: кадр на весь экран, справа вверху список вкладок (активная белая,
+   остальные приглушены), слева внизу l1 + h5, справа круглая кнопка «Book a call».
+   Смена вкладки — кадр раскрывается маской, текст сменяется. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { amenities } = tr(lang);
+const u = tr(lang).ui;
+import BtnCircle from './BtnCircle.astro';
+---
+<section class="section clip theme_on-color amen" data-ui="dark" data-tabs>
+  <div class="amen_media" data-parallax="8">
+    {amenities.map((a, i) => (
+      <div class={`amen_img ${i === 0 ? 'is-active' : ''}`} data-tab-img>
+        <img src={`/img/scenes/${a.img}-1920.webp`} srcset={`/img/scenes/${a.img}-1280.webp 1280w, /img/scenes/${a.img}-1920.webp 1920w, /img/scenes/${a.img}-2560.webp 2560w`} sizes="(max-width: 991px) 150vw, 100vw" alt={u.alt.amen.replace('{name}', a.name)} loading="lazy" decoding="async" width="1920" height="1680" />
+      </div>
+    ))}
+  </div>
+  <div class="img-over-grad from-top _100vh"></div>
+  <div class="amen_grad" aria-hidden="true"></div>
+  <div class="container amen_in">
+    <ul class="amen_list" role="tablist" aria-label={u.lifeLabel} data-reveal-w>
+      {amenities.map((a, i) => (
+        <li><button class={`h5 amen_tab ${i === 0 ? 'is-active' : ''}`} type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-tab>{a.name}</button></li>
+      ))}
+    </ul>
+    <div class="grid amen_bottom" data-reveal-w>
+      <div class="amen_texts">
+        {amenities.map((a, i) => (
+          <div class={`amen_text ${i === 0 ? 'is-active' : ''}`} data-tab-text role="tabpanel">
+            <h3 class="l1">{a.name}</h3>
+            <div class="u-24"></div>
+            <h4 class="h5">{a.head}</h4>
+            {a.text && <p class="p1 amen_p">{a.text}</p>}
+          </div>
+        ))}
+      </div>
+      <div class="amen_btn"><BtnCircle label={u.meeting} dialog /></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .amen{height:calc(100vh + 200rem/var(--s));min-height:calc(1100rem/var(--s));background:var(--dark)}
+  .amen_media{position:absolute;left:0;right:0;top:calc(-240rem/var(--s));height:calc(100% + 480rem/var(--s))}
+  .amen_img{position:absolute;inset:0;clip-path:inset(0 0 0 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
+  .amen_img.is-active{clip-path:inset(0 0 0 0);z-index:1}
+  .amen_img img{width:100%;height:100%;object-fit:cover;transform:scale(1.15);transition:transform var(--dur-l) var(--ease-out)}
+  .amen_img.is-active img{transform:none}
+  /* затемнение под текстом (гайдбук §5.3): снизу и отдельное пятно за текстом слева и списком вкладок справа */
+  .amen_grad{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(55% 45% at 28% 78%,rgba(0,0,0,.5),rgba(0,0,0,0) 70%),
+      radial-gradient(28% 40% at 72% 20%,rgba(0,0,0,.35),rgba(0,0,0,0) 70%),
+      linear-gradient(rgba(0,0,0,0) 45%,rgba(0,0,0,.55))}
+  .amen_in{position:relative;z-index:2;height:100%}
+  .amen_list{list-style:none;margin:0;padding:0;position:absolute;right:calc(380rem/var(--s));top:calc(150rem/var(--s)); /* левее меню шапки: подписи меню стали крупнее */display:flex;flex-direction:column;gap:calc(4rem/var(--s))}
+  .amen_tab{text-align:left;opacity:.4;transition:opacity var(--dur-m) var(--ease-out);padding:calc(2rem/var(--s)) 0}
+  .amen_tab.is-active,.amen_tab:hover{opacity:1}
+  .amen_bottom{position:absolute;left:calc(48rem/var(--s));right:calc(48rem/var(--s));bottom:calc(360rem/var(--s));align-items:end}
+  .amen_texts{grid-column:2 / 7;display:grid}
+  .amen_text{grid-area:1/1;opacity:0;transform:translateY(16px);transition:opacity var(--dur-m) var(--ease-out),transform var(--dur-m) var(--ease-out)}
+  .amen_text.is-active{opacity:1;transform:none}
+  .amen_text .l1{padding-left:calc(152rem/var(--s))}
+  .amen_p{margin-top:calc(20rem/var(--s));max-width:calc(460rem/var(--s))}
+  .amen_btn{grid-column:8 / 10;display:flex;justify-content:center}
+  @media (max-width:991px){
+    .amen{height:auto;min-height:100svh}
+    .amen_media{top:0;height:100%}
+    .amen_list{position:relative;right:auto;top:auto;padding-top:calc(96rem/var(--s))}
+    .amen_bottom{position:relative;left:auto;right:auto;bottom:auto;margin-top:calc(200rem/var(--s));padding-bottom:calc(180rem/var(--s));row-gap:calc(32rem/var(--s))}   /* +наезд арки «Пространства» */
+    .amen_tab{opacity:.6;min-height:44px}
+    .amen_texts{grid-column:1 / 5}
+    .amen_text .l1{padding-left:0}
+    .amen_btn{grid-column:1 / 5;justify-content:flex-start}
+  }
+</style>

@@ -1,0 +1,7 @@
+---
+/* «Выбрать квартиру» на узбекском, английском и французском */
+import ApartmentsView from '../../../views/ApartmentsView.astro';
+export function getStaticPaths() { return ['uz', 'en', 'fr'].map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+---
+<ApartmentsView lang={lang} />

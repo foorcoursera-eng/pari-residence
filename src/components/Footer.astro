@@ -1,0 +1,70 @@
+---
+/* Сцена 13 ERA (theme_on-dark): знак, телефон крупно h2, «Sales office», адрес;
+   внизу слева бренд и юридическая строка, справа внешние ссылки; «To top» слева.
+   Фон — буквенный паттерн PARI (гайдбук §7.1: «digital-фоны»), золото на графите,
+   приглушён к центру, чтобы телефон и адрес читались. */
+import parts from '../data/logo-parts.json';
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { contacts, refrain } = tr(lang);
+const u = tr(lang).ui;
+const year = new Date().getFullYear();
+---
+<footer class="section theme_on-dark footer" data-ui="dark" id="contacts">
+  <div class="footer_pattern" aria-hidden="true"></div>
+  <div class="container footer_in" data-reveal-w>
+    <div class="footer_symbol" aria-hidden="true"><svg viewBox={parts.viewBox} fill="currentColor" set:html={parts.script}></svg></div>
+    <a class="h2 a-center footer_phone" href={`tel:${contacts.tel}`}>{contacts.phone}</a>
+    <div class="footer_office">
+      <h3 class="l1 reg a-center">{contacts.office}</h3>
+      <a class="l1 a-center footer_addr" href={contacts.route} target="_blank" rel="noopener">{contacts.address}</a>
+      <p class="l1 reg a-center">{contacts.hours}</p>
+    </div>
+    <div class="grid footer_bottom">
+      <div class="footer_brand">
+        <div class="l1">PARI Residence.</div>
+        <div class="l1 reg">© {year} {refrain}</div>
+        <a class="l1 footer_link" href={href(lang, '/privacy/')}>{u.privacy}</a>
+      </div>
+      <div class="footer_social">
+        <a class="l1 footer_link" href={contacts.telegram} target="_blank" rel="noopener">Telegram</a>
+        <a class="l1 footer_link" href={contacts.instagram} target="_blank" rel="noopener">Instagram</a>
+        <a class="l1 footer_link" href={contacts.route} target="_blank" rel="noopener">{u.route}</a>
+      </div>
+    </div>
+    <a class="l2 footer_top" href="#main">{u.toTop}</a>
+  </div>
+</footer>
+
+<style>
+  .footer{min-height:100vh;position:relative;overflow:clip}
+  .footer_pattern{
+    /* паттерн уже сведён на цвет подвала с прозрачностью .13 (renders/make-brand.py): 73 КБ вместо 1 МБ */
+    position:absolute;inset:0;pointer-events:none;
+    background:50% 0 / max(900px,calc(1100rem/var(--s))) auto repeat;
+    -webkit-mask:radial-gradient(62% 70% at 50% 50%,transparent 0,transparent 38%,#000 100%);
+    mask:radial-gradient(62% 70% at 50% 50%,transparent 0,transparent 38%,#000 100%);
+  }
+  .footer.is-near .footer_pattern{background-image:url(/img/brand/letter-pattern-dark-1400.webp)}   /* класс ставит scripts/scenes.js */
+  .footer_in{position:relative;z-index:1}
+  .footer_in{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-block:calc(120rem/var(--s)) calc(48rem/var(--s))}
+  .footer_symbol{width:calc(56rem/var(--s));margin-bottom:calc(32rem/var(--s))}
+  .footer_symbol svg{width:100%;height:auto}
+  .footer_phone{white-space:nowrap;transition:opacity var(--dur-m) var(--ease-out)}
+  .footer_phone:hover{opacity:.6}
+  .footer_office{margin-top:calc(32rem/var(--s));display:flex;flex-direction:column;gap:calc(4rem/var(--s))}
+  .footer_addr{text-decoration:underline;text-decoration-color:rgba(249,248,246,.3);text-underline-offset:3px}
+  .footer_bottom{width:100%;margin-top:auto;padding-top:calc(120rem/var(--s))}
+  .footer_brand{grid-column:3 / 6;display:flex;flex-direction:column;gap:calc(4rem/var(--s))}
+  .footer_social{grid-column:7 / 9;display:flex;flex-direction:column;align-items:flex-end;gap:calc(4rem/var(--s))}
+  .footer_link{opacity:.7;transition:opacity var(--dur-m) var(--ease-out)}
+  @media (max-width:991px){.footer_link{display:inline-flex;align-items:center;min-height:44px}.footer_social{gap:0}}
+  .footer_link:hover{opacity:1}
+  .footer_top{position:absolute;left:calc(56rem/var(--s));bottom:calc(64rem/var(--s));writing-mode:vertical-rl;transform:rotate(180deg)}
+  @media (max-width:991px){
+    .footer_phone{font-size:calc(40rem/var(--s))}
+    .footer_brand,.footer_social{grid-column:1 / 5;align-items:flex-start}
+    .footer_social{margin-top:calc(24rem/var(--s))}
+    .footer_top{display:none}
+  }
+</style>

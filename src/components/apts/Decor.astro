@@ -1,0 +1,18 @@
+---
+/* Рамка со скошенными углами — как .decor у ERA (карточка квартиры, строка фильтров):
+   тонкая линия по контуру восьмиугольника и заливка того же контура. Заливка
+   меняется на наведении (переменная --decor-bg у родителя). Скос — --decor-c.
+   Стили глобальные: ту же разметку рисует scripts/apartments.js для карточек. */
+---
+<div class="decor" aria-hidden="true">
+  <div class="decor_line"></div>
+  <div class="decor_fill"></div>
+</div>
+
+<style is:global>
+  .decor{position:absolute;inset:0;pointer-events:none;z-index:0;--c:var(--decor-c,calc(32rem/var(--s)))}
+  .decor_line,.decor_fill{position:absolute;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+  .decor_line{inset:0;background:var(--decor-line,var(--base-1000-line))}
+  /* заливка на 1 px внутрь; скос чуть меньше — линия по диагонали той же толщины */
+  .decor_fill{inset:1px;--c:calc(var(--decor-c,calc(32rem/var(--s))) - .41px);background:var(--decor-bg,var(--base-0));transition:background-color var(--dur-l) var(--ease-out)}
+</style>

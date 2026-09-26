@@ -1,0 +1,166 @@
+---
+/* Сцена 4 ERA (section.clip, ~4500 px): закреплённый экран, по которому едет
+   горизонтальная лента:
+   [концепция по центру] → c1 «Spain» + h1 «New Golden Mile» поверх вертикального
+   кадра → h5 + p1 + круглая кнопка → h3 «The coast you wanted / yours / this year»
+   и линия пути loc_path с точками окружения. Ветки — по углам.
+   Все позиции — номинал ERA при 1600 px (px@1440 / 0.9) в единицах --s. */
+import parts from '../data/logo-parts.json';
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { concept, places, home } = tr(lang);
+const u = tr(lang).ui;
+import Flower from './Flower.astro';
+import BtnCircle from './BtnCircle.astro';
+
+/* расстояние по прямой от квартала (км) — из координат */
+const km = (p: { lat: number; lon: number }) => {
+  const toR = Math.PI / 180, R = 6371;
+  const dLat = (p.lat - home.lat) * toR, dLon = (p.lon - home.lon) * toR;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(home.lat * toR) * Math.cos(p.lat * toR) * Math.sin(dLon / 2) ** 2;
+  return (2 * R * Math.asin(Math.sqrt(a))).toFixed(1).replace('.', ',');
+};
+/* путь 1200×233: волна, точки слева — западнее квартала, справа — восточнее */
+const W = 1200, H = 233, CX = W / 2;
+const yAt = (x: number) => 150 + 30 * Math.sin((x / W) * Math.PI * 3.2) - 18 * Math.sin((x / W) * Math.PI * 7);
+const pathD = Array.from({ length: 121 }, (_, i) => { const x = (i / 120) * W; return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + yAt(x).toFixed(1); }).join(' ');
+const west = places.filter((p) => p.lon < home.lon).sort((a, b) => a.lon - b.lon);
+const east = places.filter((p) => p.lon >= home.lon).sort((a, b) => a.lon - b.lon);
+const xs = [
+  ...west.map((_, i) => 90 + i * ((CX - 170) / Math.max(1, west.length))),
+  ...east.map((_, i) => CX + 130 + i * ((W - CX - 200) / Math.max(1, east.length - 1))),
+];
+const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), d: km(p) }));
+---
+<section class="section clip theme_on-light concept" data-ui="light" data-hscroll>
+  <div class="concept-w" data-hscroll-w>
+    <div class="concept-track" data-hscroll-track>
+
+      <!-- панель 1 обрамлена двумя ветками: сверху крупная, снизу вторая — навстречу -->
+      <Flower side="l" depth={-0.22} style="left:calc(-60rem/var(--s));top:calc(-290rem/var(--s));width:calc(610rem/var(--s))" />
+      <Flower side="lb" depth={-0.3} style="left:calc(-50rem/var(--s));top:calc(540rem/var(--s));width:calc(440rem/var(--s))" />
+      <Flower side="r" z={0} depth={0.1} style="left:calc(1952rem/var(--s));top:calc(520rem/var(--s));width:calc(440rem/var(--s))" />
+      <Flower side="r" depth={-0.18} style="left:calc(4440rem/var(--s));top:calc(-300rem/var(--s));width:calc(520rem/var(--s))" />
+
+      <!-- панель 1: концепция -->
+      <div class="concept-p1" data-reveal-w>
+        <canvas class="concept-petals" data-petals aria-hidden="true"></canvas>
+        <h2 class="l1 a-center concept-label" data-reveal>{concept.label}</h2>
+        <h3 class="h4 a-center concept-title" data-split>{concept.title}</h3>
+        <p class="p1 concept-text" data-reveal>{concept.text}</p>
+        <div class="concept-symbol" aria-hidden="true"><svg viewBox={parts.viewBox} fill="currentColor" set:html={parts.script}></svg></div>
+      </div>
+      <!-- барельеф (гайдбук §8; «Этап 1»: небольшой фрагмент в блоке концепции) — сбоку от текста, не под ним -->
+      <figure class="concept-relief" data-depth="0.12">
+        <div class="concept-relief_img"><img src="/img/brand/relief-800.webp" srcset="/img/brand/relief-800.webp 800w, /img/brand/relief-1400.webp 1400w" sizes="(max-width: 991px) 70vw, 22vw" alt={u.alt.relief} loading="lazy" decoding="async" width="800" height="477" /></div>
+      </figure>
+
+      <!-- панель 2: район -->
+      <h4 class="c1 concept-country">{concept.country}</h4>
+      <h3 class="h1 concept-place">{concept.place.map((w) => <span class="h-line"><span>{w}</span></span>)}</h3>
+      <!-- кадр района: генплан Залинии с отметкой PARI на ул. Гуругли (по просьбе заказчика 25.09 вместо балкона) -->
+      <div class="concept-terrace" data-ui-m="dark"><img src="/img/scenes/zaliniya-600.webp" srcset="/img/scenes/zaliniya-600.webp 600w, /img/scenes/zaliniya-927.webp 927w" sizes="(max-width: 991px) 90vw, 37vw" alt={u.alt.zaliniya} loading="lazy" decoding="async" width="927" height="1415" /></div>
+      <div class="concept-side" data-reveal-w>
+        <h3 class="h5">{concept.sideTitle}</h3>
+        <div class="u-24"></div>
+        <p class="p1">{concept.sideText}</p>
+      </div>
+      <div class="concept-btn"><BtnCircle label={concept.cta} href="#masterplan" /></div>   {/* страницы «Расположение» пока нет — ведём на генплан этой же страницы */}
+
+      <!-- панель 3: город и путь -->
+      <h2 class="h3 a-center concept-city">
+        <span class="h-line"><span>{concept.cityTitle[0]}</span></span>
+        <span class="a2 concept-city_a">{concept.cityScript}</span>
+        <span class="h-line"><span>{concept.cityTitle[1]}</span></span>
+      </h2>
+      <div class="concept-path" data-path>
+        <div class="concept-path_map">
+        <svg viewBox={`0 0 ${W} ${H}`} aria-label={u.pathLabel}>
+          <path class="concept-path_line" d={pathD} fill="none" stroke="currentColor" stroke-width="1.4" />
+          {dots.map((p) => (
+            <circle class="concept-path_pt" cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="4" fill="currentColor" />
+          ))}
+          <g transform={`translate(${CX - 26} ${(yAt(CX) - 44).toFixed(1)})`}><svg width="52" height="32" viewBox={parts.viewBox} fill="currentColor" set:html={parts.script}></svg></g>
+        </svg>
+        <!-- подписи точек — HTML поверх svg, чтобы кегль не падал ниже 12 px вместе с масштабом ленты -->
+        {dots.map((p, i) => (
+          <div class={`concept-path_lbl ${i % 2 ? 'is-below' : ''} ${i % 4 > 1 ? 'is-far' : ''} ${i === 0 ? 'is-first' : ''}`} style={`left:${(p.x / W * 100).toFixed(2)}%;top:${(p.y / H * 100).toFixed(2)}%`}>
+            <span class="l1">{p.name}</span><span class="l1 reg">{p.d} {u.km}</span>
+          </div>
+        ))}
+        </div>
+        <p class="l2 concept-path_note">{u.distNote}</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .concept{height:calc(100vh + 250vw)}
+  .concept-w{position:sticky;top:0;height:100vh;overflow:hidden}
+  .concept-track{position:relative;height:100%;width:calc(4900rem/var(--s));will-change:transform}
+  .concept-track>*{position:absolute}
+
+  .concept-p1{left:0;top:0;width:100vw;height:100%;display:flex;flex-direction:column;align-items:center}
+  /* лепестки: над фоном и барельефом, под ветками (z 4) и под текстом */
+  .concept-petals{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+  .concept-p1>:not(.concept-petals):not(.concept-symbol){position:relative;z-index:5}
+  .concept-label{margin-top:calc(220rem/var(--s))}
+  .concept-title{width:calc(700rem/var(--s));margin-top:calc(24rem/var(--s));text-transform:uppercase}
+  .concept-text{width:calc(420rem/var(--s));min-width:min(360px,80vw);margin-top:calc(48rem/var(--s))}
+  .concept-relief{left:calc(1236rem/var(--s));top:calc(250rem/var(--s));width:calc(280rem/var(--s));margin:0}
+  .concept-relief_img{aspect-ratio:3/4;overflow:hidden}
+  .concept-relief_img img{width:100%;height:100%;object-fit:cover;object-position:62% 50%}
+  .concept-symbol{position:absolute;z-index:5;bottom:calc(48rem/var(--s));left:50%;transform:translateX(-50%);width:calc(48rem/var(--s))}
+  .concept-symbol svg{width:100%;height:auto}
+
+  .concept-country{left:calc(1596rem/var(--s));top:calc(196rem/var(--s));z-index:2}
+  .concept-place{left:calc(1590rem/var(--s));top:calc(249rem/var(--s));z-index:3;font-size:calc(140rem/var(--s));white-space:nowrap;max-width:calc(680rem/var(--s))}
+  .concept-terrace{left:calc(2312rem/var(--s));top:calc(48rem/var(--s));width:calc(592rem/var(--s));height:calc(904rem/var(--s));overflow:hidden;z-index:1}
+  .concept-terrace img{width:100%;height:100%;object-fit:cover}
+  .concept-side{left:calc(2968rem/var(--s));top:calc(760rem/var(--s));width:calc(440rem/var(--s))}
+  .concept-btn{left:calc(3240rem/var(--s));top:calc(400rem/var(--s))}
+
+  .concept-city{left:calc(3780rem/var(--s));top:calc(262rem/var(--s));width:calc(960rem/var(--s));display:flex;flex-direction:column;align-items:center}
+  .concept-city_a{position:relative;z-index:2;margin:calc(-40rem/var(--s)) 0 calc(-52rem/var(--s));text-transform:none;letter-spacing:0;color:var(--accent);transform:rotate(-6deg)}
+  .concept-path{left:calc(3664rem/var(--s));top:calc(700rem/var(--s));width:calc(1200rem/var(--s));color:var(--base-1000)}
+  .concept-path svg{width:100%;height:auto;overflow:visible}
+  .concept-path_line{clip-path:inset(0 var(--draw,0%) 0 0)}
+  .concept-path_map{position:relative}
+  .concept-path_lbl{position:absolute;transform:translate(-50%,calc(-100% - 14px));display:flex;flex-direction:column;align-items:center;white-space:nowrap;text-align:center}
+  .concept-path_lbl.is-below{transform:translate(-50%,14px)} /* соседние подписи — по разные стороны линии, чтобы не наезжали */
+  .concept-path_lbl .reg{opacity:.65}
+  @media (max-width:991px){
+    /* на узкой линии соседние подписи одной стороны разнесены ещё и по высоте */
+    .concept-path_lbl.is-far{transform:translate(-50%,calc(-100% - 50px))}
+    .concept-path_lbl.is-below.is-far{transform:translate(-50%,50px)}
+    .concept-path>.concept-path_note{margin-top:118px}   /* выше по весу, чем общее правило ниже */
+    .concept-path>.concept-path_map{margin-top:72px}
+  }
+  .concept-path_note{margin-top:max(calc(12rem/var(--s)),52px);text-align:center;opacity:.6}
+
+  /* телефон: без горизонтальной ленты — сцены идут одна за другой */
+  @media (max-width:991px){
+    .concept{height:auto}
+    .concept-w{position:relative;height:auto;overflow:visible}
+    .concept-track{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;padding:calc(64rem/var(--s)) calc(24rem/var(--s));gap:calc(40rem/var(--s))}
+    .concept-track>*{position:relative;left:auto!important;top:auto!important}
+    .concept-track>:global(.flower){position:absolute!important;width:calc(150rem/var(--s))!important;left:calc(-24rem/var(--s))!important;top:calc(-60rem/var(--s))!important;z-index:0}
+    .concept-track>:global(.flower ~ .flower){display:none}
+    .concept-p1{width:100%;height:auto;min-height:80svh;justify-content:center}
+    .concept-label{margin-top:0}
+    .concept-title{width:100%}
+    .concept-text{width:90%}
+    .concept-relief{width:70%}
+    .concept-symbol{position:static;transform:none;margin-top:calc(40rem/var(--s))}
+    .concept-place{font-size:calc(64rem/var(--s));white-space:normal;text-align:center;max-width:none;margin-bottom:0}
+    .concept-terrace{width:100%;height:auto;aspect-ratio:.66}
+    .concept-side{width:100%}
+    .concept-city{width:100%}
+    .concept-city_a{margin:calc(-16rem/var(--s)) 0 calc(-20rem/var(--s))}
+    .concept-path_lbl.is-first{transform:translate(-12px,calc(-100% - 14px));align-items:flex-start;text-align:left}
+    .concept-p1{min-height:0}
+    .concept-path{width:100%}
+  }
+</style>

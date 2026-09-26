@@ -1,0 +1,61 @@
+---
+/* Сцена 5 ERA: облака над аэровидом расходятся на скролле и открывают квартал;
+   кадр больше экрана и перетаскивается («Drag to see more»); подпись места —
+   справа внизу. Облака — видео из футажа заказчика (renders/make-clouds-video.py),
+   собираются WebGL-шейдером (scripts/clouds.js); до запуска видео — кадр-постер. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { masterplan } = tr(lang);
+const u = tr(lang).ui;
+---
+<section class="section clip theme_on-color masterplan" id="masterplan" data-ui="dark" data-masterplan>
+  <div class="masterplan_drag" data-drag>
+    <img class="masterplan_img" src="/img/scenes/masterplan-1600.webp" srcset="/img/scenes/masterplan-1600.webp 1600w, /img/scenes/masterplan-2400.webp 2400w" sizes="115vw"
+      alt={u.alt.masterplan} loading="lazy" decoding="async" width="1600" height="1400" draggable="false" />
+  </div>
+  <div class="masterplan_clouds" aria-hidden="true" data-clouds data-src-desk="/video/clouds-1920.mp4" data-src-mid="/video/clouds-1280.mp4" data-src-mob="/video/clouds-640.mp4">
+    <img class="masterplan_clouds_poster" src="/img/scenes/clouds-poster.webp" alt="" loading="lazy" decoding="async" width="1600" height="900" data-clouds-poster />
+    <canvas class="masterplan_clouds_gl" data-clouds-gl></canvas>
+  </div>
+  <div class="masterplan_haze" aria-hidden="true"></div>
+  <div class="masterplan_grad" aria-hidden="true"></div>
+  <div class="container masterplan_label">
+    <div class="grid">
+      <div class="masterplan_place" data-reveal-w>
+        <h3 class="l1">{masterplan.label}</h3>
+        <div class="u-24"></div>
+        {masterplan.lines.map((t) => <p class="p1">{t}</p>)}
+      </div>
+    </div>
+  </div>
+  <div class="masterplan_cursor l1" data-drag-cursor aria-hidden="true"><span>{masterplan.drag}</span></div>
+</section>
+
+<style>
+  .masterplan{height:calc(1400rem/var(--s));background:#8ea3ad;cursor:grab;touch-action:pan-y}
+  .masterplan.is-dragging{cursor:grabbing}
+  .masterplan_drag{position:absolute;left:calc(-120rem/var(--s));top:calc(-80rem/var(--s));width:calc(1840rem/var(--s));will-change:transform}
+  .masterplan_img{width:100%;height:auto;display:block;user-select:none;-webkit-user-drag:none}
+  /* облака: слой 16:9 во всю ширину, привязан к верху; двигает и растворяет scripts/clouds.js */
+  .masterplan_clouds{position:absolute;left:0;right:0;top:0;aspect-ratio:16/9;pointer-events:none;z-index:2;transform-origin:50% 0;will-change:transform,opacity}
+  .masterplan_clouds_poster,.masterplan_clouds_gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .masterplan_clouds_poster{object-fit:cover;object-position:50% 0;transition:opacity var(--dur-l) var(--ease-out)}
+  .masterplan_clouds_poster:global(.is-hidden){opacity:0}
+  /* переход от светлой сцены выше: мягкая дымка цвета страницы, без края */
+  .masterplan_haze{position:absolute;left:0;right:0;top:0;height:22%;pointer-events:none;z-index:3;background:linear-gradient(rgba(249,248,246,1),rgba(249,248,246,.55) 45%,rgba(249,248,246,0))}
+  .masterplan_grad{position:absolute;left:0;right:0;bottom:0;height:50%;pointer-events:none;z-index:1;
+    background:radial-gradient(38% 55% at 86% 74%,rgba(0,0,0,.42),rgba(0,0,0,0) 72%),linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.42))}
+  .masterplan_label{position:absolute;left:0;right:0;bottom:calc(120rem/var(--s));z-index:3;pointer-events:none}
+  .masterplan_place{grid-column:9 / 11} /* по просьбе заказчика — правее, к краю кадра */
+  .masterplan_cursor{position:absolute;left:0;top:0;z-index:4;width:calc(120rem/var(--s));height:calc(120rem/var(--s));border-radius:50%;border:1px solid var(--white-line);display:flex;align-items:center;justify-content:center;text-align:center;padding:calc(14rem/var(--s));pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.6);transition:opacity var(--dur-s) var(--ease-out),transform var(--dur-s) var(--ease-out)}
+  .masterplan:hover .masterplan_cursor{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .masterplan:global(.is-clouded) .masterplan_cursor{opacity:0!important}
+  .masterplan_cursor{text-shadow:0 1px 8px rgba(0,0,0,.35)}
+  @media (max-width:991px){
+    .masterplan{height:120vw;cursor:auto}
+    .masterplan_drag{width:180vw;left:-40vw;top:0}
+    .masterplan_place{grid-column:1 / 5}
+    .masterplan_cursor{display:none}
+  }
+  @media (hover:none){.masterplan_cursor{display:none}}
+</style>

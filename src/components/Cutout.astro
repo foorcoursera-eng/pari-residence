@@ -1,0 +1,43 @@
+---
+/* Сцена 3 ERA: img_cam_05_alpha — кадр с прозрачным небом встаёт прямо на фон
+   секции, внизу цитата h5 и подпись l1 (Architecture Team / Era Residence). */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { arch } = tr(lang);
+const u = tr(lang).ui;
+---
+<section class="section z-2 theme_on-brand cutout" data-ui="light">
+  <div class="cutout_img" data-parallax="6">
+    <img src="/img/scenes/cutout-1440.webp" srcset="/img/scenes/cutout-800.webp 800w, /img/scenes/cutout-1440.webp 1440w, /img/scenes/cutout-2400.webp 2400w" sizes="100vw"
+      alt={u.alt.cutout} loading="lazy" decoding="async" width="1440" height="1080" />
+  </div>
+  <div class="cutout_grad" aria-hidden="true"></div>
+  <div class="container cutout_text theme_on-color">
+    <div class="grid">
+      <div class="cutout_quote" data-reveal-w>
+        <h4 class="h5" data-reveal>{arch.quote}</h4>
+        <p class="p1 cutout_p" data-reveal>{arch.quoteText}</p>
+        <div class="u-32"></div>
+        <div data-reveal><div class="l1">{arch.creditLabel}</div><div class="l1 reg">{arch.credit}</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cutout{height:75vw;overflow:clip}
+  .cutout_img{position:absolute;inset:0}
+  .cutout_img img{width:100%;height:auto;display:block}
+  .cutout_grad{position:absolute;left:0;right:0;bottom:0;height:55%;pointer-events:none;
+    background:radial-gradient(45% 60% at 72% 70%,rgba(0,0,0,.38),rgba(0,0,0,0) 75%),linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.5))}
+  .cutout_p{margin-top:calc(16rem/var(--s));max-width:calc(440rem/var(--s))}
+  .cutout_text{position:absolute;left:0;right:0;top:calc(897rem/var(--s))}
+  .cutout_quote{grid-column:6 / 10}
+  @media (max-width:991px){
+    .cutout{height:auto;aspect-ratio:auto;min-height:0;overflow:visible}
+    .cutout_img{position:relative}
+    .cutout_grad{display:none}
+    .cutout_text{position:relative;top:auto;bottom:auto;padding:calc(24rem/var(--s)) 0 calc(48rem/var(--s));color:var(--base-1000);--c-text:var(--base-1000)}
+    .cutout_quote{grid-column:1 / 5}
+  }
+</style>

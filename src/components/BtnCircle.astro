@@ -1,0 +1,22 @@
+---
+/* Круглая кнопка ERA (.btn-circle): подпись l1 в центре, две короткие дуги
+   удлиняются при наведении, магнит на десктопе. href — ссылка; dialog — открыть
+   окно записи на встречу. */
+interface Props { label: string; href?: string; dialog?: boolean; size?: 'l' | 'm'; class?: string }
+const { label, href, dialog = false, size = 'l', class: cls = '' } = Astro.props;
+---
+<div class={`btn-circle ${size === 'm' ? 'is-m' : ''} ${cls}`} data-magnetic>
+  <div class="btn-circle_label" data-magnetic-inner>
+    <span class="nav-item"><span class="nav-item_label"><span class="nav-item_label_text"><span class="l1">{label}</span></span><span class="nav-item_label_text is-2" aria-hidden="true"><span class="l1">{label}</span></span></span></span>
+  </div>
+  <div class="btn-circle_bg" aria-hidden="true">
+    <svg viewBox="0 0 208 208">
+      <circle class="btn-circle_arc" cx="104" cy="104" r="103.5" stroke="currentColor" stroke-width="1" fill="none" transform="rotate(-150 104 104)"/>
+      <circle class="btn-circle_arc" cx="104" cy="104" r="103.5" stroke="currentColor" stroke-width="1" fill="none" transform="rotate(30 104 104)"/>
+      <circle class="btn-circle_ring" cx="104" cy="104" r="103.5" stroke-width="1" fill="none"/>
+    </svg>
+  </div>
+  {dialog
+    ? <button class="btn-circle_link" type="button" data-open-dialog aria-label={label}></button>
+    : <a class="btn-circle_link" href={href} aria-label={label}></a>}
+</div>

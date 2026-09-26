@@ -1,0 +1,29 @@
+---
+/* 404 — в оформлении сайта: знак, короткая фраза и дорога на главную и к квартирам. */
+import Base from '../layouts/Base.astro';
+import Footer from '../components/Footer.astro';
+import { t, href } from '../i18n/index.js';
+const d = t('ru');
+---
+<Base title="Страница не найдена — PARI Residence" description="Такой страницы нет. Перейдите на главную или к выбору квартиры." path="/404/" scrollbar={false}>
+  <section class="section theme_on-brand nf" data-ui="light">
+    <div class="container nf_in">
+      <p class="l2">404</p>
+      <h1 class="h3 a-center nf_title">Страница не найдена</h1>
+      <p class="p1 a-center nf_p">Возможно, адрес изменился вместе с новым сайтом.</p>
+      <div class="nf_btns">
+        <a class="pill l1" href={href('ru', '/')}>{d.ui.home}</a>
+        <a class="pill l1" href={href('ru', '/apartments/')}>{d.ui.pick}</a>
+      </div>
+    </div>
+  </section>
+  <Footer lang="ru" />
+</Base>
+
+<style>
+  .nf{min-height:100svh;display:flex;align-items:center}
+  .nf_in{display:flex;flex-direction:column;align-items:center;gap:calc(24rem/var(--s));padding-block:calc(160rem/var(--s))}
+  .nf_title{max-width:12ch}
+  .nf_p{max-width:calc(480rem/var(--s))}
+  .nf_btns{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(12rem/var(--s))}
+</style>

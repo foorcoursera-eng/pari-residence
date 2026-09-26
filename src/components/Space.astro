@@ -1,0 +1,87 @@
+---
+/* Сцена 9 ERA (section.arch, ~3000 px): светлая арка поднимается над кадром удобств;
+   h1 в три строки + каллиграфия a1; коллаж: тёмный блок с вертикальным кадром
+   слева, горизонтальный кадр справа (ветку здесь убрали — гайдбук §5.1: один
+   визуальный центр на экране); h5 + p1 + l1 + круглая кнопка;
+   внизу слайдер интерьеров 1123×702 с пагинацией. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { space } = tr(lang);
+const u = tr(lang).ui;
+import BtnCircle from './BtnCircle.astro';
+---
+<section class="section arch clip space" data-ui="light" style="--arch-bg:var(--base-0)">
+  <div class="arch_shape" aria-hidden="true"></div>
+  <div class="arch_body container space_in">
+    <h2 class="h1 a-center space_title" data-split>{space.title.map((w) => <span class="h-line"><span>{w}</span></span>)}</h2>
+    <h3 class="a1 a-center space_script">{space.script}</h3>
+
+    <div class="space_collage">
+      <div class="space_block" aria-hidden="true"></div>
+      <div class="space_garden" data-parallax="10"><img src="/img/scenes/garden2-700.webp" alt={u.alt.garden} loading="lazy" decoding="async" width="700" height="933" /></div>
+      <div class="space_terrace" data-parallax="-8"><img src="/img/scenes/terrace2-1200.webp" alt={u.alt.terrace} loading="lazy" decoding="async" width="1200" height="900" /></div>
+    </div>
+
+    <div class="grid space_text" data-reveal-w>
+      <h4 class="h5 space_statement" data-reveal>{space.statement}</h4>
+      <p class="p1 space_p" data-reveal>{space.text}</p>
+      <p class="l1 space_note" data-reveal>{space.note}</p>
+      <div class="space_btn"><BtnCircle label={space.cta} href={href(lang, '/apartments/')} size="m" /></div>
+    </div>
+
+    <div class="space_slider" data-slider data-autoplay="6000">
+      <div class="space_slides" data-ui-m="dark">
+        {space.slides.map((s, i) => (
+          <div class={`space_slide ${i === 0 ? 'is-active' : ''}`} data-slide-img>
+            <img src={`/img/scenes/${s}-1200.webp`} srcset={`/img/scenes/${s}-1200.webp 1200w, /img/scenes/${s}-1536.webp 1536w`} sizes="(max-width: 991px) 92vw, 70vw" alt={u.alt.interior} loading="lazy" decoding="async" width="1200" height="750" />
+          </div>
+        ))}
+      </div>
+      <div class="pag space_pag">
+        <button class="pag_btn pag_prev" type="button" data-slide-prev aria-label={u.prev}><svg viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="M8 1 3 6l5 5"/></svg></button>
+        <span class="l1" data-slide-index>1</span>
+        <span class="pag_track"><span class="pag_fill" data-slide-fill></span></span>
+        <span class="l1">{space.slides.length}</span>
+        <button class="pag_btn pag_next" type="button" data-slide-next aria-label={u.next}><svg viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="m4 1 5 5-5 5"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .space{margin-top:calc(-150rem/var(--s));z-index:3;color:var(--base-1000);--c-line:var(--base-1000-line);--c-text:var(--base-1000)}
+  .space .arch_shape{width:200vw;height:200vw}
+  .space_in{padding-top:calc(272rem/var(--s));padding-bottom:calc(160rem/var(--s));position:relative}
+  .space_title{font-size:calc(150rem/var(--s));line-height:.9}
+  .space_script{position:relative;z-index:2;margin-top:calc(10rem/var(--s));color:var(--accent);text-transform:none}
+  .space_collage{position:relative;height:calc(820rem/var(--s));margin-top:calc(120rem/var(--s))}
+  .space_block{position:absolute;left:calc(-48rem/var(--s));top:calc(40rem/var(--s));width:calc(600rem/var(--s));height:calc(760rem/var(--s));background:var(--dark)}
+  .space_garden{position:absolute;left:calc(88rem/var(--s));top:calc(150rem/var(--s));width:calc(368rem/var(--s));aspect-ratio:3/4;overflow:hidden}
+  .space_garden img,.space_terrace img{width:100%;height:100%;object-fit:cover}
+  .space_terrace{position:absolute;right:calc(-48rem/var(--s));top:0;width:calc(640rem/var(--s));aspect-ratio:4/3;overflow:hidden}
+  .space_text{position:relative;margin-top:calc(-280rem/var(--s));row-gap:calc(24rem/var(--s));z-index:2}
+  .space_statement{grid-column:6 / 10}
+  .space_p{grid-column:8 / 10;grid-row:2}
+  .space_note{grid-column:3 / 5;grid-row:3;margin-top:calc(120rem/var(--s))}
+  .space_btn{grid-column:7 / 8;grid-row:3;margin-top:calc(80rem/var(--s))}
+  .space_slider{margin-top:calc(220rem/var(--s));margin-left:calc(300rem/var(--s))}
+  .space_slides{position:relative;width:100%;aspect-ratio:1.6;overflow:hidden}
+  .space_slide{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
+  .space_slide img{width:100%;height:100%;object-fit:cover;transform:scale(1.5) translateX(25%);transition:transform var(--dur-l) var(--ease-out)}
+  .space_slide.is-active{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);z-index:1}
+  .space_slide.is-active img{transform:none}
+  .space_pag{justify-content:flex-start;margin-top:calc(24rem/var(--s))}
+  @media (max-width:991px){
+    .space{margin-top:calc(-120rem/var(--s))}
+    .space_in{padding-top:calc(140rem/var(--s))}
+    .space_title{font-size:calc(38rem/var(--s))}
+    .space_script{font-size:calc(72rem/var(--s))}
+    .space_collage{height:calc(420rem/var(--s));margin-top:calc(48rem/var(--s))}
+    .space_block{width:calc(220rem/var(--s));height:calc(320rem/var(--s));left:calc(-24rem/var(--s))}
+    .space_garden{left:calc(24rem/var(--s));top:calc(60rem/var(--s));width:calc(160rem/var(--s))}
+    .space_terrace{width:calc(200rem/var(--s));right:calc(-24rem/var(--s))}
+    .space_text{margin-top:calc(24rem/var(--s))}
+    .space_statement,.space_p,.space_note,.space_btn{grid-column:1 / 5;grid-row:auto;margin-top:0}
+    .space_slider{margin-left:0;margin-top:calc(64rem/var(--s))}
+  }
+</style>

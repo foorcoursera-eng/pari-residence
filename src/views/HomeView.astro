@@ -1,0 +1,45 @@
+---
+/* Главная PARI Residence — порядок сцен повторяет era-residence.com:
+   hero → арка «Три причины» → слайдер причин → вырезка с цитатой → концепция и
+   горизонтальная глава о месте → генплан с облаками → типологии → утверждение →
+   вкладки удобств → «Пространство для жизни» → архитектура → команда →
+   финальная панорама → футер. Один шаблон на все языки (lang). */
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Reasons from '../components/Reasons.astro';
+import Cutout from '../components/Cutout.astro';
+import Concept from '../components/Concept.astro';
+import Masterplan from '../components/Masterplan.astro';
+import Types from '../components/Types.astro';
+import Amenities from '../components/Amenities.astro';
+import Space from '../components/Space.astro';
+import Architecture from '../components/Architecture.astro';
+import Team from '../components/Team.astro';
+import FinalCta from '../components/FinalCta.astro';
+import Footer from '../components/Footer.astro';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { t } from '../i18n/index.js';
+interface Props { lang: string }
+const { lang } = Astro.props;
+const d = t(lang);
+/* Пара «Днём / Вечером» как у ERA. Кадры кладёт renders/make-hero-pair.py:
+   есть hero-day-* — он становится основным; есть hero-night-* — включается переключатель. */
+const has = (b: string) => existsSync(join(process.cwd(), 'public', 'img', `${b}-1920.webp`));
+const dayBase = has('hero-day') ? '/img/hero-day' : '/img/hero-facade';
+const nightBase = has('hero-night') ? '/img/hero-night' : undefined;
+---
+<Base lang={lang} path="/" title={d.meta.home.title} description={d.meta.home.description}>
+  <Hero lang={lang} dayBase={dayBase} nightBase={nightBase} />
+  <Reasons lang={lang} />
+  <Cutout lang={lang} />
+  <Concept lang={lang} />
+  <Masterplan lang={lang} />
+  <Types lang={lang} />
+  <Amenities lang={lang} />
+  <Space lang={lang} />
+  <Architecture lang={lang} />
+  <Team lang={lang} />
+  <FinalCta lang={lang} />
+  <Footer lang={lang} />
+</Base>

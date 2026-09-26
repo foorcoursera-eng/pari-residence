@@ -1,0 +1,105 @@
+---
+/* Сцены 6–7 ERA:
+   типологии — карточка 3:4 по центру, слева «Bedrooms / Area up to», справа абзац и
+   кнопка-пилюля, ниже огромный заголовок h2 поверх края карточки, пагинация;
+   затем утверждение о составе h4 на той же поверхности с веткой слева. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { types, typesText, typesCta, statement, refrain } = tr(lang);
+const u = tr(lang).ui;
+import Flower from './Flower.astro';
+---
+<section class="section theme_on-brand types" data-ui="light" data-slider>
+  <div class="container types_in">
+    <div class="types_card" data-ui-m="dark">
+      {types.map((t, i) => (
+        <div class={`types_img ${i === 0 ? 'is-active' : ''}`} data-slide-img>
+          <img src={`/img/scenes/${t.img}-600.webp`} srcset={`/img/scenes/${t.img}-600.webp 600w, /img/scenes/${t.img}-900.webp 900w`} sizes="(max-width: 991px) 70vw, 28vw" alt={u.alt.type.replace('{type}', t.title)} loading="lazy" decoding="async" width="600" height="800" />
+        </div>
+      ))}
+    </div>
+    <div class="grid types_row" data-reveal-w>
+      <div class="types_specs">
+        {types.map((t, i) => (
+          <div class={`types_spec ${i === 0 ? 'is-active' : ''}`} data-slide-text>
+            <h4 class="l1 reg">{u.rooms}</h4>
+            <h5 class="h5">{t.rooms}</h5>
+            <div class="u-24"></div>
+            <h4 class="l1 reg">{u.area}</h4>
+            <h5 class="h5">{t.from} — {t.to} {u.m2}</h5>
+          </div>
+        ))}
+      </div>
+      <div class="types_desc">
+        <p class="p1">{typesText}</p>
+        <div class="u-24"></div>
+        <a class="pill l1" href={href(lang, '/apartments/') + '?type=' + types[0].rooms} data-types-link data-types-base={href(lang, '/apartments/')}>{typesCta}</a>
+      </div>
+    </div>
+    <div class="types_titles">
+      {types.map((t, i) => <h3 class={`h2 a-center types_title ${i === 0 ? 'is-active' : ''}`} data-slide-title data-split>{t.title}</h3>)}
+    </div>
+    <div class="pag types_pag">
+      <button class="pag_btn pag_prev" type="button" data-slide-prev aria-label={u.prev}><svg viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="M8 1 3 6l5 5"/></svg></button>
+      <span class="l1" data-slide-index>1</span>
+      <span class="pag_track"><span class="pag_fill" data-slide-fill></span></span>
+      <span class="l1">{types.length}</span>
+      <button class="pag_btn pag_next" type="button" data-slide-next aria-label={u.next}><svg viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="m4 1 5 5-5 5"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<section class="section clip theme_on-brand statement" data-ui="light">
+  <Flower side="l" style="left:calc(-40rem/var(--s));top:calc(-220rem/var(--s));width:calc(460rem/var(--s))" />
+  <div class="container statement_in" data-reveal-w>
+    <p class="l1 a-center statement_refrain" data-reveal>{refrain}</p>
+    <h3 class="h4 a-center statement_text" data-split>{statement.head}</h3>
+    <p class="p1 a-center statement_p" data-reveal>{statement.text}</p>
+  </div>
+</section>
+
+<style>
+  .types{height:100vh;min-height:calc(1000rem/var(--s))}
+  .types_in{height:100%;position:relative}
+  .types_card{position:absolute;left:50%;top:calc(174rem/var(--s));width:calc(440rem/var(--s));aspect-ratio:3/4;transform:translateX(-50%);overflow:hidden}
+  .types_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
+  .types_img img{width:100%;height:100%;object-fit:cover;transform:scale(1.5) translateX(25%);transition:transform var(--dur-l) var(--ease-out)}
+  .types_img.is-active{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);z-index:1}
+  .types_img.is-active img{transform:none}
+  .types_row{position:absolute;left:calc(48rem/var(--s));right:calc(48rem/var(--s));top:calc(388rem/var(--s))}
+  .types_specs{grid-column:2 / 4;display:grid}
+  .types_spec .h5{white-space:nowrap}
+  .types_spec{grid-area:1/1;opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .types_spec.is-active{opacity:1}
+  .types_spec .h5{margin-top:calc(8rem/var(--s))}
+  .types_desc{grid-column:8 / 11}
+  /* .pill — общий стиль в global.css */
+  .types_titles{position:absolute;left:0;right:0;top:calc(800rem/var(--s));display:grid;z-index:2;pointer-events:none}
+  .types_title{grid-area:1/1;opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .types_title.is-active{opacity:1}
+  .types_pag{position:absolute;left:0;right:0;top:calc(950rem/var(--s))}
+
+  .statement{min-height:calc(950rem/var(--s))}
+  .statement_in{display:flex;flex-direction:column;align-items:center;padding-top:calc(304rem/var(--s));padding-bottom:calc(200rem/var(--s))}
+  .statement_refrain{width:calc(200rem/var(--s))}
+  .statement_text{width:calc(1120rem/var(--s));margin-top:calc(150rem/var(--s));font-size:calc(63rem/var(--s))}
+  .statement_p{margin-top:calc(32rem/var(--s))}
+
+  @media (max-width:991px){
+    .types{height:auto;min-height:0;padding:calc(64rem/var(--s)) 0}
+    .types_in{display:flex;flex-direction:column;align-items:center}
+    .types_card{position:relative;left:auto;top:auto;transform:none;width:calc(260rem/var(--s))}
+    .types_row{position:relative;left:auto;right:auto;top:auto;margin-top:calc(24rem/var(--s));width:100%}
+    .types_specs{grid-column:1 / 5}
+    .types_desc{grid-column:1 / 5;margin-top:calc(24rem/var(--s))}
+    .types_titles{position:relative;top:auto;margin-top:calc(24rem/var(--s))}
+    .types_pag{position:relative;top:auto;margin-top:calc(16rem/var(--s))}
+    .statement{min-height:0}
+    .statement_in{padding-top:calc(120rem/var(--s));padding-bottom:calc(120rem/var(--s))}
+    .types_card{order:0}.types_titles{order:1}.types_pag{order:2}.types_row{order:3}
+    .statement_text{width:100%;margin-top:calc(48rem/var(--s))}
+    .statement :global(.flower){width:calc(150rem/var(--s))!important;top:calc(-40rem/var(--s))!important;left:calc(-40rem/var(--s))!important}
+    .statement_text{font-size:calc(30rem/var(--s))}
+    .types_title{font-size:calc(40rem/var(--s))}
+  }
+</style>

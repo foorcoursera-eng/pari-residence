@@ -1,0 +1,120 @@
+---
+/* Шапка по референсу: слева — фиксированный медальон (8.5vw, отступ 3vw), справа —
+   ссылка h6 в две строки и две подписи l2. На телефоне вместо правого блока — «Меню».
+   Тексты — из документа «Этап 1».
+   Медальон — утверждённая версия логотипа с рамкой-арабеской (гайдбук §2.2,
+   PARI_LOGO.pdf): у ERA вокруг знака крутится кольцо с текстом, у PARI в той же
+   роли вращается рамка, а надпись PARI и подстрочник SAMARKAND стоят неподвижно.
+   В покое рамка возвращается в исходное положение, поэтому знак читается
+   утверждённым. На телефоне — надпись без подстрочника (§2.4, малый размер). */
+import brand from '../data/logo-brand.json';
+import { t, href, LANGS } from '../i18n/index.js';
+interface Props { lang?: string; path?: string }
+const { lang = 'ru', path = '/' } = Astro.props;
+const u = t(lang).ui;
+const closeLabel = t(lang).form.close;
+/* «Контакты» — футер этой же страницы (отдельной страницы контактов пока нет) */
+---
+<a class="header-logo theme_on-color" href={path === '/' ? '#hero' : href(lang, '/')} aria-label={u.logoLabel} data-header-logo>
+  <div class="header-logo_bg b-desk" data-logo-ring aria-hidden="true">
+    <svg viewBox={brand.frameBox} width="100%" height="100%" fill="currentColor"><path d={brand.frame} /></svg>
+  </div>
+  <div class="header-logo_mark b-desk" aria-hidden="true">
+    <svg viewBox={brand.frameBox} width="100%" height="100%" fill="currentColor">
+      {brand.pari.map((d) => <path d={d} />)}
+      <path d={brand.samarkand} />
+    </svg>
+  </div>
+  <div class="header-logo_mob b-mob" aria-hidden="true">
+    <svg viewBox={brand.pariBox} width="100%" height="100%" fill="currentColor">{brand.pari.map((d) => <path d={d} />)}</svg>
+  </div>
+</a>
+
+<div class="header-nav theme_on-color" data-header-nav>
+  <a class={`link header-nav_main ${path.startsWith('/apartments/') ? 'is-current' : ''}`} href={href(lang, '/apartments/')} aria-current={path === '/apartments/' ? 'page' : undefined}>
+    <div class="h6 a-right">{u.pickLines[0]}<br>{u.pickLines[1]}</div>
+  </a>
+  <div class="u-24"></div>
+  <button class="nav-item header-nav_item" type="button" data-open-dialog aria-label={u.meeting}>
+    <span class="nav-item_label"><span class="nav-item_label_text l2">{u.meeting}</span><span class="nav-item_label_text is-2 l2" aria-hidden="true">{u.meeting}</span></span>
+  </button>
+  <a class="nav-item header-nav_item" href="#contacts" aria-label={u.contacts}>
+    <span class="nav-item_label"><span class="nav-item_label_text l2">{u.contacts}</span><span class="nav-item_label_text is-2 l2" aria-hidden="true">{u.contacts}</span></span>
+  </a>
+  <nav class="header-nav_lang l2" aria-label={u.langLabel}>
+    {LANGS.map((l) => (
+      <a href={href(l, path)} hreflang={t(l).ui.htmlLang} lang={t(l).ui.htmlLang} aria-current={l === lang ? 'true' : undefined} aria-label={t(l).ui.name} data-lang-link={l}>{l.toUpperCase()}</a>
+    ))}
+  </nav>
+  <button class="nav-item header-nav_menu" type="button" aria-expanded="false" aria-controls="mnav" aria-label={u.openMenu} data-menu-btn data-label-open={u.menu} data-label-close={closeLabel}>
+    <span class="nav-item_label"><span class="nav-item_label_text l2" data-menu-label>{u.menu}</span><span class="nav-item_label_text is-2 l2" aria-hidden="true" data-menu-label>{u.menu}</span></span>
+  </button>
+</div>
+
+<!-- меню телефона: на ≤991 правый блок шапки скрыт, всё то же самое — здесь, крупно (цели касания ≥ 44 px) -->
+<div class="mnav theme_on-dark" id="mnav" data-mnav data-lenis-prevent hidden>
+  <nav class="mnav_links" aria-label={u.menu}>
+    <a class="h4 mnav_link" href={href(lang, '/apartments/')}>{u.pick}</a>
+    <button class="h4 mnav_link" type="button" data-open-dialog>{u.meeting}</button>
+    <a class="h4 mnav_link" href="#contacts">{u.contacts}</a>
+    {path !== '/' && <a class="h4 mnav_link" href={href(lang, '/')}>{u.home}</a>}
+  </nav>
+  <nav class="mnav_lang l2" aria-label={u.langLabel}>
+    {LANGS.map((l) => (
+      <a href={href(l, path)} hreflang={t(l).ui.htmlLang} lang={t(l).ui.htmlLang} aria-current={l === lang ? 'true' : undefined} aria-label={t(l).ui.name} data-lang-link={l}>{l.toUpperCase()}</a>
+    ))}
+  </nav>
+</div>
+
+<style>
+  .header-logo{
+    position:fixed;z-index:100;top:calc(48rem/var(--s));left:calc(48rem/var(--s));
+    width:max(116px,calc(136rem/var(--s)));height:max(116px,calc(136rem/var(--s)));
+    display:flex;align-items:center;justify-content:center;color:var(--white);
+  }
+  .header-logo_bg,.header-logo_mark{position:absolute;inset:0;width:100%;height:100%}
+  .header-logo_bg{will-change:transform}
+  .header-logo svg{display:block;width:100%;height:100%}
+  .header-logo_mob{width:100%}
+
+  .header-nav{
+    position:fixed;z-index:100;top:calc(48rem/var(--s));right:calc(48rem/var(--s));
+    display:flex;flex-direction:column;align-items:flex-end;gap:calc(6rem/var(--s));
+    color:var(--white);
+  }
+  .header-nav_main .h6{line-height:1;transition:opacity var(--dur-m) var(--ease-out)}
+  .header-nav_main:hover .h6{opacity:.5}
+  .header-nav_main.is-current .h6{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.18em}
+  .header-nav_item{display:block}
+  .header-nav_lang{display:flex;gap:calc(12rem/var(--s));margin-top:calc(6rem/var(--s))}
+  .header-nav_lang a{opacity:.5;transition:opacity var(--dur-m) var(--ease-out)}
+  .header-nav_lang a:hover,.header-nav_lang a[aria-current]{opacity:1}
+  .header-nav_menu{display:none}
+  @media (max-width:991px){
+    .header-logo{top:calc(24rem/var(--s));left:calc(24rem/var(--s));width:calc(80rem/var(--s));height:calc(32rem/var(--s))}
+    .header-nav{top:calc(24rem/var(--s));right:calc(24rem/var(--s));flex-direction:row;align-items:center;gap:calc(16rem/var(--s))}
+    .header-nav_main,.header-nav .u-24,.header-nav_item{display:none}
+    .header-nav_lang{display:none}                              /* языки — в меню, крупными кнопками */
+    .header-nav_menu{display:block;min-height:44px;min-width:44px;padding-left:calc(12rem/var(--s))}
+  }
+  .mnav{
+    position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;justify-content:space-between;
+    padding:calc(120rem/var(--s)) calc(24rem/var(--s)) calc(32rem/var(--s) + env(safe-area-inset-bottom,0px));
+    background:var(--dark);color:var(--base-0);opacity:0;transition:opacity var(--dur-m) var(--ease-out);overscroll-behavior:contain;
+  }
+  .mnav[hidden]{display:none}
+  .mnav.is-open{opacity:1}
+  .mnav_links{display:flex;flex-direction:column;align-items:flex-start;gap:calc(8rem/var(--s))}
+  .mnav_link{display:flex;align-items:center;min-height:56px;text-align:left;color:inherit;transform:translateY(12px);opacity:0;transition:transform var(--dur-l) var(--ease-out),opacity var(--dur-l) var(--ease-out)}
+  .mnav.is-open .mnav_link{transform:none;opacity:1}
+  .mnav.is-open .mnav_link:nth-child(2){transition-delay:.05s}
+  .mnav.is-open .mnav_link:nth-child(3){transition-delay:.1s}
+  .mnav.is-open .mnav_link:nth-child(4){transition-delay:.15s}
+  .mnav_lang{display:flex;gap:8px}
+  .mnav_lang a{display:inline-flex;align-items:center;justify-content:center;min-width:52px;min-height:44px;border:1px solid var(--c-line);border-radius:999px;opacity:.6}
+  .mnav_lang a[aria-current]{opacity:1;border-color:currentColor}
+  @media (min-width:992px){.mnav{display:none!important}}
+  /* меню открыто: знак и «Закрыть» — белые на тёмной панели, страница под меню не прокручивается */
+  :global(html.is-menu-open){overflow:hidden}
+  :global(html.is-menu-open) .header-logo,:global(html.is-menu-open) .header-nav{color:var(--white)}
+</style>

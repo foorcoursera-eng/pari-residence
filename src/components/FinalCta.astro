@@ -1,0 +1,38 @@
+---
+/* Сцена 12 ERA: кадр на всю ширину выше экрана с параллаксом; сверху l1 по центру,
+   огромный h1 в две строки, подзаголовок c1 разрядкой, круглая кнопка. */
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { cta } = tr(lang);
+const u = tr(lang).ui;
+import BtnCircle from './BtnCircle.astro';
+---
+<section class="section clip theme_on-color fcta" data-ui="dark">
+  <div class="fcta_media" data-parallax="12"><img src="/img/scenes/cta-1400.webp" srcset="/img/scenes/cta-1400.webp 1400w, /img/scenes/cta-1920.webp 1920w" sizes="100vw" alt={u.alt.cta} loading="lazy" decoding="async" width="1400" height="1120" /></div>
+  <div class="fcta_grad" aria-hidden="true"></div>
+  <div class="container fcta_in" data-reveal-w>
+    <p class="p1 fcta_top" data-reveal>{cta.top}</p>
+    <h2 class="h1 a-center fcta_title" data-split>{cta.title.map((w) => <span class="h-line"><span>{w}</span></span>)}</h2>
+    <h3 class="c1 a-center fcta_sub" data-reveal>{cta.sub}</h3>
+    <div class="fcta_btn"><BtnCircle label={cta.button} dialog /></div>
+  </div>
+</section>
+
+<style>
+  .fcta{height:calc(1300rem/var(--s));min-height:100vh;background:var(--dark)}
+  .fcta_media{position:absolute;left:0;right:0;top:-12%;height:124%}
+  .fcta_media img{width:100%;height:100%;object-fit:cover}
+  .fcta_in{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding-top:calc(48rem/var(--s))}
+  /* затемнение сверху под приглашением и заголовком (гайдбук §5.3) */
+  .fcta_grad{position:absolute;left:0;right:0;top:0;height:100vh;pointer-events:none;z-index:1;
+    background:radial-gradient(60% 45% at 50% 38%,rgba(40,24,14,.34),rgba(40,24,14,0) 72%),linear-gradient(rgba(40,24,14,.6),rgba(40,24,14,.22) 45%,rgba(40,24,14,0) 80%)}
+  .fcta_top{width:calc(592rem/var(--s));min-width:min(420px,100%)}
+  .fcta_title{margin-top:calc(260rem/var(--s));font-size:calc(176rem/var(--s))}
+  .fcta_sub{margin-top:calc(56rem/var(--s))}
+  .fcta_btn{margin-top:calc(140rem/var(--s))}
+  @media (max-width:991px){
+    .fcta{height:auto;min-height:100svh;padding-bottom:calc(48rem/var(--s))}
+    .fcta_top{width:100%}
+    .fcta_title{font-size:calc(52rem/var(--s));margin-top:calc(120rem/var(--s))}
+  }
+</style>

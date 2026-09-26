@@ -1,13 +1,35 @@
-.env
-.env*.local
-.env.local
-.vercel
+# build output
 dist/
-node_modules
+# generated types
+.astro/
+
+# dependencies
 node_modules/
 
-# служебное
-tools/__pycache__/
-# промежуточная склейка промо-ролика: make-promo-loop.py удаляет её сам,
-# но при обрыве на середине она остаётся — в репозиторий ей не надо
-assets/video/_promo-*.mp4
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# выкладка на Vercel
+.deploy-out/
+deploy/.vercel/
+
+# Private environment and local tooling
+.env.*
+!.env.example
+.vercel/
+.vscode/
+

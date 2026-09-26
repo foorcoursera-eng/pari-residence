@@ -1,0 +1,215 @@
+---
+/* Страница планировки — по раскладке карточки квартиры era-residence.com/apartments/011:
+     слева — чертёж планировки, план этажа с квартирой, интерьеры (прокручиваются);
+     справа — закреплённая колонка: № квартиры, тип и отделка, параметры (l1 + h5),
+     выбор конкретной квартиры этой планировки, вкладки «Инфо / Преимущества»,
+     кнопка заявки; ниже — вкладки двора, дуга «Похожие варианты», финальная панорама, футер.
+   Страница одна на планировку (62 типа), конкретная квартира — ?flat=4-45:
+   scripts/flat.js меняет номер, этаж, подъезд и подсветку на плане этажа. */
+import '../styles/apts.css';
+import Base from '../layouts/Base.astro';
+import Select from '../components/apts/Select.astro';
+import Decor from '../components/apts/Decor.astro';
+import Amenities from '../components/Amenities.astro';
+import FinalCta from '../components/FinalCta.astro';
+import Footer from '../components/Footer.astro';
+import { layouts, FLOORS } from '../data/flats.js';
+import { t, href, fill, fmtArea, plural } from '../i18n/index.js';
+
+interface Props { lang: string; id: string }
+const { lang, id } = Astro.props;
+const d = t(lang);
+const A = d.apts, F = d.flat;
+const all = layouts();
+const L = all.find((x) => x.id === id)!;
+const flats = [...L.flats].sort((a, b) => a.ent - b.ent || a.floor - b.floor || a.num - b.num);
+const f0 = flats[0];
+const typeName = A.types[L.type];
+const area = fmtArea(lang, L.area);
+
+/* похожие: та же комнатность, ближайшие площади; не хватает — соседние типы */
+const near = all.filter((x) => x.id !== L.id).sort((a, b) =>
+  (a.type === L.type ? 0 : 1) - (b.type === L.type ? 0 : 1) || Math.abs(a.area - L.area) - Math.abs(b.area - L.area) || (b.plan ? 1 : 0) - (a.plan ? 1 : 0));
+const similar = near.slice(0, 3);
+
+const opts = flats.map((f) => ({ v: f.id, t: `${fill(A.entFmt, { n: f.ent })} · ${fill(A.floorFmt, { n: f.floor })} · ${fill(A.noFmt, { n: f.num })}` }));
+const data = {
+  flats: flats.map((f) => ({ id: f.id, e: f.ent, f: f.floor, n: f.num })),
+  floors: FLOORS,
+  s: { noFmt: A.noFmt, entFmt: A.entFmt, floorFmt: A.floorFmt, floorNone: F.floorNone, floorAlt: d.ui.alt.floor, floorTitle: F.floorPlan },
+};
+/* интерьеры 25.09.2026: гостиная, спальня с барельефом, гостиная с текстилем; семейным — ещё детская */
+const gallery = ['live-1', 'live-3', 'live-2', ...(L.rooms >= 3 && !L.studio ? ['live-4'] : [])];
+const catalog = href(lang, '/apartments/');
+---
+<Base lang={lang} path={`/apartments/${L.id}/`}
+  title={fill(d.meta.flat.title, { type: typeName, area })}
+  description={fill(d.meta.flat.description, { type: typeName, area })}
+  crumbs={[{ t: d.ui.home, href: href(lang, '/') }, { t: A.crumb, href: catalog }, { t: `${typeName}, ${area} ${d.ui.m2}` }]} scrollbar={false}>
+
+  <section class="section apt" data-ui="light" data-flat>
+    <div class="container">
+      <div class="u-48"></div>
+      <div class="apt_top"></div>
+      <div class="grid apt_grid">
+        <!-- слева: чертёж, план этажа, интерьеры -->
+        <div class="apt_media">
+          {L.plan ? (
+            <figure class="apt_plan" data-reveal-w>
+              <figcaption class="l2 reg">{F.plan}</figcaption>
+              <img src={`/img/plans/${L.plan}-1400.webp`} srcset={`/img/plans/${L.plan}-800.webp 800w, /img/plans/${L.plan}-1400.webp 1400w`} sizes="(max-width: 991px) 92vw, 52vw"
+                alt={fill(d.ui.alt.plan, { type: typeName, area })} decoding="async" fetchpriority="high" />
+            </figure>
+          ) : (
+            <p class="p1 apt_plan-none">{F.planNone}</p>
+          )}
+          <figure class="apt_floor" data-floor>
+            <figcaption class="l2 reg" data-floor-title>{F.floorPlan}</figcaption>
+            <div class="apt_floor_w">
+              <img data-floor-img alt="" decoding="async" loading="lazy" />
+              <svg data-floor-svg aria-hidden="true"></svg>
+            </div>
+            <p class="p1 apt_floor-none" data-floor-none hidden>{F.floorNone}</p>
+          </figure>
+          {gallery.map((g) => (
+            <div class="apt_img"><img src={`/img/scenes/${g}-1200.webp`} srcset={`/img/scenes/${g}-1200.webp 1200w, /img/scenes/${g}-1536.webp 1536w`} sizes="(max-width: 991px) 92vw, 52vw" alt={d.ui.alt.interior} loading="lazy" decoding="async" width="1200" height="750" /></div>
+          ))}
+        </div>
+
+        <!-- справа: закреплённая колонка -->
+        <aside class="apt_info" data-reveal-w>
+          <h1 class="h3 apt_no" data-flat-no data-no-reveal>{fill(A.noFmt, { n: f0.num })}</h1>
+          <div class="u-16"></div>
+          <p class="l2">{typeName}</p>
+          <div class="u-4"></div>
+          <p class="l2 reg">{A.finish}</p>
+          <div class="u-48"></div>
+          <dl class="apt_params">
+            <div><dt class="l1 reg">{F.rooms}</dt><dd class="h5">{L.studio ? A.types.s : L.rooms}</dd></div>
+            <div><dt class="l1 reg">{F.area}</dt><dd class="h5">{area} {d.ui.m2}</dd></div>
+            <div><dt class="l1 reg">{F.floor}</dt><dd class="h5" data-flat-floor>{f0.floor}</dd></div>
+            <div><dt class="l1 reg">{F.ent}</dt><dd class="h5" data-flat-ent>{f0.ent}</dd></div>
+          </dl>
+          <div class="u-32"></div>
+          <div class="apt_pick">
+            <p class="l1 reg">{fill(F.count, { n: flats.length, flats: plural(lang, flats.length, F.flatsForms) })}</p>
+            <div class="u-12"></div>
+            <Select name="flat" label="" ariaLabel={F.pick} options={opts} value={f0.id} />
+          </div>
+          <div class="u-32"></div>
+          <div class="apt_tabs" data-flat-tabs>
+            <div class="apt_tabs_nav" role="tablist">
+              {F.tabs.map((tab, i) => <button class={`l1 apt_tab ${i === 0 ? 'is-active' : ''}`} type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-flat-tab={i}>{tab}</button>)}
+            </div>
+            <div class="u-16"></div>
+            <div class="apt_tab_panel is-active" role="tabpanel" data-flat-panel="0"><p class="p1">{F.info}</p></div>
+            <div class="apt_tab_panel" role="tabpanel" data-flat-panel="1"><ul class="p1 apt_benefits">{F.benefits.map((b) => <li>{b}</li>)}</ul></div>
+          </div>
+          <div class="u-32"></div>
+          <button class="pill l1" type="button" data-open-dialog>{F.request}</button>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <Amenities lang={lang} />
+
+  <!-- похожие варианты (ERA: арка «Similar options») -->
+  <section class="section arch clip apt-sim" data-ui="light" style="--arch-bg:var(--base-0)">
+    <div class="arch_shape" aria-hidden="true"></div>
+    <div class="arch_body container">
+      <div class="apt-sim_line" aria-hidden="true"></div>
+      <h2 class="h2 a-center apt-sim_title" style={`--chars:${F.similar.length}`}>{F.similar}</h2>
+      <div class="u-24"></div>
+      <p class="l1 a-center apt-sim_lead">{F.similarLead}</p>
+      <div class="u-48"></div>
+      <div class="apt-sim_list">
+        {similar.map((s) => {
+          const f = s.flats[0];
+          return (
+            <a class="acard" href={href(lang, `/apartments/${s.id}/`) + `?flat=${f.id}`}>
+              <Decor />
+              <div class="acard_shadow" aria-hidden="true"></div>
+              <div class="acard_c">
+                <div class="acard_t"><h3 class="l2 a-center">{A.types[s.type]}</h3><div class="u-4"></div><p class="l2 reg a-center">{A.finish}</p></div>
+                <div class="acard_img">{s.plan ? <img src={`/img/plans/${s.plan}-800.webp`} alt={fill(d.ui.alt.plan, { type: A.types[s.type], area: fmtArea(lang, s.area) })} loading="lazy" decoding="async" /> : <div class="acard_none" aria-hidden="true"></div>}</div>
+                <div class="acard_b">
+                  <p class="acard_data l2 reg"><span>{fill(A.noFmt, { n: f.num })}</span><i></i><span>{fill(A.entFmt, { n: f.ent })}</span><i></i><span>{fill(A.floorFmt, { n: f.floor })}</span></p>
+                  <div class="u-16"></div>
+                  <p class="acard_info h5"><span>{A.roomsShort[s.type]}</span><span class="acard_sl">/</span><span>{fmtArea(lang, s.area)} {d.ui.m2}</span></p>
+                  <div class="u-16"></div>
+                  <p class="acard_add l1">{s.flats.length > 1 ? fill(A.same, { n: s.flats.length - 1 }) : ' '}</p>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+      <div class="u-48"></div>
+      <div class="apt-sim_btn"><a class="pill l1" href={catalog + '?type=' + L.type}>{F.all}</a></div>
+    </div>
+  </section>
+
+  <FinalCta lang={lang} />
+  <Footer lang={lang} />
+  <script type="application/json" id="flat-data" set:html={JSON.stringify(data)}></script>
+  <script>
+    import '../scripts/flat.js';
+  </script>
+</Base>
+
+<style is:global>
+  /* ---------- карточка планировки (ERA .apart-p): медиа слева, закреплённые данные справа ---------- */
+  .apt{padding-bottom:calc(200rem/var(--s))}
+  .apt_top{height:calc(120rem/var(--s))}
+  .apt_grid{align-items:start}
+  .apt_media{grid-column:2 / 8;display:flex;flex-direction:column;gap:calc(32rem/var(--s))}
+  .apt_info{grid-column:8 / 11;position:sticky;top:calc(215rem/var(--s));padding-left:calc(16rem/var(--s))} /* ниже меню шапки */
+  .apt_plan,.apt_floor{margin:0;position:relative;background:#fff;padding:calc(48rem/var(--s)) calc(40rem/var(--s)) calc(40rem/var(--s))}
+  .apt_plan figcaption,.apt_floor figcaption{position:absolute;left:calc(40rem/var(--s));top:calc(24rem/var(--s))}
+  .apt_plan img{width:100%;height:auto;max-height:82vh;object-fit:contain;display:block;margin:0 auto}
+  .apt_plan-none{max-width:calc(560rem/var(--s))}
+  .apt_floor_w{position:relative}
+  .apt_floor_w img{width:100%;height:auto;display:block}
+  .apt_floor_w svg{position:absolute;inset:0;width:100%;height:100%}
+  .apt_floor_w path{fill:transparent;stroke:transparent;stroke-width:2;transition:fill var(--dur-s) var(--ease-out),stroke var(--dur-s) var(--ease-out)}
+  .apt_floor_w path.is-same{fill:rgba(197,160,89,.12);stroke:rgba(197,160,89,.7);stroke-dasharray:6 5;cursor:pointer}
+  .apt_floor_w path.is-same:hover{fill:rgba(197,160,89,.28)}
+  .apt_floor_w path.is-cur{fill:rgba(197,160,89,.5);stroke:var(--accent);stroke-dasharray:none}
+  .apt_img{overflow:hidden;aspect-ratio:1.6}
+  .apt_img img{width:100%;height:100%;object-fit:cover}
+  .apt_no{text-transform:none}
+  .apt_params{margin:0;display:grid;gap:calc(24rem/var(--s))}
+  .apt_params div{display:flex;flex-direction:column;gap:calc(6rem/var(--s))}
+  .apt_params dd{margin:0}
+  .apt_pick .fsel_drop{min-width:calc(360rem/var(--s))}
+  .apt_tabs_nav{display:flex;gap:calc(24rem/var(--s))}
+  .apt_tab{opacity:.4;transition:opacity var(--dur-m) var(--ease-out);min-height:32px}
+  .apt_tab.is-active,.apt_tab:hover{opacity:1}
+  .apt_tab_panel{display:none;max-width:calc(420rem/var(--s))}
+  .apt_tab_panel.is-active{display:block}
+  .apt_benefits{margin:0;padding-left:1.1em;display:grid;gap:.4em}
+
+  /* похожие варианты — арка, как у ERA */
+  .apt-sim{margin-top:calc(-120rem/var(--s));z-index:3;color:var(--base-1000);--c-line:var(--base-1000-line)}
+  .apt-sim .arch_shape{width:140vw;height:140vw}
+  .apt-sim .arch_body{padding-top:calc(200rem/var(--s));padding-bottom:calc(160rem/var(--s))}
+  .apt-sim_title{font-size:min(calc(136rem/var(--s)),calc((100vw - 560px) / (var(--chars) * .62)))}
+  @media (max-width:991px){
+    .apt-sim_title{font-size:min(calc(40rem/var(--s)),calc(88vw / (var(--chars) * .62)))}
+    .apt-sim .arch_body{padding-top:calc(96rem/var(--s))}
+    .apt-sim_line{height:calc(64rem/var(--s))}
+    .apt_params{grid-template-columns:1fr 1fr}
+  }
+  .apt-sim_line{width:1px;height:calc(200rem/var(--s));background:var(--base-1000-line);margin:0 auto calc(48rem/var(--s))}
+  .apt-sim_list{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(16rem/var(--s));width:calc(100% - 2 * (136.8rem/var(--s)));margin:0 auto}
+  .apt-sim_btn{display:flex;justify-content:center}
+
+  @media (max-width:991px){
+    .apt_top{height:calc(60rem/var(--s))}
+    .apt_media,.apt_info{grid-column:1 / 5}
+    .apt_info{position:relative;top:auto;padding-left:0;order:-1;margin-bottom:calc(32rem/var(--s))}
+    .apt_plan,.apt_floor{padding:calc(40rem/var(--s)) calc(16rem/var(--s)) calc(16rem/var(--s))}
+    .apt-sim_list{grid-template-columns:1fr;width:100%}
+  }
+</style>

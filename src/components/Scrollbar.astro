@@ -1,0 +1,11 @@
+---
+/* Индикатор прокрутки слева (ERA initScrollBar): тонкая линия, число 00–100
+   движется вместе с заполнением, внизу подпись «Листайте». */
+import { t } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+---
+<div class="scrollbar" aria-hidden="true" data-scrollbar>
+  <div class="scrollbar_fill" data-scrollbar-fill></div>
+  <div class="scrollbar_num l2" data-scrollbar-num>00</div>
+  <div class="scrollbar_label l2">{t(lang).ui.scroll}</div>
+</div>

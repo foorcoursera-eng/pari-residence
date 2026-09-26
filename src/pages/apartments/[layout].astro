@@ -1,0 +1,8 @@
+---
+/* Страница планировки на русском: /apartments/2-6708/?flat=4-45 */
+import LayoutView from '../../views/LayoutView.astro';
+import { layouts } from '../../data/flats.js';
+export function getStaticPaths() { return layouts().map((l) => ({ params: { layout: l.id } })); }
+const { layout } = Astro.params;
+---
+<LayoutView lang="ru" id={layout} />

@@ -1,0 +1,113 @@
+---
+/* Сцены 1–2 ERA:
+   section.arch.theme_on-brand — огромная дуга поднимается над закреплённым hero,
+     по дуге надпись «Three reasons to choose ERA», в центре «Costa ✱ del Sol»,
+     вертикальная линия и рефрен;
+   section.z-2.theme_on-brand — слайдер причин: заголовок h1, карточка 2:1,
+     пагинация, абзац p1 и подпись l1.
+   Обе секции наезжают на hero (отрицательный отступ = их общей высоте). */
+import parts from '../data/logo-parts.json';
+import { t as tr, href } from '../i18n/index.js';
+const { lang = 'ru' } = Astro.props;
+const { reasons, refrain } = tr(lang);
+const u = tr(lang).ui;
+const R = 1000;                      /* радиус дуги текста в координатах svg 2000×600 */
+---
+<section class="section arch clip theme_on-brand reasons-arch" data-ui="light" style="--arch-bg:var(--brand)">
+  <div class="arch_shape" aria-hidden="true"></div>
+  <div class="arch_body container">
+    <svg class="reasons-arc" viewBox="0 0 2000 520" aria-hidden="true">
+      <defs><path id="reasonsArc" d={`M 60 ${R + 40} A ${R - 60} ${R - 60} 0 0 1 1940 ${R + 40}`} /></defs>
+      <text class="reasons-arc_text"><textPath href="#reasonsArc" startOffset="50%" text-anchor="middle">{reasons.arc}</textPath></text>
+    </svg>
+    <h2 class="visually-hidden">{reasons.arc}</h2>
+    <div class="reasons-center" data-reveal-w>
+      <div class="reasons-place">
+        <div class="l1 a-center">{reasons.left}</div>
+        <div class="reasons-symbol" aria-hidden="true"><svg viewBox={parts.viewBox} fill="currentColor" set:html={parts.script}></svg></div>
+        <div class="l1 a-center">{reasons.right}</div>
+      </div>
+      <div class="reasons-line" data-line></div>
+      <p class="l1 a-center reasons-refrain">{refrain}</p>
+    </div>
+  </div>
+</section>
+
+<section class="section z-2 theme_on-brand reasons-slider" data-ui="light" data-slider data-autoplay="5000">
+  <div class="container reasons-slider_in" data-reveal-w>
+    <div class="u-48"></div>
+    <div class="reasons-titles">
+      {reasons.items.map((it, i) => (
+        <h3 class={`h1 a-center reasons-title ${i === 0 ? 'is-active' : ''}`} style={`--chars:${it.title.length}`} data-slide-title aria-hidden={i === 0 ? undefined : 'true'} data-split>{it.title}</h3>
+      ))}
+    </div>
+    <div class="reasons-card">
+      {reasons.items.map((it, i) => (
+        <div class={`reasons-card_img ${i === 0 ? 'is-active' : ''}`} data-slide-img>
+          <img src={`/img/scenes/${it.img}-800.webp`} srcset={`/img/scenes/${it.img}-800.webp 800w, /img/scenes/${it.img}-1200.webp 1200w`} sizes="(max-width: 991px) 80vw, 26vw" alt={it.title} loading="lazy" decoding="async" width="800" height="400" />
+        </div>
+      ))}
+    </div>
+    <div class="pag reasons-pag">
+      <button class="pag_btn pag_prev" type="button" data-slide-prev aria-label={u.prev}><svg viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="M8 1 3 6l5 5"/></svg></button>
+      <span class="l1" data-slide-index>1</span>
+      <span class="pag_track"><span class="pag_fill" data-slide-fill></span></span>
+      <span class="l1">{reasons.items.length}</span>
+      <button class="pag_btn pag_next" type="button" data-slide-next aria-label={u.next}><svg viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="m4 1 5 5-5 5"/></svg></button>
+    </div>
+    <div class="reasons-texts">
+      {reasons.items.map((it, i) => (
+        <p class={`p1 reasons-text ${i === 0 ? 'is-active' : ''}`} data-slide-text>{it.text}</p>
+      ))}
+    </div>
+    <p class="l1 a-center reasons-note">{reasons.note}</p>
+  </div>
+</section>
+
+<style>
+  /* наезд на закреплённый hero: минус высота обеих секций (50vw + 100vh) */
+  .reasons-arch{height:50vw;margin-top:calc(-50vw - 100vh);z-index:3}
+  .reasons-arch .arch_shape{width:125vw;height:125vw}
+  .reasons-arch .arch_body{height:100%}
+  .reasons-arc{position:absolute;left:50%;top:calc(8rem/var(--s));width:125vw;transform:translateX(-50%);overflow:visible}
+  .reasons-arc_text{font-family:var(--font-display);font-weight:500;font-size:34px;letter-spacing:.02em;word-spacing:.9em;text-transform:uppercase;fill:var(--base-1000)}
+  .reasons-center{position:absolute;left:0;right:0;top:calc(330rem/var(--s));display:flex;flex-direction:column;align-items:center}
+  .reasons-place{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:calc(24rem/var(--s));width:calc(260rem/var(--s))}
+  .reasons-place .l1:first-child{text-align:right}.reasons-place .l1:last-child{text-align:left}
+  .reasons-symbol{width:calc(44rem/var(--s));color:var(--base-1000)}
+  .reasons-symbol svg{width:100%;height:auto}
+  .reasons-line{width:1px;height:calc(250rem/var(--s));background:var(--base-1000-line);margin:calc(24rem/var(--s)) 0;transform-origin:50% 0}
+  .reasons-refrain{width:calc(200rem/var(--s))}
+
+  .reasons-slider{height:100vh;min-height:calc(900rem/var(--s));z-index:3}
+  .reasons-slider_in{height:100%;display:flex;flex-direction:column;align-items:center}
+  .reasons-titles{display:grid;width:calc(1200rem/var(--s))}
+  /* не шире промежутка между знаком и меню шапки: подписи меню не мельче 12 px, на узких экранах они шире */
+  .reasons-title{grid-area:1/1;font-size:min(calc(150rem/var(--s)),calc((100vw - 560px) / (var(--chars) * .62)));white-space:nowrap;opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .reasons-title.is-active{opacity:1}
+  .reasons-card{position:relative;width:calc(416rem/var(--s));aspect-ratio:2/1;margin-top:calc(64rem/var(--s));overflow:hidden}
+  .reasons-card_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
+  .reasons-card_img img{width:100%;height:100%;object-fit:cover;transform:scale(1.5) translateX(25%);transition:transform var(--dur-l) var(--ease-out)}
+  .reasons-card_img.is-active{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);z-index:1}
+  .reasons-card_img.is-active img{transform:none}
+  .reasons-pag{margin-top:calc(32rem/var(--s))}
+  .reasons-texts{display:grid;width:calc(592rem/var(--s));margin-top:auto}
+  .reasons-text{grid-area:1/1;opacity:0;transform:translateY(12px);transition:opacity var(--dur-m) var(--ease-out),transform var(--dur-m) var(--ease-out)}
+  .reasons-text.is-active{opacity:1;transform:none}
+  .reasons-note{width:calc(200rem/var(--s));margin-top:calc(48rem/var(--s));margin-bottom:calc(80rem/var(--s))}
+
+  @media (max-width:991px){
+    .reasons-arch{height:100vw;margin-top:calc(-100vw - 100svh)}
+    .reasons-arch .arch_shape{width:180vw;height:180vw}
+    .reasons-arc{width:180vw;top:calc(4rem/var(--s))}
+    .reasons-arc_text{font-size:44px}
+    .reasons-center{top:calc(150rem/var(--s))}
+    .reasons-place{width:calc(260rem/var(--s))}
+    .reasons-line{height:calc(120rem/var(--s))}
+    .reasons-titles{width:100%}
+    .reasons-title{font-size:calc(52rem/var(--s));white-space:normal}
+    .reasons-card{width:calc(300rem/var(--s))}
+    .reasons-texts{width:100%}
+    .reasons-slider{height:auto;min-height:0;padding-bottom:calc(40rem/var(--s))}
+  }
+</style>

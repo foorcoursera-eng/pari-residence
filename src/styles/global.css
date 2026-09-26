@@ -1,0 +1,217 @@
+/* ==========================================================================
+   PARI Residence — дизайн-система по референсу era-residence.com.
+   Модель размеров скопирована с референса: корень html = 1vw, все размеры
+   заданы номиналом при базе 1600 px и делятся на коэффициент --s
+   (16 на desktop, 4.16 на телефоне — как в CSS ERA). Палитра и гарнитуры —
+   по документу «Этап 1»: #F9F8F6 / #1A1A1A / #C5A059, Cormorant Garamond +
+   Pinyon Script + Inter.
+   ========================================================================== */
+
+:root{
+  --s:16;
+  /* палитра этапа 1 */
+  --base-0:#F9F8F6;
+  --base-1000:#1A1A1A;
+  --accent:#C5A059;
+  --white:#FFFFFF;
+  --base-1000-line:rgba(26,26,26,.1);
+  --white-line:rgba(255,255,255,.2);
+  --white-30:rgba(255,255,255,.3);
+
+  /* тема секции: on-color (поверх изображения) / on-light */
+  --c-text:var(--base-1000);
+  --c-bg:var(--base-0);
+  --c-line:var(--base-1000-line);
+
+  --font-display:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --font-script:'Pinyon Script',cursive;
+  --font-text:'Inter','Helvetica Neue',Arial,sans-serif;
+
+  /* длительности и кривые — как в референсе */
+  --dur-s:.4s;--dur-m:.8s;--dur-l:1.2s;
+  --ease-in-out:cubic-bezier(.76,0,.24,1);
+  --ease-out:cubic-bezier(.25,1,.5,1);
+  --ease-in:cubic-bezier(.5,0,.75,0);
+  --ease:cubic-bezier(.25,.1,.25,1);
+}
+@media (max-width:991px){:root{--s:4.16}}
+/* телефон, повёрнутый горизонтально: раскладка та же, мобильная, но шкала — по высоте экрана,
+   иначе всё в 2 с лишним раза крупнее (1vw в альбоме вдвое больше) */
+@media (max-width:991px) and (orientation:landscape) and (max-height:540px){:root{--s:8.5}}
+
+html{font-size:1vw;background:var(--base-0);-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--base-0);color:var(--base-1000);
+  font-family:var(--font-text);font-size:max(16px,calc(13rem/var(--s)));line-height:1.5;
+  -webkit-font-smoothing:antialiased;overflow-x:clip;
+}
+img,svg,video{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
+::selection{background:rgba(197,160,89,.28)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ---------- темы (как theme_on-color / theme_on-light в референсе) ---------- */
+.theme_on-color{--c-text:var(--white);--c-line:var(--white-line);color:var(--white)}
+.theme_on-light{--c-text:var(--base-1000);--c-line:var(--base-1000-line);color:var(--base-1000)}
+
+/* ---------- типографическая шкала референса (номинал / --s) ---------- */
+.h1{font-family:var(--font-display);font-weight:500;font-size:calc(192rem/var(--s));line-height:.875;letter-spacing:-.024em;text-transform:uppercase}
+.h2{font-family:var(--font-display);font-weight:500;font-size:calc(136rem/var(--s));line-height:.88235;letter-spacing:-.024em;text-transform:uppercase}
+.h3{font-family:var(--font-display);font-weight:500;font-size:calc(96rem/var(--s));line-height:.91667;letter-spacing:-.024em;text-transform:uppercase}
+.h4{font-family:var(--font-display);font-weight:500;font-size:calc(63rem/var(--s));line-height:.88889;letter-spacing:-.016em;text-transform:uppercase}
+.h5{font-family:var(--font-display);font-weight:500;font-size:calc(40rem/var(--s));line-height:1;letter-spacing:-.008em;text-transform:uppercase}
+.h6{font-family:var(--font-display);font-weight:500;font-size:calc(28rem/var(--s));line-height:1;text-transform:uppercase}
+/* Нижние границы кегля — «Этап 1» (текст 17–18 px, на телефоне 16–17; подписи и меню 12–14)
+   и гайдбук §4.3: шкала ERA сохраняется, но мельче порога текст не становится. */
+.p1{font-family:var(--font-text);font-size:max(17px,calc(13rem/var(--s)));line-height:1.5;letter-spacing:-.011em}
+.l1{font-family:var(--font-text);font-weight:600;font-size:max(12px,calc(11rem/var(--s)));line-height:1.4545;letter-spacing:.048em;text-transform:uppercase}
+.l2{font-family:var(--font-text);font-weight:600;font-size:max(12px,calc(9rem/var(--s)));line-height:1.33;letter-spacing:.2em;text-transform:uppercase}
+.a1{font-family:var(--font-script);font-weight:400;font-size:calc(192rem/var(--s));line-height:1}
+.a2{font-family:var(--font-script);font-weight:400;font-size:calc(120rem/var(--s));line-height:1}
+@media (max-width:991px){
+  .h1{font-size:calc(96rem/var(--s))}
+  .h2{font-size:calc(73rem/var(--s))}
+  .h3{font-size:calc(56rem/var(--s))}
+  .h4{font-size:calc(40rem/var(--s))}
+  .h5{font-size:calc(28rem/var(--s))}
+  .h6{font-size:calc(20rem/var(--s))}
+  .a2{font-size:calc(64rem/var(--s))}
+  .p1{font-size:max(16px,calc(13rem/var(--s)))}
+  .l2{font-size:12px}
+}
+/* цифры одной высоты: у Cormorant по умолчанию «старые» цифры с выносными элементами */
+.h1,.h2,.h3,.h4,.h5,.h6{font-variant-numeric:lining-nums}
+.a-center{text-align:center}.a-left{text-align:left}.a-right{text-align:right}
+
+/* ---------- отступы и сетка референса ---------- */
+.u-24{height:calc(24rem/var(--s))}
+.u-32{height:calc(32rem/var(--s))}
+.u-48{height:calc(48rem/var(--s))}
+.container{position:relative;width:100%;padding-inline:calc(48rem/var(--s))}
+@media (max-width:991px){.container{padding-inline:calc(24rem/var(--s))}}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);column-gap:calc(16rem/var(--s))}
+@media (max-width:991px){.grid{grid-template-columns:repeat(4,1fr)}}
+.section{position:relative}
+.section.clip{overflow:clip}
+
+/* ---------- изображения ---------- */
+.img-w{position:relative;width:100%;overflow:hidden}
+.img{width:100%;height:100%;object-fit:cover}
+.img.h-auto{height:auto}
+.img-over-grad{position:absolute;left:0;width:100%;pointer-events:none;z-index:1}
+.img-over-grad.from-top{top:0;background:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,0))}
+.img-over-grad.from-bot{background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.3))}
+.img-over-grad.bot{bottom:0}
+.img-over-grad._100vh{height:100vh}
+.img-over-grad._6x{height:calc(6 * 110rem/var(--s))}
+
+/* ---------- скрытие ---------- */
+.b-desk{display:block}.b-mob{display:none}
+@media (max-width:991px){.b-desk{display:none}.b-mob{display:block}}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- nav-item: смена двух копий текста при наведении (референс) ---------- */
+.nav-item{display:inline-block;position:relative}
+.nav-item_label{position:relative;overflow:hidden;display:block}
+.nav-item_label_text{display:block;transition:transform var(--dur-m) var(--ease-out),opacity var(--dur-m) var(--ease-out)}
+.nav-item_label_text.is-2{position:absolute;inset:0;transform:translateY(100%);opacity:0}
+@media (min-width:992px){
+  .nav-item:hover .nav-item_label_text:nth-child(1){transform:translateY(-100%);opacity:0}
+  .nav-item:hover .nav-item_label_text.is-2{transform:translateY(0);opacity:1}
+}
+
+/* ---------- reveal: исходные состояния только при has-motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* ==========================================================================
+   Сцены главной по раскладке era-residence.com
+   ========================================================================== */
+:root{
+  /* «brand»-поверхность ERA (у них Powder Sky) — у PARI молочный из гайдбука */
+  --brand:#E8E3D1;
+  --dark:#1A1A1A;
+}
+.theme_on-brand{--c-text:var(--base-1000);--c-line:var(--base-1000-line);background:var(--brand);color:var(--base-1000)}
+.theme_on-light{background:var(--base-0)}
+.theme_on-dark{--c-text:var(--base-0);--c-line:rgba(249,248,246,.16);background:var(--dark);color:var(--base-0)}
+.section.z-2{position:relative;z-index:2}
+
+.c1{font-family:var(--font-display);font-weight:500;font-size:calc(25rem/var(--s));line-height:1;letter-spacing:.8em;text-transform:uppercase}
+.reg{font-weight:400}
+.l1.reg{letter-spacing:.048em}
+.h-line{display:block;overflow:hidden}
+.h-line>span{display:block}
+@media (max-width:991px){.c1{font-size:calc(14rem/var(--s))}}
+
+/* ---------- круглая кнопка (ERA .btn-circle: дуги удлиняются при наведении) ---------- */
+.btn-circle{position:relative;width:max(168px,calc(208rem/var(--s)));height:max(168px,calc(208rem/var(--s)));color:var(--c-text,var(--white));display:flex;align-items:center;justify-content:center;flex:none}
+.btn-circle.is-m{width:max(148px,calc(156rem/var(--s)));height:max(148px,calc(156rem/var(--s)))}
+.btn-circle_label{position:relative;z-index:2;width:62%;text-align:center;pointer-events:none}
+.btn-circle_label .l1{display:block}
+.btn-circle_bg{position:absolute;inset:0;z-index:1}
+.btn-circle_bg svg{width:100%;height:100%;overflow:visible}
+.btn-circle_arc{stroke-dasharray:27.1179 650.31;transition:stroke-dasharray var(--dur-m) var(--ease-in-out)}
+.btn-circle:hover .btn-circle_arc{stroke-dasharray:325.155 650.31}
+.btn-circle_ring{stroke:var(--c-line,var(--white-line))}
+.btn-circle_link{position:absolute;inset:0;z-index:3;border-radius:50%;cursor:pointer;background:none;border:0}
+@media (max-width:991px){.btn-circle{width:max(150px,calc(136rem/var(--s)));height:max(150px,calc(136rem/var(--s)))}.btn-circle.is-m{width:max(140px,calc(120rem/var(--s)));height:max(140px,calc(120rem/var(--s)))}}
+
+/* ---------- кнопка-пилюля (ERA .btn-pill): тонкая рамка, на наведении — заливка ---------- */
+.pill{display:inline-flex;align-items:center;justify-content:center;min-height:max(44px,calc(40rem/var(--s)));padding:0 calc(24rem/var(--s));border:1px solid currentColor;border-radius:999px;cursor:pointer;
+  transition:background-color var(--dur-m) var(--ease-out),color var(--dur-m) var(--ease-out),border-color var(--dur-m) var(--ease-out),opacity var(--dur-s) var(--ease-out)}
+.pill:hover{background:var(--base-1000);border-color:var(--base-1000);color:var(--base-0)}
+.theme_on-color .pill:hover{background:var(--white);border-color:var(--white);color:var(--base-1000)}
+.pill[disabled]{opacity:.45;pointer-events:none}
+
+/* ---------- ветки вишни (ERA: видео бугенвиллеи) ----------
+   Картинка медленно покачивается и «дышит»; обёртку гнёт ветер от прокрутки
+   и сдвигает глубина (scripts/blossom.js). Обе оси вращения — на линии среза. */
+.flower{position:absolute;z-index:4;pointer-events:none;will-change:transform;transform-origin:var(--fo,0% 0%)}
+.flower img{width:100%;height:auto;display:block;transform-origin:var(--fo,0% 0%);animation:flowerSway 7s ease-in-out infinite alternate}
+.flower.is-r img,.flower.is-rb img{animation-duration:8.5s;animation-delay:-3s}
+.flower.is-far img{animation-play-state:paused}   /* вдали от экрана покачивание стоит (scripts/blossom.js) */
+@keyframes flowerSway{
+  0%{transform:rotate(-1.6deg) skewY(0deg) scale(1)}
+  45%{transform:rotate(.4deg) skewY(-.5deg) scale(1.012)}
+  100%{transform:rotate(1.9deg) skewY(.3deg) scale(1)}
+}
+
+/* ---------- арка (ERA section.arch): верх секции — дуга огромного круга ---------- */
+.section.arch{background:transparent!important}
+.arch_shape{position:absolute;left:50%;top:0;width:180vw;height:180vw;transform:translateX(-50%);border-radius:50%;background:var(--arch-bg,var(--brand));z-index:0}
+.arch_body{position:relative;z-index:1}
+
+/* ---------- кнопки-пагинация слайдеров (ERA .pag) ---------- */
+.pag{display:flex;align-items:center;justify-content:center;gap:calc(16rem/var(--s))}
+.pag_btn{width:calc(32rem/var(--s));height:calc(32rem/var(--s));display:flex;align-items:center;justify-content:center;min-width:32px;min-height:32px}
+.pag_btn svg{width:calc(12rem/var(--s));min-width:10px;transition:transform var(--dur-m) var(--ease-out)}
+@media (max-width:991px){.pag_btn{min-width:44px;min-height:44px}}
+.pag_prev:hover svg{transform:translateX(-3px)}.pag_next:hover svg{transform:translateX(3px)}
+.pag_track{position:relative;width:calc(160rem/var(--s));height:1px;background:var(--c-line)}
+.pag_fill{position:absolute;left:0;top:0;height:100%;width:100%;background:currentColor;transform:scaleX(0);transform-origin:0 50%;transition:transform var(--dur-m) var(--ease-out);will-change:transform}
+
+/* ---------- индикатор прокрутки слева (ERA initScrollBar) ---------- */
+.scrollbar{position:fixed;z-index:90;left:calc(56rem/var(--s));top:50%;transform:translateY(-50%);height:calc(560rem/var(--s));width:1px;background:var(--white-line);color:var(--white);transition:color var(--dur-m) var(--ease-out),background-color var(--dur-m) var(--ease-out)}
+.scrollbar_fill{position:absolute;left:0;top:0;width:1px;height:100%;background:currentColor;transform:scaleY(0);transform-origin:50% 0;will-change:transform}
+.scrollbar_num{position:absolute;left:calc(10rem/var(--s));top:0;transform:translateY(-50%);font-variant-numeric:tabular-nums;will-change:transform}
+.scrollbar_label{position:absolute;left:calc(-4rem/var(--s));bottom:calc(-40rem/var(--s));writing-mode:vertical-rl;transform:rotate(180deg)}
+.is-light-ui .scrollbar{color:var(--base-1000);background:var(--base-1000-line)}
+@media (max-width:991px){.scrollbar{display:none}}
+
+/* шапка на светлых сценах становится графитовой (ERA theme_on-brand) */
+.header-logo,.header-nav{transition:color var(--dur-m) var(--ease-out)}
+/* html. — выше по весу, чем scoped-стиль шапки (.header-logo[data-astro-cid]) */
+html.is-light-ui .header-logo,html.is-light-ui .header-nav{color:var(--base-1000)}
+/* телефон: шапка без подложки уходит вверх при прокрутке вниз и возвращается при прокрутке вверх
+   (иначе «Меню» и знак ложатся на текст сцен); класс ставит scripts/scenes.js */
+@media (max-width:991px){
+  .header-logo,.header-nav{transition:transform var(--dur-m) var(--ease-out),color var(--dur-m) var(--ease-out)}
+  html.is-header-away:not(.is-menu-open) .header-logo,html.is-header-away:not(.is-menu-open) .header-nav{transform:translateY(calc(-100% - 32px))}
+}

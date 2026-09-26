@@ -1,0 +1,7 @@
+---
+/* Главная на узбекском, английском и французском: /uz/, /en/, /fr/ */
+import HomeView from '../../views/HomeView.astro';
+export function getStaticPaths() { return ['uz', 'en', 'fr'].map((lang) => ({ params: { lang } })); }
+const { lang } = Astro.params;
+---
+<HomeView lang={lang} />

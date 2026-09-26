@@ -1,0 +1,187 @@
+---
+/* «Выбрать квартиру» — каталог по раскладке era-residence.com/apartments:
+     h1 «Квартиры» слева, счётчик результатов справа (h1);
+     строка фильтров в рамке со скошенными углами: «Комнат», «Подъезд», «Сортировка», «Сбросить»;
+     сетка карточек 3 колонки (9 колонок сетки), имиджевые вставки внутри сетки;
+     в конце — финальная панорама и футер, как у ERA.
+   У ERA 25 квартир, у PARI 1186, поэтому карточки показываются по 24 с кнопкой
+   «Показать ещё»; фильтры и сортировка — в адресе (?type=2&ent=4&sort=asc).
+   Первые 24 карточки отдаются в HTML (страница видна без JS), дальше карточки
+   рисует scripts/apartments.js по данным из <script type="application/json">. */
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import '../styles/apts.css';
+import Base from '../layouts/Base.astro';
+import Select from '../components/apts/Select.astro';
+import Decor from '../components/apts/Decor.astro';
+import Flower from '../components/Flower.astro';
+import FinalCta from '../components/FinalCta.astro';
+import Footer from '../components/Footer.astro';
+import { allFlats, layouts, TYPES, ENTRANCES, hasFloor } from '../data/flats.js';
+import { t, href, fill, fmtArea } from '../i18n/index.js';
+
+interface Props { lang: string }
+const { lang } = Astro.props;
+const d = t(lang);
+const A = d.apts;
+
+/* контуры квартир на планах этажей — только для квартир без чертежа планировки */
+const floorData: Record<number, any> = {};
+const floorOf = (ent: number) => {
+  if (!floorData[ent]) {
+    const p = join(process.cwd(), 'public', 'data', 'floors', `p${ent}.json`);
+    floorData[ent] = existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : { floors: {} };
+  }
+  return floorData[ent];
+};
+
+const L = layouts();
+const count = new Map(L.map((l) => [l.id, l.flats.length]));
+const flats = allFlats();
+
+/* «Рекомендуемые»: по одной квартире каждой планировки по кругу (сначала верхние
+   этажи), чтобы первая страница показывала разнообразие, а не один подъезд подряд.
+   Сначала — планировки с чертежом квартиры, затем остальные (у них на карточке план этажа). */
+const round = (ls: any[]) => {
+  const qs = ls.map((l) => [...l.flats].sort((a, b) => b.floor - a.floor || a.ent - b.ent || a.num - b.num));
+  const out: any[] = [];
+  for (let r = 0; qs.some((q) => q[r]); r++) qs.forEach((q) => { if (q[r]) out.push(q[r]); });
+  return out;
+};
+const rel: any[] = [...round(L.filter((l) => l.plan)), ...round(L.filter((l) => !l.plan))];
+const relRank = new Map(rel.map((f, i) => [f.id, i]));
+
+const rows = flats.map((f) => {
+  let poly = null;
+  if (!f.plan && hasFloor(f.ent, f.floor)) {
+    const fl = floorOf(f.ent).floors[String(f.floor)];
+    const shape = fl && fl.flats.find((x: any) => x.num === f.num);
+    if (fl && shape) poly = { box: fl.box, d: shape.d };
+  }
+  return { id: f.id, e: f.ent, f: f.floor, n: f.num, t: f.type, a: f.area, l: f.layout, p: f.plan, c: count.get(f.layout), r: relRank.get(f.id), poly };
+});
+rows.sort((x, y) => x.r - y.r);
+
+const typeOpts = [{ v: '', t: A.all }, ...TYPES.map((k) => ({ v: k, t: A.types[k] }))];
+const entOpts = [{ v: '', t: A.all }, ...ENTRANCES.map((n) => ({ v: String(n), t: String(n) }))];
+const sortOpts = [{ v: 'rel', t: A.sort.rel }, { v: 'asc', t: A.sort.asc }, { v: 'desc', t: A.sort.desc }];
+
+const PAGE = 24;
+const first = rows.slice(0, PAGE);
+const flatHref = (r: any) => href(lang, `/apartments/${r.l}/`) + `?flat=${r.id}`;
+const strings = {
+  types: A.types, roomsShort: A.roomsShort, finish: A.finish, noFmt: A.noFmt, entFmt: A.entFmt, floorFmt: A.floorFmt,
+  same: A.same, m2: d.ui.m2, base: href(lang, '/apartments/'), lang, benefits: A.benefits, empty: A.empty,
+};
+const title = A.title;
+---
+<Base lang={lang} path="/apartments/" title={d.meta.apartments.title} description={d.meta.apartments.description} crumbs={[{ t: d.ui.home, href: href(lang, '/') }, { t: A.crumb }]} scrollbar={false}>
+  <section class="section clip apts" data-ui="light" data-apts>
+    <Flower side="r" style="left:calc(1180rem/var(--s));top:calc(-230rem/var(--s));width:calc(480rem/var(--s))" />
+    <div class="container">
+      <div class="u-48"></div>
+      <div class="apts_top"></div>
+      <div class="grid">
+        <div class="apts_cms">
+          <div class="apts_title" style={`--chars:${title.length}`}>
+            <h1 class="h1 apts_h1">{title}</h1>
+            <div class="h1 a-right apts_count" data-apts-count data-no-reveal aria-live="polite">{rows.length}</div>
+          </div>
+          <div class="u-16"></div>
+          <div class="apts_filter" data-reveal-w>
+            <Decor />
+            <div class="apts_filter_c">
+              <div class="apts_filter_item"><Select name="type" label={A.fType} options={typeOpts} /></div>
+              <div class="apts_filter_item"><Select name="ent" label={A.fEnt} options={entOpts} /></div>
+              <div class="apts_filter_item is-last">
+                <Select name="sort" label={A.fSort} options={sortOpts} />
+                <button class="nav-item apts_reset is-disabled" type="button" data-apts-reset>
+                  <span class="nav-item_label"><span class="nav-item_label_text l2">{A.reset}</span><span class="nav-item_label_text is-2 l2" aria-hidden="true">{A.reset}</span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="u-16"></div>
+          <div class="apts_list" data-apts-list>
+            {first.map((r, i) => (
+              <>
+                {i === 5 && A.benefits[0] && (
+                  <div class="abenefit theme_on-color"><div class="abenefit_bg"><img src={`/img/scenes/${A.benefits[0].img}.webp`} alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">{A.benefits[0].title}</h3><div class="u-12"></div><p class="p1">{A.benefits[0].text}</p></div></div>
+                )}
+                {i === 11 && A.benefits[1] && (
+                  <div class="abenefit theme_on-color"><div class="abenefit_bg"><img src={`/img/scenes/${A.benefits[1].img}.webp`} alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">{A.benefits[1].title}</h3><div class="u-12"></div><p class="p1">{A.benefits[1].text}</p></div></div>
+                )}
+                {i === 18 && A.benefits[2] && (
+                  <div class="abenefit theme_on-color"><div class="abenefit_bg"><img src={`/img/scenes/${A.benefits[2].img}.webp`} alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">{A.benefits[2].title}</h3><div class="u-12"></div><p class="p1">{A.benefits[2].text}</p></div></div>
+                )}
+                <a class="acard" href={flatHref(r)} data-id={r.id}>
+                  <Decor />
+                  <div class="acard_shadow" aria-hidden="true"></div>
+                  <div class="acard_c">
+                    <div class="acard_t"><h2 class="l2 a-center">{A.types[r.t]}</h2><div class="u-4"></div><p class="l2 reg a-center">{A.finish}</p></div>
+                    <div class="acard_img">
+                      {r.p ? <img src={`/img/plans/${r.p}-800.webp`} alt={fill(d.ui.alt.plan, { type: A.types[r.t], area: fmtArea(lang, r.a) })} loading={i < 6 ? 'eager' : 'lazy'} decoding="async" />
+                        : r.poly ? <div class="acard_floor"><img src={`/img/floors/p${r.e}-f${r.f}.webp`} alt={fill(d.ui.alt.floor, { floor: r.f, ent: r.e })} loading="lazy" decoding="async" /><svg viewBox={r.poly.box} preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d={r.poly.d} /></svg></div>
+                        : <div class="acard_none" aria-hidden="true"></div>}
+                    </div>
+                    <div class="acard_b">
+                      <p class="acard_data l2 reg"><span>{fill(A.noFmt, { n: r.n })}</span><i></i><span>{fill(A.entFmt, { n: r.e })}</span><i></i><span>{fill(A.floorFmt, { n: r.f })}</span></p>
+                      <div class="u-16"></div>
+                      <p class="acard_info h5"><span>{A.roomsShort[r.t]}</span><span class="acard_sl">/</span><span>{fmtArea(lang, r.a)} {d.ui.m2}</span></p>
+                      <div class="u-16"></div>
+                      <p class="acard_add l1">{r.c > 1 ? fill(A.same, { n: r.c - 1 }) : ' '}</p>
+                    </div>
+                  </div>
+                </a>
+              </>
+            ))}
+          </div>
+          <p class="p1 apts_empty" data-apts-empty hidden>{A.empty}</p>
+          <div class="apts_more">
+            <button class="pill l1" type="button" data-apts-more>{A.more}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <FinalCta lang={lang} />
+  <Footer lang={lang} />
+  <script type="application/json" id="apts-data" set:html={JSON.stringify({ rows, s: strings, page: PAGE })}></script>
+  <script>
+    import '../scripts/apartments.js';
+  </script>
+</Base>
+
+<style is:global>
+  /* ---------- каталог (ERA .apart-s): отступ сверху 48 + 272, сетка 9 колонок из 10 ---------- */
+  .apts{padding-bottom:calc(160rem/var(--s))}
+  .apts_top{height:calc(272rem/var(--s))}
+  .apts_cms{grid-column:2 / 11;position:relative}
+  .apts_title{display:flex;justify-content:space-between;align-items:flex-end;gap:calc(32rem/var(--s))}
+  /* заголовок не шире строки вместе со счётчиком: длина слова зависит от языка */
+  .apts_h1,.apts_count{font-size:min(calc(192rem/var(--s)),calc(82vw / (var(--chars) * .62 + 2.8)))}
+  .apts_count{font-variant-numeric:lining-nums tabular-nums}
+
+  .apts_filter{position:relative;--decor-c:calc(32rem/var(--s))}
+  .apts_filter_c{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;padding:calc(32rem/var(--s)) calc(32rem/var(--s))}
+  .apts_filter_item{display:flex;align-items:center}
+  .apts_filter_item.is-last{justify-content:space-between}
+  .apts_reset{min-height:32px}
+  .apts_reset.is-disabled{opacity:.35;pointer-events:none}
+
+  /* ---------- сетка карточек (ERA: 3 × 396 px, зазор 14.4 px при 1440) ---------- */
+  .apts_list{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(16rem/var(--s));transition:opacity var(--dur-s) var(--ease-out)}
+  .apts_list.is-swapping{opacity:0}
+  .apts_empty{margin-top:calc(64rem/var(--s));text-align:center}
+  .apts_more{display:flex;justify-content:center;margin-top:calc(64rem/var(--s))}
+  .apts_more[hidden],.apts_more.is-hidden{display:none}
+
+  @media (max-width:991px){
+    .apts_top{height:calc(120rem/var(--s))}
+    .apts_cms{grid-column:1 / 5}
+    .apts_h1{font-size:min(calc(72rem/var(--s)),calc(92vw / (var(--chars) * .62 + .4)))}
+    .apts_filter_c{grid-template-columns:1fr;row-gap:calc(8rem/var(--s));padding:calc(16rem/var(--s)) calc(24rem/var(--s))}
+    .apts_filter_item.is-last{flex-wrap:wrap;column-gap:calc(16rem/var(--s))}
+    .apts_list{grid-template-columns:1fr}
+  }
+</style>

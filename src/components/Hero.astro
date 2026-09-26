@@ -1,0 +1,245 @@
+---
+/* Первый экран — структура и размеры сняты с era-residence.com #hero:
+   section.clip > .container > .hero-scroll-area (580vh) > .hero-w (sticky 100vh)
+     .hero-s   — u-48, h1 в две строки (12vw), каллиграфия a2 (7.5vw, −12°),
+                 u-48, строка h5: слева / вкладки день-ночь / справа
+     .hero-w_bg — картинка шириной 100vw (высота auto), пины, два градиента,
+                 внизу картинки — круглая кнопка 13vw
+   Тексты — из документа «Этап 1»: PARI RESIDENCE, Samarqand,
+   «Парижское очарование.» / «Самаркандская душа.», «Выбрать квартиру».
+   Вместо набранного «PARI RESIDENCE» — утверждённый векторный знак PARI
+   (гайдбук §2.1, §2.6: логотип не набирается шрифтом); буквы — отдельные svg,
+   поэтому появление по буквам как у ERA сохраняется. Текст заголовка — для
+   поисковиков и экранных дикторов. */
+/* dayBase / nightBase — префикс нарезки из renders/make-hero-pair.py (…-800 … -2560.webp и -m-720/1080.webp).
+   Пока вечернего кадра нет, переключатель скрыт (документ «Этап 1»: только при паре одной камеры). */
+import brand from '../data/logo-brand.json';
+import { t, href } from '../i18n/index.js';
+interface Props { dayBase?: string; nightBase?: string; lang?: string }
+const { dayBase = '/img/hero-facade', nightBase, lang = 'ru' } = Astro.props;
+const d = t(lang);
+const u = d.ui;
+const deskSet = (b: string) => [800, 1280, 1600, 1920, 2560].map((w) => `${b}-${w}.webp ${w}w`).join(', ');
+const mobSet = (b: string) => `${b}-m-720.webp 720w, ${b}-m-1080.webp 1080w`;
+const tabSet = (b: string) => `${b}-m-1080.webp 1080w, ${b}-m-1536.webp 1536w`;   /* планшет: вертикаль крупнее, телефону хватает 1080 */
+
+/* буквы знака PARI (P, A, R, ствол i, точка i) в долях габарита надписи */
+const [bx, by, bw, bh] = brand.pariBox.split(' ').map(Number);
+const pct = (v: number) => (v * 100).toFixed(3) + '%';
+const letters = brand.pari.map((d, i) => {
+  const [x, y, w, h] = brand.pariRects[i];
+  return { d, vb: x + ' ' + y + ' ' + w + ' ' + h, style: 'left:' + pct((x - bx) / bw) + ';top:' + pct((y - by) / bh) + ';width:' + pct(w / bw) + ';height:' + pct(h / bh) };
+});
+
+/* точки — на кадре «3.1.jpg» (renders/make-hero-official.py): башня справа, средние корпуса, аркада */
+const pins = [
+  { left: '80.5%', top: '55.5%', tip: u.pins[0] },
+  { left: '42%', top: '62%', tip: u.pins[1] },
+  { left: '74.5%', top: '81.5%', tip: u.pins[2] },
+];
+---
+<section id="hero" class="section clip theme_on-color" data-hero>
+  <div class="container">
+    <div class="hero-scroll-area" data-hero-scroll>
+      <div class="hero-w" data-hero-w>
+
+        <div class="hero-s" data-hero-s>
+          <div class="u-48"></div>
+          <div class="grid">
+            <div class="hero-s_logo">
+              <h1 class="visually-hidden">PARI Residence</h1>
+              <div class="hero-logo" data-hero-h1 aria-hidden="true" style={'aspect-ratio:' + bw + ' / ' + bh}>
+                {letters.map((l) => (
+                  <span class="split-char hero-logo_l" style={l.style}><svg viewBox={l.vb} preserveAspectRatio="none" fill="currentColor"><path d={l.d} /></svg></span>
+                ))}
+              </div>
+              <div class="hero-s_logo_a" data-hero-a2>
+                <h2 class="a2"><span>{d.hero.script}</span></h2>
+              </div>
+            </div>
+          </div>
+          <div class="u-48"></div>
+          <div class="grid">
+            <h3 class="hero-s_title h5">
+              <span class="a-left" data-hero-line><span class="line-mask"><span class="line">{d.hero.left}</span></span></span>
+              <div class="hero-s_tabs" data-hero-tabs hidden={!nightBase}>
+                <a class="nav-item is-active" href="#" data-theme-btn="day" aria-label={u.day}><span class="nav-item_label"><span class="nav-item_label_text l1">{u.day}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.day}</span></span></a>
+                <div class="hero-s_tabs_divider is-day"></div>
+                <a class="nav-item" href="#" data-theme-btn="night" aria-label={u.night}><span class="nav-item_label"><span class="nav-item_label_text l1">{u.night}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.night}</span></span></a>
+              </div>
+              <span class="a-right" data-hero-line><span class="line-mask"><span class="line">{d.hero.right}</span></span></span>
+            </h3>
+          </div>
+        </div>
+
+        <div class="hero-w_bg" data-hero-bg>
+          <div class="hero-w_bg_master">
+            <div class="hero-w_bg_master_img" data-hero-img>
+              <div class="pins-cms b-desk" aria-hidden="true">
+                {pins.map(p => (
+                  <div class="pins-cms_list_item" style={`left:${p.left};top:${p.top}`} data-pin>
+                    <div class="pin">
+                      <div class="pin_dot"><div class="ico-16"><svg viewBox="0 0 16 16" width="100%" height="100%" fill="none"><path d="M8 2.666c.368 0 .667.3.667.668v4h4l.134.013c.303.062.533.331.533.653 0 .368-.299.667-.667.667H8.667v4c0 .368-.299.667-.667.667a.667.667 0 0 1-.667-.667v-4h-4A.667.667 0 0 1 2.666 8c0-.368.3-.667.668-.667h4v-4c0-.368.299-.667.667-.667Z" fill="currentColor"/></svg></div></div>
+                      <div class="pin_bg"><div class="pin_bg_pulse"></div></div>
+                    </div>
+                    <div class="pin_tip l1">{p.tip}</div>
+                  </div>
+                ))}
+              </div>
+              <div class="hero-w_bg_master_img_day">
+                <div class="img-w h-auto">
+                  <picture>
+                    <source media="(min-width: 600px) and (max-width: 991px) and (orientation: portrait)" srcset={tabSet(dayBase)} sizes="100vw" width="720" height="1560" />
+                    <source media="(max-width: 991px) and (orientation: portrait)" srcset={mobSet(dayBase)} sizes="100vw" width="720" height="1560" />
+                    <img class="img h-auto hero-img" src={`${dayBase}-1920.webp`} srcset={deskSet(dayBase)}
+                      sizes="100vw" width="1920" height="1286" alt={u.alt.hero} fetchpriority="high" decoding="async" data-critical />
+                  </picture>
+                </div>
+              </div>
+              {nightBase && (
+                <div class="hero-w_bg_master_img_night" data-hero-night>
+                  <div class="img-w h-auto">
+                    <picture>
+                      {/* вечерний кадр грузится не сразу (scripts/motion.js): на телефоне это −124 КБ на первом экране */}
+                      <source media="(min-width: 600px) and (max-width: 991px) and (orientation: portrait)" data-srcset={tabSet(nightBase)} sizes="100vw" width="720" height="1560" />
+                      <source media="(max-width: 991px) and (orientation: portrait)" data-srcset={mobSet(nightBase)} sizes="100vw" width="720" height="1560" />
+                      <img class="img h-auto hero-img" data-src={`${nightBase}-1920.webp`} data-srcset={deskSet(nightBase)} sizes="100vw" width="1920" height="1286" alt="" decoding="async" data-night-img />
+                    </picture>
+                  </div>
+                </div>
+              )}
+              <div class="img-over-grad from-top _100vh"></div>
+              <div class="img-over-grad from-bot bot _6x"></div>
+              <span class="hero-w_note l2">{u.render}</span>
+            </div>
+
+            <div class="hero-s_b">
+              <div class="hero-s_btn">
+                <div class="btn-circle" data-btn-circle data-magnetic>
+                  <div class="btn-circle_label" data-magnetic-inner>
+                    <span class="nav-item"><span class="nav-item_label"><span class="nav-item_label_text"><span class="l1">{u.pick}</span></span><span class="nav-item_label_text is-2" aria-hidden="true"><span class="l1">{u.pick}</span></span></span></span>
+                  </div>
+                  <div class="btn-circle_bg" aria-hidden="true">
+                    <svg viewBox="0 0 208 208" width="100%" height="100%">
+                      <circle class="btn-circle_arc" cx="104" cy="104" r="103.5" stroke="currentColor" stroke-width="1" fill="none" transform="rotate(-150 104 104)"/>
+                      <circle class="btn-circle_arc" cx="104" cy="104" r="103.5" stroke="currentColor" stroke-width="1" fill="none" transform="rotate(30 104 104)"/>
+                      <circle cx="104" cy="104" r="103.5" stroke="var(--white-line)" stroke-width="1" fill="none"/>
+                    </svg>
+                  </div>
+                  <a class="btn-circle_link" href={href(lang, '/apartments/')} aria-label={u.pick}></a>
+                </div>
+              </div>
+              <div class="u-32"></div>
+              <div class="grid"><div class="hero-s_desc"><p class="l1 a-center"></p></div></div>
+              <div class="u-48"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-scroll-area{position:relative;height:580vh}
+  @media (max-width:991px){.hero-scroll-area{height:max(300vh,calc(100vw + 200vh))}}
+  /* телефон в альбоме: экран низкий — круглая кнопка не помещается рядом со знаком («Выбрать квартиру» есть в меню) */
+  @media (max-width:991px) and (orientation:landscape) and (max-height:540px){.hero-s_b{display:none}.hero-logo{margin-top:calc(20rem/var(--s))}}   /* в альбоме арка следующей сцены начинается под первым экраном */
+  .hero-w{position:sticky;top:0;height:100vh;height:100svh;overflow:visible}
+
+  /* ---------- контент ---------- */
+  .hero-s{position:relative;z-index:2;height:100%;will-change:transform}
+  .hero-s_logo{grid-column:3 / 9;display:flex;flex-direction:column;align-items:center;min-width:0;position:relative}
+  /* знак занимает те же 6 колонок, что и набранный заголовок раньше; высота ~ две строки h1 ERA */
+  /* заказчик 26.09: «тексты очень большие» — знак 760 → 460, каллиграфия 92 → 64, слоган 40 → 28 */
+  .hero-logo{position:relative;width:calc(460rem/var(--s));margin-top:calc(24rem/var(--s))}
+  .hero-logo_l{position:absolute;display:block;will-change:transform,opacity}
+  .hero-logo_l svg{display:block;width:100%;height:100%;overflow:visible}
+  /* Каллиграфия вне потока: не толкает строку слогана вниз, висит под заголовком
+     между двумя половинами слогана (замечание заказчика 21.09: не перекрывать
+     RESIDENCE и поднять слоган к небу). */
+  .hero-s_logo_a{
+    position:absolute;left:50%;top:100%;z-index:1;
+    width:max-content;margin-top:calc(34rem/var(--s));margin-left:calc(16rem/var(--s));
+    /* со знаком PARI (гайдбук §2.3, охранное поле) каллиграфия не заходит на буквы:
+       она висит в строке слогана, в промежутке между двумя фразами */
+    transform:translateX(-50%) rotate(-12deg);transform-origin:50% 50%;
+  }
+  .hero-s_logo_a .a2{margin-top:0;text-align:center;text-transform:none;color:var(--white);font-size:calc(64rem/var(--s))}
+  .hero-s_logo_a .a2 span{display:inline-block;will-change:transform,opacity}
+
+  .hero-s_title{grid-column:1 / 11;display:flex;justify-content:space-between;align-items:center;position:relative;font-size:calc(28rem/var(--s))} /* русские фразы длиннее «A place / to return to»: строка на всю ширину сетки при том же кегле 2.5vw */
+  .hero-s_title .a-left,.hero-s_title .a-right{flex:0 1 auto;white-space:nowrap}
+  .line-mask{display:block;overflow:hidden}
+  .line{display:block;will-change:transform}
+  /* центр строки слогана занят каллиграфией «Samarqand», поэтому вкладки «Днём / Вечером»
+     стоят под правой фразой — на небе; каллиграфия не перехватывает клики. */
+  .hero-s_tabs{display:flex;align-items:center;gap:calc(16rem/var(--s));position:absolute;right:0;top:calc(100% + 24rem/var(--s));z-index:3}
+  .hero-s_logo_a{pointer-events:none}
+  .hero-s_tabs[hidden]{display:none}
+  .hero-s_tabs .nav-item{opacity:.45;transition:opacity var(--dur-m) var(--ease-out)}
+  @media (max-width:991px){.hero-s_tabs .nav-item{display:inline-flex;align-items:center;min-height:44px;opacity:.6}}
+  .hero-s_tabs .nav-item.is-active,.hero-s_tabs .nav-item:hover{opacity:1}
+  .hero-s_tabs_divider{width:calc(64rem/var(--s));height:1px;background:var(--white-30)}
+
+  /* ---------- фон ---------- */
+  .hero-w_bg{
+    position:absolute;top:0;left:calc(-48rem/var(--s));width:100vw;z-index:0;
+    transform-origin:50% 75%;will-change:transform;
+  }
+  .hero-w_bg_master{position:relative}
+  .hero-w_bg_master_img{position:relative;transform-origin:50% 0}
+  .hero-w_bg_master_img_day{position:relative}
+  .hero-w_bg_master_img_night{position:absolute;inset:0;opacity:0;transition:opacity var(--dur-m) var(--ease-in-out)}
+  .hero-w_bg_master_img.is-night .hero-w_bg_master_img_night{opacity:1}
+  .hero-img{width:100%;height:auto;display:block}
+  .hero-w_note{position:absolute;right:calc(48rem/var(--s));bottom:calc(16rem/var(--s));z-index:2;opacity:.5}
+
+  /* ---------- пины (референс: .pin 2rem, точка 6/16rem, пульс) ---------- */
+  .pins-cms{position:absolute;inset:0;z-index:5;pointer-events:none}
+  .pins-cms_list_item{position:absolute;transform:translate(-50%,-50%);pointer-events:auto}
+  .pin{position:relative;width:calc(32rem/var(--s));height:calc(32rem/var(--s));border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .pin_dot{position:relative;z-index:2;width:calc(6rem/var(--s));height:calc(6rem/var(--s));border-radius:50%;background:var(--white);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:width var(--dur-m) var(--ease-out),height var(--dur-m) var(--ease-out)}
+  .pin_dot .ico-16{width:calc(16rem/var(--s));height:calc(16rem/var(--s));color:var(--base-1000);opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .pin_bg{position:absolute;inset:0}
+  .pin_bg_pulse{position:absolute;inset:0;border-radius:50%;border:1px solid var(--white);animation:pinPulse 2.4s var(--ease-out) infinite}
+  .hero-off .pin_bg_pulse{animation-play-state:paused}   /* первый экран ушёл — пульс не тикает (scripts/motion.js) */
+  @keyframes pinPulse{0%{transform:scale(1);opacity:1}100%{transform:scale(1.6);opacity:0}}
+  .pin:hover .pin_dot{width:calc(20rem/var(--s));height:calc(20rem/var(--s))}
+  .pin:hover .pin_dot .ico-16{opacity:1}
+  .pin_tip{
+    position:absolute;left:50%;top:calc(100% + 8rem/var(--s));transform:translateX(-50%) translateY(6px);
+    white-space:nowrap;color:var(--white);opacity:0;pointer-events:none;
+    transition:opacity var(--dur-m) var(--ease-out),transform var(--dur-m) var(--ease-out);
+  }
+  .pins-cms_list_item:hover .pin_tip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ---------- низ картинки: круглая кнопка ---------- */
+  /* кнопка — у низа первого экрана (картинка выше экрана на «хвост»): видна сразу, дальше едет вместе с фоном */
+  .hero-s_b{position:absolute;left:0;right:0;bottom:max(0px,calc(100% - 100vh));bottom:max(0px,calc(100% - 100svh));z-index:3;padding-inline:calc(48rem/var(--s))}
+  .hero-s_btn{display:flex;justify-content:center}
+  .hero-s_desc{grid-column:4 / 8}
+  .btn-circle{position:relative;width:max(168px,calc(208rem/var(--s)));height:max(168px,calc(208rem/var(--s)));color:var(--white);display:flex;align-items:center;justify-content:center}
+  .btn-circle_label{position:relative;z-index:2;width:62%;text-align:center}
+  .btn-circle_label .l1{display:block;white-space:normal}
+  .btn-circle_bg{position:absolute;inset:0;z-index:1}
+  .btn-circle_arc{stroke-dasharray:27.1179 650.31;transition:stroke-dasharray var(--dur-m) var(--ease-in-out)}
+  .btn-circle:hover .btn-circle_arc{stroke-dasharray:325.155 650.31}
+  .btn-circle_link{position:absolute;inset:0;z-index:3;border-radius:50%}
+
+  @media (max-width:991px){
+    .hero-s_logo,.hero-s_title{grid-column:1 / 5}
+    .hero-logo{width:calc(220rem/var(--s));margin-top:calc(52rem/var(--s))}   /* ниже знака в шапке: не касается его */
+    .hero-s_logo_a{position:relative;left:auto;top:auto;transform:rotate(-12deg);width:calc(130rem/var(--s));margin-top:calc(6rem/var(--s));margin-left:calc(-12rem/var(--s))}
+    .hero-s_logo_a .a2{margin-top:0;font-size:calc(48rem/var(--s))}
+    .hero-s_title{font-size:calc(21rem/var(--s))}
+    .hero-s_title{flex-wrap:wrap;justify-content:center;gap:calc(8rem/var(--s)) calc(16rem/var(--s));text-align:center}
+    .hero-s_title .a-left,.hero-s_title .a-right{flex:0 0 auto;text-align:center}
+    .hero-s_tabs{position:static;transform:none;order:3;flex:0 0 100%;justify-content:center;margin-top:calc(12rem/var(--s))}
+    .hero-w_bg{left:calc(-24rem/var(--s))}
+    .hero-s_b{padding-inline:calc(24rem/var(--s))}
+    .btn-circle{width:max(150px,calc(160rem/var(--s)));height:max(150px,calc(160rem/var(--s)))}
+    .hero-w_note{right:calc(24rem/var(--s))}
+  }
+</style>

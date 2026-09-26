@@ -1,0 +1,41 @@
+/* ==========================================================================
+   PARI Residence — карточка квартиры и имиджевая вставка (ERA .apart-card,
+   .benefit-card). Общие для каталога и блока «Похожие варианты» на странице
+   планировки; ту же разметку рисует scripts/apartments.js, поэтому стили глобальные.
+   ========================================================================== */
+/* карточка (ERA .apart-card: padding 48/32/24, рамка со скосом, тень при наведении) */
+.acard{position:relative;display:block;padding:calc(48rem/var(--s)) calc(32rem/var(--s)) calc(24rem/var(--s));color:var(--base-1000);--decor-bg:var(--base-0);isolation:isolate}
+.acard:hover{--decor-bg:#FFFFFF}
+.acard_shadow{position:absolute;inset:0;z-index:-1;border-radius:calc(32rem/var(--s));opacity:0;transition:opacity 1.6s var(--ease-out);
+  box-shadow:0 224px 63px 0 rgba(0,0,0,0),0 143px 57px 0 rgba(0,0,0,.01),0 81px 48px 0 rgba(0,0,0,.04),0 36px 36px 0 rgba(0,0,0,.07),0 9px 20px 0 rgba(0,0,0,.08)}
+.acard:hover .acard_shadow{opacity:1}
+.acard_c{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+.acard_img{position:relative;aspect-ratio:1 / .92;margin:calc(16rem/var(--s)) 0;display:flex;align-items:center;justify-content:center}
+.acard_img>img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;transition:transform var(--dur-l) var(--ease-out)}
+.acard:hover .acard_img>img{transform:scale(1.03)}
+.acard_floor{position:relative;width:100%}
+.acard_floor img{width:100%;height:auto;display:block;mix-blend-mode:multiply}
+.acard_floor svg{position:absolute;inset:0;width:100%;height:100%}
+.acard_floor path{fill:rgba(197,160,89,.42);stroke:var(--accent);stroke-width:2}
+.acard_none{width:40%;aspect-ratio:1;background:url(/img/brand/frame-solid.svg) center / contain no-repeat;opacity:.08}
+.acard_b{margin-top:auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.acard_data{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:calc(12rem/var(--s))}
+.acard_data i{width:1px;height:1em;background:var(--base-1000-line)}
+.acard_info{display:flex;align-items:baseline;gap:calc(10rem/var(--s));justify-content:center;flex-wrap:wrap}
+.acard_add{min-height:1.4em;opacity:.8}
+.acard.is-in{animation:acardIn var(--dur-l) var(--ease-out) both}
+@keyframes acardIn{from{opacity:0;transform:translateY(calc(40rem/var(--s)))}to{opacity:1;transform:none}}
+
+/* имиджевая вставка (ERA .benefit-card): кадр с затемнением, h5 + p1 снизу */
+.abenefit{position:relative;overflow:hidden;min-height:calc(560rem/var(--s));padding:calc(32rem/var(--s));display:flex;align-items:flex-end}
+.abenefit_bg{position:absolute;inset:0}
+.abenefit_bg img{width:100%;height:100%;object-fit:cover;transform:scale(1.04);transition:transform 1.6s var(--ease-out)}
+.abenefit:hover .abenefit_bg img{transform:scale(1.1)}
+.abenefit_grad{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,0) 35%,rgba(0,0,0,.62))}
+.abenefit_info{position:relative;z-index:1;max-width:calc(320rem/var(--s))}
+
+
+@media (max-width:991px){
+  .acard{padding:calc(32rem/var(--s)) calc(20rem/var(--s)) calc(20rem/var(--s))}
+  .abenefit{min-height:calc(360rem/var(--s))}
+}

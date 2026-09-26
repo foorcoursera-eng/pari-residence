@@ -1,0 +1,26 @@
+---
+/* «Хлебные крошки» слева по вертикали — как header-cramps у ERA на внутренних
+   страницах: «Главная / Выбрать квартиру / № 45», читаются снизу вверх.
+   Цвет меняется вместе с шапкой (светлая / тёмная сцена). */
+interface Props { items: { t: string; href?: string }[] }
+const { items } = Astro.props;
+---
+<nav class="crumbs" aria-label="breadcrumbs" data-crumbs>
+  {items.map((it, i) => (
+    <>
+      {i > 0 && <span class="l2 crumbs_sep" aria-hidden="true">/</span>}
+      {it.href
+        ? <a class="nav-item crumbs_item" href={it.href}><span class="nav-item_label"><span class="nav-item_label_text l2">{it.t}</span><span class="nav-item_label_text is-2 l2" aria-hidden="true">{it.t}</span></span></a>
+        : <span class="l2 crumbs_item is-active" aria-current="page" data-crumb-last>{it.t}</span>}
+    </>
+  ))}
+</nav>
+
+<style>
+  .crumbs{position:fixed;z-index:90;left:calc(104rem/var(--s));bottom:calc(64rem/var(--s));display:flex;align-items:center;gap:calc(12rem/var(--s));
+    writing-mode:vertical-rl;transform:rotate(180deg);color:var(--white);transition:color var(--dur-m) var(--ease-out)}
+  :global(html.is-light-ui) .crumbs{color:var(--base-1000)}
+  .crumbs_sep{opacity:.35}
+  .crumbs_item.is-active{opacity:.5}
+  @media (max-width:991px){.crumbs{display:none}}
+</style>
