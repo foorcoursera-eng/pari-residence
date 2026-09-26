@@ -11,11 +11,10 @@
    ========================================================================== */
 import { animate } from 'motion';
 import Lenis from 'lenis';
-import { onFrame, progress } from './ticker.js';
+import { onFrame, progress, wake, desktop, layoutVersion } from './ticker.js';
 
 const root = document.documentElement;
 const MOTION = root.classList.contains('has-motion');
-const DESKTOP = matchMedia('(min-width: 992px)').matches;
 const FINE = matchMedia('(pointer: fine)').matches && matchMedia('(hover: hover)').matches;
 
 const DUR = { s: .4, m: .8, l: 1.2 };
@@ -32,7 +31,9 @@ if (MOTION) {
     scrollVelocity = e.velocity;
     if (Math.abs(e.velocity) > .05) scrollDir = e.velocity > 0 ? 1 : -1;
   });
-  onFrame('scroll', (t) => lenis.raf(t));                  /* общий кадр: сначала прокрутка, потом замеры и записи */
+  /* общий кадр: сначала прокрутка, потом замеры и записи; пока Lenis доводит прокрутку — кадры идут */
+  onFrame('scroll', (t) => { lenis.raf(t); if (lenis.isScrolling) wake(); });
+  window.__lenis = lenis;                                     /* меню, окно записи и каталог останавливают и двигают прокрутку */
 }
 
 /* ---------- элементы ---------- */
@@ -84,21 +85,37 @@ function heroIntro() {
 if (INTRO) Promise.resolve(window.__pariLoader).then(() => setTimeout(heroIntro, 250));
 
 /* ---------- скролл первого экрана ----------
-   Замер и запись в одном кадре с Lenis: фон и текст не отстают от прокрутки. */
+   Замер и запись в одном кадре с Lenis: фон и текст не отстают от прокрутки.
+   Положение области прокрутки и высоты не меряются каждый кадр: они меняются только
+   с размером окна и загрузкой картинки, в кадре остаётся арифметика от scrollY. */
 if (MOTION && scrollArea && heroBg && heroS) {
-  let p = -1, vh = 0, bgH = 0, sS = '', sB = '';
+  let geo = null, p = -1, sS = '', sB = '', lastY = NaN;
+  const measure = () => {
+    geo = {
+      top: scrollArea.getBoundingClientRect().top + window.scrollY,
+      h: scrollArea.offsetHeight,
+      vh: (heroW && heroW.offsetHeight) || window.innerHeight,  /* высота липкого экрана (100svh): не прыгает от адресной строки iOS */
+      bgH: heroBg.offsetHeight,
+    };
+    lastY = NaN;
+  };
+  window.addEventListener('resize', () => { geo = null; });
+  if ('ResizeObserver' in window) new ResizeObserver(() => { geo = null; wake(); }).observe(heroBg);
   onFrame('read', () => {
-    const r = scrollArea.getBoundingClientRect();
-    vh = (heroW && heroW.offsetHeight) || window.innerHeight;   /* высота липкого экрана (100svh): не прыгает от адресной строки iOS */
-    p = r.bottom < -vh ? 1 : progress(r, 'pin', vh);          /* ушли далеко вниз — кадр стоит в конце */
-    bgH = heroBg.offsetHeight;
+    if (!geo) measure();
+    const y = window.scrollY;
+    if (y === lastY) return;
+    lastY = y;
+    const top = geo.top - y;
+    p = top + geo.h < -geo.vh ? 1 : progress({ top, height: geo.h }, 'pin', geo.vh);   /* ушли далеко вниз — кадр стоит в конце */
   });
   onFrame('write', () => {
+    if (!geo) return;
     const p1 = easeOut(clamp01(p / .65));
-    const tail = Math.max(0, bgH - vh);
+    const tail = Math.max(0, geo.bgH - geo.vh);
     const p2 = clamp01((p - .5) / .5);
-    const scale = 1 + p2 * (DESKTOP ? 1 : .2);
-    const tS = `translate3d(0, ${(-0.78 * vh * p1).toFixed(2)}px, 0)`;
+    const scale = 1 + p2 * (desktop() ? 1 : .2);
+    const tS = `translate3d(0, ${(-0.78 * geo.vh * p1).toFixed(2)}px, 0)`;
     const tB = `translate3d(0, ${(-tail * p1).toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
     if (tS !== sS) { heroS.style.transform = sS = tS; }
     if (tB !== sB) { heroBg.style.transform = sB = tB; }
@@ -139,19 +156,22 @@ $$('[data-theme-btn]').forEach((btn) => {
    вверх → против) и разгоняется со скоростью Lenis (до ~450°/с). У PARI вращается
    рамка-арабеска: пока страница движется — те же скорости и направление; после
    остановки рамка упруго доходит до ближайшего положения, кратного 180°, где она
-   совпадает с утверждённым знаком (рамка симметрична относительно центра). */
+   совпадает с утверждённым знаком (рамка симметрична относительно центра).
+   В покое кадры не нужны: пока рамка не дошла, она сама просит следующий кадр. */
 let lastScrollT = -1e9;
 if (MOTION) window.addEventListener('scroll', () => { lastScrollT = performance.now(); }, { passive: true });
-if (MOTION && ring && DESKTOP) {
+if (MOTION && ring) {
   let angle = 0, vel = 0, target = null, shown = '';
   onFrame('write', (now, dt) => {
+    if (!desktop()) { if (shown) { ring.style.transform = shown = ''; angle = 0; vel = 0; target = null; } return; }
     if (now - lastScrollT < 180) {
       target = null;
       const boost = Math.max(-450, Math.min(450, scrollVelocity * 26));
       const want = 30 * scrollDir + boost;
       vel += (want - vel) * Math.min(1, dt * 8);
       angle += vel * dt;
-    } else {
+      wake();
+    } else if (vel !== 0 || target !== null) {
       if (target === null) {
         const ahead = angle + vel * .35;                      /* куда рамка докатится по инерции */
         target = (vel >= 0 ? Math.ceil(ahead / 180) : Math.floor(ahead / 180)) * 180;
@@ -159,18 +179,24 @@ if (MOTION && ring && DESKTOP) {
       const k = 26, c = 2 * Math.sqrt(k);                     /* критическое затухание: без перелёта */
       vel += (k * (target - angle) - c * vel) * dt;
       angle += vel * dt;
-      if (Math.abs(target - angle) < .02 && Math.abs(vel) < .05) { angle = target; vel = 0; }
+      if (Math.abs(target - angle) < .02 && Math.abs(vel) < .05) { angle = target % 360; vel = 0; target = null; }
+      else wake();
     }
     const tr = `rotate(${angle.toFixed(2)}deg)`;
     if (tr !== shown) ring.style.transform = shown = tr;      /* в покое не трогаем стиль — кадр не пересчитывается */
   });
 }
 
-/* ---------- магнитная круглая кнопка (только мышь, ≥992) ---------- */
-if (MOTION && FINE && DESKTOP) {
+/* ---------- магнитная круглая кнопка (только мышь, ≥992) ----------
+   Движение мыши копится и применяется раз в кадр: одна анимация на кадр, а не на каждое событие. */
+if (MOTION && FINE) {
   $$('[data-magnetic]').forEach((btn) => {
     const inner = $('[data-magnetic-inner]', btn);
-    btn.addEventListener('mousemove', (e) => {
+    let ev = null;
+    btn.addEventListener('mousemove', (e) => { if (desktop()) { ev = e; wake(); } });
+    onFrame('write', () => {
+      if (!ev) return;
+      const e = ev; ev = null;
       const r = btn.getBoundingClientRect();
       const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
       const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
@@ -178,6 +204,7 @@ if (MOTION && FINE && DESKTOP) {
       if (inner) animate(inner, { x: dx * r.width * .1, y: dy * r.height * .1 }, { duration: DUR.s, ease: EASE_OUT });
     });
     btn.addEventListener('mouseleave', () => {
+      ev = null;
       animate(btn, { x: 0, y: 0 }, { type: 'spring', stiffness: 150, damping: 9 });
       if (inner) animate(inner, { x: 0, y: 0 }, { type: 'spring', stiffness: 150, damping: 9 });
     });

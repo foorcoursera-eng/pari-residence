@@ -58,6 +58,8 @@ if (root && dataEl) {
 
   function show(f, user) {
     cur = f;
+    /* для заявки — чистые значения, не текст из разметки (заголовки на странице режутся на буквы) */
+    Object.assign(root.dataset, { leadNo: fill(S.noFmt, { n: f.n }), leadFloor: String(f.f), leadEnt: String(f.e) });
     noEl.textContent = fill(S.noFmt, { n: f.n });
     floorEl.textContent = f.f;
     entEl.textContent = f.e;

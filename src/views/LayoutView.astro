@@ -47,7 +47,7 @@ const catalog = href(lang, '/apartments/');
   description={fill(d.meta.flat.description, { type: typeName, area })}
   crumbs={[{ t: d.ui.home, href: href(lang, '/') }, { t: A.crumb, href: catalog }, { t: `${typeName}, ${area} ${d.ui.m2}` }]} scrollbar={false}>
 
-  <section class="section apt" data-ui="light" data-flat>
+  <section class="section apt" data-ui="light" data-flat data-lead-type={typeName} data-lead-area={`${area} ${d.ui.m2}`}>
     <div class="container">
       <div class="u-48"></div>
       <div class="apt_top"></div>
@@ -87,8 +87,8 @@ const catalog = href(lang, '/apartments/');
           <dl class="apt_params">
             <div><dt class="l1 reg">{F.rooms}</dt><dd class="h5">{L.studio ? A.types.s : L.rooms}</dd></div>
             <div><dt class="l1 reg">{F.area}</dt><dd class="h5">{area} {d.ui.m2}</dd></div>
-            <div><dt class="l1 reg">{F.floor}</dt><dd class="h5" data-flat-floor>{f0.floor}</dd></div>
-            <div><dt class="l1 reg">{F.ent}</dt><dd class="h5" data-flat-ent>{f0.ent}</dd></div>
+            <div><dt class="l1 reg">{F.floor}</dt><dd class="h5" data-flat-floor data-no-reveal>{f0.floor}</dd></div>
+            <div><dt class="l1 reg">{F.ent}</dt><dd class="h5" data-flat-ent data-no-reveal>{f0.ent}</dd></div>
           </dl>
           <div class="u-32"></div>
           <div class="apt_pick">

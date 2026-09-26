@@ -9,11 +9,11 @@
      облака; облака тают с тонких краёв (порог маски растёт), затем гаснут.
    В покое облака медленно плывут (видео + лёгкий дрейф кадра).
    Пока видео не готово или без WebGL — неподвижный кадр-постер с альфой.
+   Кадры цикл тратит, только пока сцена рядом с экраном и облака ещё не растаяли (hold).
    ========================================================================== */
-import { onFrame } from './ticker.js';
+import { onFrame, hold, release, desktop } from './ticker.js';
 
 const MOTION = document.documentElement.classList.contains('has-motion');
-const MOBILE = matchMedia('(max-width: 991px)').matches;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const ease = (t) => t * t * (3 - 2 * t);
 
@@ -51,7 +51,7 @@ document.querySelectorAll('[data-clouds]').forEach((box) => {
     const r = sec.getBoundingClientRect();
     const p = (window.innerHeight - r.top) / (window.innerHeight + r.height);   /* 0 — сцена вошла снизу, 1 — ушла вверх */
     /* облака держатся, пока сцена встаёт на экран, и расходятся дальше; на телефоне сцена ниже экрана — окно раньше */
-    target = MOBILE ? clamp01((p - .3) / .45) : clamp01((p - .38) / .4);
+    target = !desktop() ? clamp01((p - .3) / .45) : clamp01((p - .38) / .4);
   };
 
   /* ---------- WebGL ---------- */
@@ -111,10 +111,11 @@ document.querySelectorAll('[data-clouds]').forEach((box) => {
 
   /* ---------- видимость: видео играет и кадры рисуются только рядом с экраном ---------- */
   let near = false;
+  const key = {};
   new IntersectionObserver((es) => {
     near = es[0].isIntersecting;
-    if (near) { startVideo(); if (video && video.paused) video.play().catch(() => {}); }
-    else if (video) video.pause();
+    if (near) { startVideo(); if (video && video.paused) video.play().catch(() => {}); hold(key); }
+    else { if (video) video.pause(); release(key); }
   }, { rootMargin: '50% 0px' }).observe(sec);
 
   size();
@@ -134,8 +135,9 @@ document.querySelectorAll('[data-clouds]').forEach((box) => {
       sec.classList.toggle('is-clouded', cur < .45);             /* подсказку «потяните» не показываем поверх облаков */
       const ui = cur < .5 ? 'light' : 'dark';                    /* на белых облаках шапка графитовая, на аэровиде — белая */
       if (sec.dataset.ui !== ui) sec.dataset.ui = ui;            /* цвет шапки проверяется каждый кадр (scenes.js) */
-      /* облака растаяли и слой погашен — видео и шейдер не нужны */
-      if (op === '0.000') { if (video && !video.paused) video.pause(); return; }
+      /* облака растаяли и слой погашен — видео, шейдер и лишние кадры не нужны (прокрутка разбудит цикл сама) */
+      if (op === '0.000') { if (video && !video.paused) video.pause(); if (cur === target) release(key); return; }
+      hold(key);
       if (video && video.paused && ready) video.play().catch(() => {});
       if (gl && ready) {
         if (frameNew || !video.requestVideoFrameCallback) {

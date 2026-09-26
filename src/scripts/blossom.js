@@ -10,12 +10,13 @@
         выключен по требованиям «Этапа 1»).
    В сцене «Характер PARI» с веток падают лепестки (canvas); при быстрой
    прокрутке их сдувает в сторону движения.
+   Кадры нужны, только пока ветки отыгрывают ветер или лепестки на экране (hold / wake):
+   в покое вдали от сцены цикл спит.
    ========================================================================== */
-import { onFrame } from './ticker.js';
+import { onFrame, wake, hold, release, desktop, viewRect } from './ticker.js';
 
 const root = document.documentElement;
 const MOTION = root.classList.contains('has-motion');
-const DESKTOP = matchMedia('(min-width: 992px)').matches;
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -38,7 +39,7 @@ if (MOTION) {
   /* ---------- лепестки ---------- */
   const fields = $$('[data-petals]').map((cv) => {
     const ctx = cv.getContext('2d');
-    const n = DESKTOP ? 34 : 14;
+    const n = desktop() ? 34 : 14;
     const f = { cv, ctx, w: 0, h: 0, dpr: 1, petals: [], n };
     const size = () => {
       f.dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -98,6 +99,7 @@ if (MOTION) {
   let y = window.scrollY, W = window.innerWidth, H = window.innerHeight;
   onFrame('read', () => {
     y = window.scrollY; W = window.innerWidth; H = window.innerHeight;
+    const DESKTOP = desktop();
     const tracks = new Map();
     layers.forEach((L) => {
       L.tx = 0; L.ty = 0; L.near = false;
@@ -111,23 +113,29 @@ if (MOTION) {
           L.tx = -(cx - home) * L.depth;
         }
       } else if (L.el.offsetParent) {
-        const pr = L.el.offsetParent.getBoundingClientRect();
+        const pr = viewRect(L.el.offsetParent);                   /* секция неподвижна относительно документа — из кеша */
         const cy = pr.top + L.el.offsetTop + L.el.offsetHeight / 2;
         L.near = cy > -H && cy < 2 * H;
         if (DESKTOP && L.depth && L.near) L.ty = -(cy - H / 2) * L.depth;
       }
     });
-    fields.forEach((f) => {
+    fields.forEach((f, i) => {
       const r = f.cv.getBoundingClientRect();
-      f.vis = !(r.right < 0 || r.left > W || r.bottom < 0 || r.top > H);
+      const vis = !(r.right < 0 || r.left > W || r.bottom < 0 || r.top > H);
+      if (vis !== f.vis) { f.vis = vis; if (vis) hold('petals' + i); else release('petals' + i); }
     });
   });
+  /* лепестки видны с первого кадра (перезагрузка посреди сцены) — цикл должен знать об этом сразу */
+  fields.forEach((f, i) => new IntersectionObserver(([e]) => { if (e.isIntersecting) hold('petals' + i); }).observe(f.cv));
 
   /* ---------- фаза записи ---------- */
   onFrame('write', (now, dt) => {
+    const DESKTOP = desktop();
     if (dt > 0) vy += ((y - lastY) / dt - vy) * Math.min(1, dt * 6);
     lastY = y;
+    if (Math.abs(vy) < .5) vy = 0;
     wind = clamp(vy / 1600, -1, 1);
+    let busy = vy !== 0;
 
     /* ветки: пружина к углу «ветра» + глубина; вдали от экрана и в покое стиль не трогаем */
     layers.forEach((L) => {
@@ -138,10 +146,12 @@ if (MOTION) {
         L.va += (48 * (target - L.a) - 6.5 * L.va) * dt;        /* недодемпфированная пружина: лёгкое «отыгрывание» */
         L.a += L.va * dt;
         if (Math.abs(L.a) < .002 && Math.abs(L.va) < .002 && Math.abs(target) < .002) { L.a = 0; L.va = 0; }
+        else busy = true;                                        /* ветка ещё отыгрывает — нужен следующий кадр */
         if (!L.near) return;
         tr = `translate3d(${L.tx.toFixed(1)}px,${L.ty.toFixed(1)}px,0) rotate(${L.a.toFixed(2)}deg)`;
       } else {
-        if (!L.near || !(DESKTOP && L.depth)) return;            /* слои без глубины (телефон) не трогаем вовсе */
+        if (!(DESKTOP && L.depth)) { if (L.shown) L.el.style.transform = L.shown = ''; return; }   /* телефон: глубины нет, сдвиг снят */
+        if (!L.near) return;
         tr = `translate3d(${L.tx.toFixed(1)}px,${L.ty.toFixed(1)}px,0)`;
       }
       if (tr !== L.shown) L.el.style.transform = L.shown = tr;
@@ -164,5 +174,6 @@ if (MOTION) {
         drawPetal(ctx, p);
       });
     });
+    if (busy) wake();
   });
 }

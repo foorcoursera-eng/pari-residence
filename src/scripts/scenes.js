@@ -3,37 +3,44 @@
    Motion (MIT) для скролла и анимаций; значения — из разбора ERA:
    short .4 / medium .8 / long 1.2 с, stagger символов .05, ease-out (0.25,1,0.5,1),
    in-out (0.76,0,0.24,1); горизонтальная глава и тяжёлый параллакс — только ≥992.
+   Граница 992 px проверяется в каждом кадре (desktop()): поворот планшета без
+   перезагрузки переключает сцены между раскладками.
    ========================================================================== */
 import { revealTitle } from './reveal.js';
-import { onFrame, progress } from './ticker.js';
+import { onFrame, onLayout, progress, wake, desktop, docRect, viewRect, layoutVersion } from './ticker.js';
+import { initTabs } from './tabs.js';
 import './blossom.js';
 import './clouds.js';
 
 const root = document.documentElement;
 const MOTION = root.classList.contains('has-motion');
-const DESKTOP = matchMedia('(min-width: 992px)').matches;
 const FINE = matchMedia('(pointer: fine)').matches && matchMedia('(hover: hover)').matches;
-const DUR = { s: .4, m: .8, l: 1.2 };
-const EASE_OUT = [.25, 1, .5, 1];
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
 /* ---------- мягкое догоняние (аналог scrub у ScrollTrigger: .5 с — параллакс, .25 с — лента) ----------
-   Скролл задаёт цель, кадр подтягивается к ней экспоненциально каждый кадр. */
+   Скролл задаёт цель, кадр подтягивается к ней экспоненциально каждый кадр; пока не догнал — просит кадры. */
 const smoothers = new Set();
 function smooth(apply, lag) {
   const s = { t: null, c: null, apply, lag };
   smoothers.add(s);
-  return (v) => { s.t = v; if (s.c === null) { s.c = v; apply(v); } };
+  const set = (v) => { if (v !== s.t) wake(); s.t = v; if (s.c === null) { s.c = v; apply(v); } };
+  set.jump = (v) => { s.t = s.c = v; apply(v); };                   /* без догоняния: смена раскладки, первый кадр */
+  set.redraw = () => { if (s.c !== null) apply(s.c); };             /* то же значение заново: размеры изменились */
+  return set;
 }
 onFrame('write', (now, dt) => {
+  let moving = false;
   smoothers.forEach((s) => {
     if (s.t === null || Math.abs(s.t - s.c) < 1e-4) return;
     s.c += (s.t - s.c) * (1 - Math.exp(-dt * (3 / s.lag)));
+    if (Math.abs(s.t - s.c) < 1e-4) s.c = s.t;
     s.apply(s.c);
+    moving = true;
   });
+  if (moving) wake();
 });
 
 /* ---------- слайдеры (ERA initSlider: кадр из маски-полигона, scale 1.5→1, xPercent 25→0) ---------- */
@@ -45,29 +52,41 @@ $$('[data-slider]').forEach((box) => {
   const fill = $('[data-slide-fill]', box);
   const n = Math.max(imgs.length, titles.length, texts.length);
   if (n < 2) return;
+  const auto = MOTION ? parseInt(box.dataset.autoplay || '0', 10) : 0;
   let cur = 0;
-  const set = (i) => {
+  /* следующий слайд грузим заранее: иначе ленивая картинка под маской появляется с пустой полосой */
+  const warm = (i) => { const im = imgs[(i + n) % n]?.querySelector('img'); if (im && im.loading === 'lazy') im.loading = 'eager'; };
+  /* автолистание (data-autoplay = мс): линия пагинации растёт, пока идёт отсчёт до следующего кадра.
+     Рост линии — анимация transform средствами браузера (WAAPI): ни одного кадра скрипта.
+     Пауза при наведении на фото или стрелки и при фокусе, вне экрана и в скрытой вкладке;
+     ручное переключение начинает отсчёт заново. При «меньше движения» — выключено. */
+  let run = null, visible = false, over = 0, focused = false;
+  const shouldRun = () => visible && !over && !focused && !document.hidden;
+  const sync = () => { if (run) { if (shouldRun()) run.play(); else run.pause(); } };
+  const restart = () => {
+    if (!auto || !fill) return;
+    if (run) run.cancel();
+    run = fill.animate([{ transform: `scaleX(${cur / n})` }, { transform: `scaleX(${(cur + 1) / n})` }], { duration: auto, easing: 'linear', fill: 'forwards' });
+    run.onfinish = () => set(cur + 1, true);
+    sync();
+  };
+  function set(i, fromAuto) {
     cur = (i + n) % n;
     [imgs, titles, texts].forEach((list) => list.forEach((el, k) => {
       el.classList.toggle('is-active', k === cur);
       if (el.hasAttribute('data-slide-title')) el.setAttribute('aria-hidden', k === cur ? 'false' : 'true');
     }));
     if (index) index.textContent = String(cur + 1);
-    if (fill) fill.style.transform = `scaleX(${(cur + 1) / n})`;
+    if (fill && !auto) fill.style.transform = `scaleX(${(cur + 1) / n})`;
     if (titles[cur]) revealTitle(titles[cur]);
     warm(cur + 1);
     /* «Посмотреть планировку» в типологиях ведёт в каталог с фильтром по комнатам текущего слайда */
     const tl = $('[data-types-link]', box);
     if (tl) tl.href = tl.dataset.typesBase + '?type=' + (cur + 1);
-  };
-  /* автолистание (data-autoplay = мс): линия пагинации растёт, пока идёт отсчёт до
-     следующего кадра; пауза при наведении и фокусе, вне экрана и в скрытой вкладке;
-     ручное переключение начинает отсчёт заново. При «меньше движения» — выключено. */
-  /* следующий слайд грузим заранее: иначе ленивая картинка под маской появляется с пустой полосой */
-  const warm = (i) => { const im = imgs[(i + n) % n]?.querySelector('img'); if (im && im.loading === 'lazy') im.loading = 'eager'; };
+    if (auto) restart();
+    else if (!fromAuto && fill) fill.style.transform = `scaleX(${(cur + 1) / n})`;
+  }
   new IntersectionObserver(([e], io) => { if (e.isIntersecting) { warm(cur + 1); io.disconnect(); } }, { rootMargin: '100% 0px' }).observe(box);
-  const auto = parseInt(box.dataset.autoplay || '0', 10);
-  let tAuto = 0;
   /* свайп по фото: влево — следующий, вправо — предыдущий (вертикальная прокрутка страницы не мешает) */
   const zone = imgs[0]?.parentElement;
   if (zone) {
@@ -77,32 +96,26 @@ $$('[data-slider]').forEach((box) => {
     zone.addEventListener('pointerup', (e) => {
       if (sx === null) return;
       const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { tAuto = 0; set(cur + (dx < 0 ? 1 : -1)); }
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) set(cur + (dx < 0 ? 1 : -1));
     });
     zone.addEventListener('pointercancel', () => { sx = null; });
   }
-  $('[data-slide-prev]', box)?.addEventListener('click', () => { tAuto = 0; set(cur - 1); });
-  $('[data-slide-next]', box)?.addEventListener('click', () => { tAuto = 0; set(cur + 1); });
+  $('[data-slide-prev]', box)?.addEventListener('click', () => set(cur - 1));
+  $('[data-slide-next]', box)?.addEventListener('click', () => set(cur + 1));
   if (fill) fill.style.transform = `scaleX(${1 / n})`;         /* линия — transform, а не width: без пересчёта раскладки */
-  if (auto && MOTION) {
-    let visible = false, paused = false;
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: .3 }).observe(box);
+  if (auto && fill) {
+    fill.style.transition = 'none';
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }, { threshold: .3 }).observe(box);
     /* пауза — только когда курсор на фото или на стрелках: сцена во весь экран,
        и пауза по всей секции означала бы, что на компьютере слайды почти не листаются */
-    let over = 0;
-    [imgs[0]?.parentElement, $('.pag', box)].filter(Boolean).forEach((z) => {
-      z.addEventListener('mouseenter', () => { over++; paused = true; });
-      z.addEventListener('mouseleave', () => { over = Math.max(0, over - 1); paused = over > 0; });
+    [zone, $('.pag', box)].filter(Boolean).forEach((z) => {
+      z.addEventListener('mouseenter', () => { over++; sync(); });
+      z.addEventListener('mouseleave', () => { over = Math.max(0, over - 1); sync(); });
     });
-    box.addEventListener('focusin', () => { paused = true; });
-    box.addEventListener('focusout', () => { paused = over > 0; });
-    if (fill) fill.style.transition = 'none';
-    onFrame('write', (now, dt) => {
-      if (!visible || paused || document.hidden) return;
-      tAuto += dt * 1000;
-      if (tAuto >= auto) { tAuto = 0; set(cur + 1); }
-      if (fill) fill.style.transform = `scaleX(${((cur + tAuto / auto) / n).toFixed(4)})`;
-    });
+    box.addEventListener('focusin', () => { focused = true; sync(); });
+    box.addEventListener('focusout', (e) => { if (!box.contains(e.relatedTarget)) { focused = false; sync(); } });
+    document.addEventListener('visibilitychange', sync);
+    restart();
   }
 });
 
@@ -111,32 +124,42 @@ $$('[data-tabs]').forEach((box) => {
   const tabs = $$('[data-tab]', box);
   const imgs = $$('[data-tab-img]', box);
   const texts = $$('[data-tab-text]', box);
-  const set = (i) => {
-    tabs.forEach((t, k) => { t.classList.toggle('is-active', k === i); t.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
+  const select = initTabs(tabs, texts, (i) => {
+    tabs.forEach((t, k) => t.classList.toggle('is-active', k === i));
     imgs.forEach((t, k) => t.classList.toggle('is-active', k === i));
     texts.forEach((t, k) => t.classList.toggle('is-active', k === i));
-  };
-  tabs.forEach((t, i) => {
-    t.addEventListener('click', () => set(i));
-    if (FINE) t.addEventListener('mouseenter', () => set(i));
-  });
+  }, { orientation: 'vertical' });
+  if (FINE) tabs.forEach((t, i) => t.addEventListener('mouseenter', () => select(i, false)));
 });
 
-/* ---------- горизонтальная глава о месте (ERA horScroll) ---------- */
+/* ---------- горизонтальная глава о месте (ERA horScroll) ----------
+   Ширина ленты и положение секции меряются при смене раскладки, в кадре — только scrollY. */
 $$('[data-hscroll]').forEach((sec) => {
   const track = $('[data-hscroll-track]', sec);
   const path = $('[data-path]', sec);
-  if (!track || !DESKTOP) { if (path) path.style.setProperty('--draw', '0%'); return; }
+  if (!track) return;
   const START = .18;
-  let dist = 0, draw = '';
+  let dist = 0, distV = -1, draw = '', on = null;
   const set = smooth((t) => {
+    if (!on) return;
     track.style.transform = `translate3d(${(-dist * t).toFixed(1)}px,0,0)`;
     const d = `${((1 - clamp01((t - .78) / .2)) * 100).toFixed(1)}%`;
     if (path && d !== draw) path.style.setProperty('--draw', draw = d);
   }, MOTION ? .25 : .001);
   onFrame('read', () => {
-    dist = Math.max(0, track.scrollWidth - window.innerWidth);   /* ширину ленты меряем в фазе чтения, не посреди записи */
-    set(clamp01((progress(sec.getBoundingClientRect(), 'pin') - START) / (1 - START)));
+    const d = desktop();
+    const turned = d !== on;
+    if (turned) {
+      on = d;
+      if (!d) { track.style.transform = ''; if (path) path.style.setProperty('--draw', draw = '0%'); return; }
+    }
+    if (!on) return;
+    const r = docRect(sec);
+    const remeasure = distV !== r.v;
+    if (remeasure) { distV = r.v; dist = Math.max(0, track.scrollWidth - window.innerWidth); }   /* ширину ленты — только при смене раскладки */
+    const t = clamp01((progress(viewRect(sec), 'pin') - START) / (1 - START));
+    if (turned) set.jump(t);
+    else { if (remeasure) set.redraw(); set(t); }
   });
 });
 
@@ -162,8 +185,7 @@ $$('[data-masterplan]').forEach((sec) => {
     sec.setPointerCapture(e.pointerId);
   });
   sec.addEventListener('pointermove', (e) => {
-    const r = sec.getBoundingClientRect();
-    if (cursor) { cursor.style.left = `${e.clientX - r.left}px`; cursor.style.top = `${e.clientY - r.top}px`; }
+    if (cursor && !touch) { const r = sec.getBoundingClientRect(); cursor.style.left = `${e.clientX - r.left}px`; cursor.style.top = `${e.clientY - r.top}px`; }
     if (!down) return;
     const b = bounds();
     x = Math.min(b.maxX, Math.max(b.minX, px + (e.clientX - sx)));
@@ -173,6 +195,8 @@ $$('[data-masterplan]').forEach((sec) => {
   const up = () => { down = false; sec.classList.remove('is-dragging'); };
   sec.addEventListener('pointerup', up);
   sec.addEventListener('pointercancel', up);
+  /* смена раскладки: кадр возвращается в исходное положение, границы у него другие */
+  onLayout(() => { x = y = 0; drag.style.transform = ''; });
 });
 
 /* ---------- «Архитектура»: кадр раскрывается из колонки на весь экран ---------- */
@@ -187,7 +211,7 @@ $$('[data-archi]').forEach((sec) => {
      анимация width (cover-кадр шириной 75→100vw), но без раскладки и перерисовки на каждом кадре. */
   const IW = +(img?.getAttribute('width') || 1920), IH = +(img?.getAttribute('height') || 1080);
   const cover = (w, h) => Math.max(w / IW, h / IH);
-  let W = 0, H = 0, box = '';
+  let W = 0, H = 0, box = '', mode = null, geoV = -1;
   /* картинка — в полный cover-размер кадра шириной 100vw (не обрезается своей рамкой),
      со сдвигом как у object-position 50% 30%; масштаб — вокруг той же точки 50% 30% */
   const fit = () => {
@@ -205,15 +229,7 @@ $$('[data-archi]').forEach((sec) => {
       img.style.transform = `scale(${(k / s).toFixed(4)}, ${k.toFixed(4)})`;
     }
   };
-  const measure = () => { W = window.innerWidth; H = frame.offsetHeight || window.innerHeight; };
-  measure();
-  if (!DESKTOP || !MOTION) {
-    if (DESKTOP) { open(1); frame.style.setProperty('--grad', '1'); }
-    if (text) text.style.setProperty('--txt', '1');
-    return;
-  }
-  open(.75);
-  const set = smooth((p) => {
+  const draw = (p) => {
     open(.75 + .25 * easeOut(clamp01((p - .08) / .5)));
     frame.style.setProperty('--grad', clamp01((p - .45) / .3).toFixed(3));
     if (word) {
@@ -222,17 +238,46 @@ $$('[data-archi]').forEach((sec) => {
       word.style.opacity = String(1 - w);
     }
     if (text) text.style.setProperty('--txt', clamp01((p - .62) / .25).toFixed(3));
-  }, .35);
-  onFrame('read', () => { measure(); set(progress(sec.getBoundingClientRect(), 'pin')); });
+  };
+  const set = smooth((p) => { if (mode === 'scroll') draw(p); }, .35);
+  /* раскладки: телефон — кадр в потоке, всё видно (стили из CSS); ПК без движения — кадр открыт; ПК — сцена на скролле */
+  const reset = () => {
+    box = '';
+    frame.style.transform = ''; frame.style.removeProperty('--grad');
+    if (img) img.removeAttribute('style');
+    if (word) { word.style.transform = ''; word.style.opacity = ''; }
+    if (text) text.style.removeProperty('--txt');
+  };
+  onFrame('read', () => {
+    const want = !desktop() ? 'mobile' : MOTION ? 'scroll' : 'static';
+    const r = docRect(sec);
+    if (want === mode && r.v === geoV) { if (mode === 'scroll') set(progress(viewRect(sec), 'pin')); return; }
+    const turned = want !== mode;
+    mode = want; geoV = r.v;
+    W = window.innerWidth; H = frame.offsetHeight || window.innerHeight; box = '';
+    if (turned) reset();
+    if (mode === 'mobile') { if (text) text.style.setProperty('--txt', '1'); return; }
+    if (mode === 'static') { open(1); frame.style.setProperty('--grad', '1'); if (text) text.style.setProperty('--txt', '1'); return; }
+    if (turned) set.jump(progress(viewRect(sec), 'pin'));
+    else { set.redraw(); set(progress(viewRect(sec), 'pin')); }
+  });
 });
 
 /* ---------- параллакс кадров (ERA initAllParallax; на телефоне выключен) ---------- */
-if (MOTION && DESKTOP) {
+if (MOTION) {
   $$('[data-parallax]').forEach((el) => {
     const amt = parseFloat(el.dataset.parallax) || 10;
-    const set = smooth((p) => { el.style.transform = `translate3d(0, ${((p * 2 - 1) * amt).toFixed(2)}%, 0)`; }, .5);
     const box = el.parentElement;
-    onFrame('read', () => set(progress(box.getBoundingClientRect(), 'pass')));
+    let on = null;
+    const set = smooth((p) => { if (on) el.style.transform = `translate3d(0, ${((p * 2 - 1) * amt).toFixed(2)}%, 0)`; }, .5);
+    onFrame('read', () => {
+      const d = desktop();
+      if (d !== on) { on = d; if (!d) el.style.transform = ''; else set.jump(progress(viewRect(box), 'pass')); }
+      if (!on) return;
+      const r = viewRect(box);
+      if (r.bottom < -window.innerHeight || r.top > 2 * window.innerHeight) return;   /* далеко от экрана — не трогаем */
+      set(progress(r, 'pass'));
+    });
   });
 }
 
@@ -242,16 +287,15 @@ if (MOTION && DESKTOP) {
   if (bar) {
     const fill = $('[data-scrollbar-fill]', bar);
     const num = $('[data-scrollbar-num]', bar);
-    let p = 0, h = 0, shown = -1, txt = '';
+    let p = 0, h = 0, shown = -1, txt = '', max = 0, v = -1;
     onFrame('read', () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (layoutVersion() !== v) { v = layoutVersion(); max = document.documentElement.scrollHeight - window.innerHeight; h = bar.offsetHeight; }   /* высота документа — при смене раскладки, не в каждом кадре */
       p = max > 0 ? clamp01(window.scrollY / max) : 0;
-      h = bar.offsetHeight;
     });
     onFrame('write', () => {
-      const v = Math.round(p * 2000);                              /* пишем, только когда сдвиг заметен */
-      if (v === shown) return;
-      shown = v;
+      const val = Math.round(p * 2000);                            /* пишем, только когда сдвиг заметен */
+      if (val === shown) return;
+      shown = val;
       fill.style.transform = `scaleY(${p.toFixed(4)})`;
       num.style.transform = `translate3d(0, ${(p * h).toFixed(1)}px, 0) translateY(-50%)`;
       const t = String(Math.round(p * 100)).padStart(2, '0');
@@ -261,9 +305,9 @@ if (MOTION && DESKTOP) {
 }
 
 /* ---------- цвет шапки по сцене под ней (ERA theme_on-color / theme_on-brand) ---------- */
-/* Раньше — elementsFromPoint на каждом событии прокрутки (дорогой hit-test всей страницы).
-   Теперь в фазе чтения смотрим прямоугольники сцен с data-ui: побеждает последняя по порядку
-   (она рисуется поверх, вложенная — важнее родителя); первый экран — всегда тёмная шапка. */
+/* В фазе чтения смотрим, какая сцена с data-ui под шапкой: побеждает последняя по порядку
+   (она рисуется поверх, вложенная — важнее родителя); первый экран — всегда тёмная шапка.
+   Положение сцен — из кеша (секции неподвижны относительно документа), в кадре только scrollY. */
 /* На телефоне кадры-фото внутри светлых сцен помечены data-ui-m="dark": шапка над ними белая. */
 {
   const mob = matchMedia('(max-width: 991px)');
@@ -272,25 +316,27 @@ if (MOTION && DESKTOP) {
   let light = null, away = false, lastY = window.scrollY;
   onFrame('read', () => {
     let hit = null, ui = 'dark';
-    const W = window.innerWidth;
+    const y = window.scrollY + Y;
     for (const el of scenes) {
       const v = (mob.matches && el.dataset.uiM) || el.dataset.ui;
       if (!v && !el.hasAttribute('data-hero')) continue;             /* только data-ui-m, а мы на ПК */
-      const r = el.getBoundingClientRect();
-      if (r.top <= Y && r.bottom > Y && r.height > 0 && r.left < W && r.right > 0) { hit = el; ui = v; }   /* позже = поверх / вложенный */
+      const r = docRect(el);
+      if (r.top <= y && r.bottom > y && r.height > 0) { hit = el; ui = v; }   /* позже = поверх / вложенный */
     }
     const on = !!hit && !hit.hasAttribute('data-hero') && ui === 'light';
     if (on !== light) root.classList.toggle('is-light-ui', light = on);
     /* телефон: шапка прячется при прокрутке вниз, возвращается при прокрутке вверх и у самого верха */
     if (mob.matches) {
-      const y = window.scrollY, d = y - lastY;
+      const sy = window.scrollY, d = sy - lastY;
       if (Math.abs(d) > 6) {
-        const want = d > 0 && y > window.innerHeight * .6;
+        const want = d > 0 && sy > window.innerHeight * .6 && !root.classList.contains('is-menu-open');
         if (want !== away) root.classList.toggle('is-header-away', away = want);
-        lastY = y;
+        lastY = sy;
       }
     } else if (away) root.classList.toggle('is-header-away', away = false);
   });
+  /* шапка получила фокус с клавиатуры — возвращаем её на экран */
+  $$('[data-header-logo], [data-header-nav]').forEach((el) => el.addEventListener('focusin', () => { if (away) root.classList.toggle('is-header-away', away = false); }));
 }
 
 /* ---------- фон подвала грузится, только когда подвал в двух экранах от видимой части ---------- */
@@ -336,12 +382,10 @@ function leadContext() {
     site: 'pari-residence.uz',
   };
   if (flatInfo) {
-    const no = $('[data-flat-no]', flatInfo)?.textContent.trim();
-    const type = $('.apt_info .l2', flatInfo)?.textContent.trim();
-    const area = $('.apt_params div:nth-child(2) dd', flatInfo)?.textContent.trim();
-    const fl = $('[data-flat-floor]', flatInfo)?.textContent.trim();
-    const ent = $('[data-flat-ent]', flatInfo)?.textContent.trim();
-    ctx.flat = `${type}, ${area} — подъезд ${ent}, этаж ${fl}, ${no}`;
+    /* значения — из data-атрибутов (их пишет scripts/flat.js при выборе квартиры), а не из текста
+       на странице: заголовки режутся на буквы и несут скрытую копию для экранных дикторов */
+    const { leadType: type, leadArea: area, leadNo: no, leadFloor: fl, leadEnt: ent } = flatInfo.dataset;
+    if (type && no) ctx.flat = `${type}, ${area} — подъезд ${ent}, этаж ${fl}, ${no}`;
   }
   const t = new URLSearchParams(location.search).get('type');
   if (t) ctx.rooms = t === 's' ? 'студия' : t + '-комн.';
