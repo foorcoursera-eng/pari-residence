@@ -6,10 +6,13 @@
    §6.2 кадрирование): вершины и изгибы рамки срезаны краями окна, поля формы
    остаются внутри рамки. */
 import { t as tr, href } from '../i18n/index.js';
+import { pageExists } from '../data/pages.js';
 const { lang = 'ru' } = Astro.props;
 const { form } = tr(lang);
 const u = tr(lang).ui;
 import brand from '../data/logo-brand.json';
+/* текст согласия — отдельной страницей, когда она появится (src/pages/consent); до тех пор без ссылки в никуда */
+const consentHref = pageExists(lang, '/consent/') ? href(lang, '/consent/') : null;
 ---
 <dialog class="mdlg theme_on-light" data-dialog data-lenis-prevent aria-labelledby="mdlg-title">
   <div class="mdlg_card" data-dialog-card>
@@ -21,17 +24,20 @@ import brand from '../data/logo-brand.json';
       <label class="mdlg_field">
         <span class="l1 reg">{form.name}</span>
         <input class="p1" type="text" name="name" id="lead-name" autocomplete="name" placeholder={form.namePh} required />
-        <span class="l2 mdlg_err" data-err="name">{form.nameErr}</span>
+        <span class="l2 mdlg_err" id="lead-name-err" data-err="name">{form.nameErr}</span>
       </label>
       <label class="mdlg_field">
         <span class="l1 reg">{form.phone}</span>
         <input class="p1" type="tel" name="phone" id="lead-phone" autocomplete="tel" inputmode="tel" placeholder={form.phonePh} required />
-        <span class="l2 mdlg_err" data-err="phone">{form.phoneErr}</span>
+        <span class="l2 mdlg_err" id="lead-phone-err" data-err="phone">{form.phoneErr}</span>
       </label>
-      <label class="mdlg_consent">
-        <input type="checkbox" name="consent" id="lead-consent" required />
-        <span class="p1">{form.consent} (<a href={href(lang, '/consent/')}>{u.consentLink}</a>)</span>
-      </label>
+      <div class="mdlg_consent">
+        <label class="mdlg_consent_l">
+          <input type="checkbox" name="consent" id="lead-consent" required />
+          <span class="p1">{form.consent}{consentHref && <> (<a href={consentHref}>{u.consentLink}</a>)</>}</span>
+        </label>
+        <span class="l2 mdlg_err" id="lead-consent-err" data-err="consent">{form.consentErr}</span>
+      </div>
       <input type="text" name="company" tabindex="-1" autocomplete="off" class="visually-hidden" aria-hidden="true" />
       <button class="pill l1 mdlg_submit" type="submit" data-submit>{form.submit}</button>
       <p class="p1 mdlg_status" role="status" aria-live="polite" data-status data-sending={form.sending} data-ok={form.ok} data-fail={form.fail}></p>
@@ -49,6 +55,7 @@ import brand from '../data/logo-brand.json';
   .mdlg_card>:not(.mdlg_frame):not(.mdlg_close){position:relative;z-index:1}
   .mdlg_frame{position:absolute;left:50%;top:50%;width:196%;max-width:none;height:auto;transform:translate(-50%,-50%);color:var(--accent);opacity:.55;pointer-events:none;overflow:visible}
   .mdlg_close{position:absolute;z-index:2;right:calc(24rem/var(--s));top:calc(24rem/var(--s));min-height:32px}
+  @media (max-width:991px){.mdlg_close{right:8px;top:8px;min-height:44px;min-width:44px;padding:0 12px}}   /* цель касания ≥ 44 px */
   .mdlg_script{color:var(--accent);font-size:calc(72rem/var(--s))}
   .mdlg_title{margin-top:calc(8rem/var(--s));text-transform:none}
   .mdlg_form{display:flex;flex-direction:column;gap:calc(20rem/var(--s));margin-top:calc(32rem/var(--s))}
@@ -56,11 +63,13 @@ import brand from '../data/logo-brand.json';
   .mdlg_field input{font-size:16px;border:0;border-bottom:1px solid var(--base-1000-line);background:transparent;padding:calc(10rem/var(--s)) 0;color:inherit;outline:none;transition:border-color var(--dur-s) var(--ease-out)}
   .mdlg_field input:focus{border-color:var(--base-1000)}
   .mdlg_err{color:#9a3b3b;display:none}
-  .mdlg_field.is-error .mdlg_err{display:block}
+  .mdlg_field.is-error .mdlg_err,.mdlg_consent.is-error .mdlg_err{display:block}
   .mdlg_field.is-error input{border-color:#9a3b3b}
-  .mdlg_consent{display:flex;gap:calc(10rem/var(--s));align-items:flex-start}
+  .mdlg_consent{display:flex;flex-direction:column;gap:calc(6rem/var(--s))}
+  .mdlg_consent_l{display:flex;gap:calc(10rem/var(--s));align-items:flex-start;cursor:pointer}
+  .mdlg_consent_l input{flex:none;width:18px;height:18px;margin:.2em 0 0;accent-color:var(--base-1000)}
   .mdlg_consent a{text-decoration:underline}
-  .mdlg_consent.is-error{color:#9a3b3b}
+  .mdlg_consent.is-error .mdlg_consent_l{color:#9a3b3b}
   .mdlg_submit{align-self:flex-start;min-height:44px}
   .mdlg_submit[disabled]{opacity:.5;pointer-events:none}
   .mdlg_status:empty{display:none}

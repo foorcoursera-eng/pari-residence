@@ -71,12 +71,13 @@ const first = rows.slice(0, PAGE);
 const flatHref = (r: any) => href(lang, `/apartments/${r.l}/`) + `?flat=${r.id}`;
 const strings = {
   types: A.types, roomsShort: A.roomsShort, finish: A.finish, noFmt: A.noFmt, entFmt: A.entFmt, floorFmt: A.floorFmt,
-  same: A.same, m2: d.ui.m2, base: href(lang, '/apartments/'), lang, benefits: A.benefits, empty: A.empty,
+  same: A.same, m2: d.ui.m2, base: href(lang, '/apartments/'), lang, benefits: A.benefits, empty: A.empty, found: A.found,
+  alt: d.ui.alt.plan, altFloor: d.ui.alt.floor,
 };
 const title = A.title;
 ---
 <Base lang={lang} path="/apartments/" title={d.meta.apartments.title} description={d.meta.apartments.description} crumbs={[{ t: d.ui.home, href: href(lang, '/') }, { t: A.crumb }]} scrollbar={false}>
-  <section class="section clip apts" data-ui="light" data-apts>
+  <section class="section apts" data-ui="light" data-apts>
     <Flower side="r" style="left:calc(1180rem/var(--s));top:calc(-230rem/var(--s));width:calc(480rem/var(--s))" />
     <div class="container">
       <div class="u-48"></div>
@@ -85,7 +86,8 @@ const title = A.title;
         <div class="apts_cms">
           <div class="apts_title" style={`--chars:${title.length}`}>
             <h1 class="h1 apts_h1">{title}</h1>
-            <div class="h1 a-right apts_count" data-apts-count data-no-reveal aria-live="polite">{rows.length}</div>
+            <div class="h1 a-right apts_count" data-apts-count data-no-reveal aria-hidden="true">{rows.length}</div>
+            <p class="visually-hidden" role="status" data-apts-found>{fill(A.found, { n: rows.length })}</p>
           </div>
           <div class="u-16"></div>
           <div class="apts_filter" data-reveal-w>
@@ -136,7 +138,10 @@ const title = A.title;
               </>
             ))}
           </div>
-          <p class="p1 apts_empty" data-apts-empty hidden>{A.empty}</p>
+          <div class="apts_empty" data-apts-empty hidden>
+            <p class="p1">{A.empty}</p>
+            <button class="pill l1" type="button" data-apts-reset-empty>{A.reset}</button>
+          </div>
           <div class="apts_more">
             <button class="pill l1" type="button" data-apts-more>{A.more}</button>
           </div>
@@ -154,7 +159,9 @@ const title = A.title;
 
 <style is:global>
   /* ---------- каталог (ERA .apart-s): отступ сверху 48 + 272, сетка 9 колонок из 10 ---------- */
-  .apts{padding-bottom:calc(160rem/var(--s))}
+  /* по горизонтали обрезаем ветку у края экрана, по вертикали — нет: список фильтра при пустом
+     или коротком результате выходит за низ секции и не должен обрезаться */
+  .apts{padding-bottom:calc(160rem/var(--s));overflow-x:clip}
   .apts_top{height:calc(272rem/var(--s))}
   .apts_cms{grid-column:2 / 11;position:relative}
   .apts_title{display:flex;justify-content:space-between;align-items:flex-end;gap:calc(32rem/var(--s))}
@@ -172,14 +179,18 @@ const title = A.title;
   /* ---------- сетка карточек (ERA: 3 × 396 px, зазор 14.4 px при 1440) ---------- */
   .apts_list{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(16rem/var(--s));transition:opacity var(--dur-s) var(--ease-out)}
   .apts_list.is-swapping{opacity:0}
-  .apts_empty{margin-top:calc(64rem/var(--s));text-align:center}
+  .apts_empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(24rem/var(--s));min-height:max(320px,calc(420rem/var(--s)));text-align:center}
+  .apts_empty[hidden]{display:none}
   .apts_more{display:flex;justify-content:center;margin-top:calc(64rem/var(--s))}
   .apts_more[hidden],.apts_more.is-hidden{display:none}
 
   @media (max-width:991px){
     .apts_top{height:calc(120rem/var(--s))}
     .apts_cms{grid-column:1 / 5}
-    .apts_h1{font-size:min(calc(72rem/var(--s)),calc(92vw / (var(--chars) * .62 + .4)))}
+    /* заголовок и счётчик в одной строке: кегль — от длины слова на языке страницы плюс место под 4 цифры
+       (раньше счётчик уходил за правый край экрана и при смене фильтра его не было видно) */
+    .apts_title{gap:12px}
+    .apts_h1,.apts_count{font-size:min(calc(72rem/var(--s)),calc((100vw - 48rem/var(--s) - 12px) / (var(--chars) * .66 + 2.1)))}
     .apts_filter_c{grid-template-columns:1fr;row-gap:calc(8rem/var(--s));padding:calc(16rem/var(--s)) calc(24rem/var(--s))}
     .apts_filter_item.is-last{flex-wrap:wrap;column-gap:calc(16rem/var(--s))}
     .apts_list{grid-template-columns:1fr}

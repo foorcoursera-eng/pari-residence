@@ -5,10 +5,13 @@
    приглушён к центру, чтобы телефон и адрес читались. */
 import parts from '../data/logo-parts.json';
 import { t as tr, href } from '../i18n/index.js';
+import { pageExists } from '../data/pages.js';
 const { lang = 'ru' } = Astro.props;
 const { contacts, refrain } = tr(lang);
 const u = tr(lang).ui;
 const year = new Date().getFullYear();
+/* политика конфиденциальности — ссылкой, когда страница появится (src/pages/privacy): адрес без страницы вёл на 404 */
+const privacyHref = pageExists(lang, '/privacy/') ? href(lang, '/privacy/') : null;
 ---
 <footer class="section theme_on-dark footer" data-ui="dark" id="contacts">
   <div class="footer_pattern" aria-hidden="true"></div>
@@ -24,7 +27,7 @@ const year = new Date().getFullYear();
       <div class="footer_brand">
         <div class="l1">PARI Residence.</div>
         <div class="l1 reg">© {year} {refrain}</div>
-        <a class="l1 footer_link" href={href(lang, '/privacy/')}>{u.privacy}</a>
+        {privacyHref && <a class="l1 footer_link" href={privacyHref}>{u.privacy}</a>}
       </div>
       <div class="footer_social">
         <a class="l1 footer_link" href={contacts.telegram} target="_blank" rel="noopener">Telegram</a>

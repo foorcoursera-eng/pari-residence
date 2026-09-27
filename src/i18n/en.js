@@ -130,6 +130,7 @@ export const form = {
   fail: 'We could not send your request. Please try again or call us.',
   nameErr: 'Please tell us how to address you',
   phoneErr: 'Please check the phone number',
+  consentErr: 'Please confirm your consent to data processing',
   close: 'Close',
 };
 
@@ -146,6 +147,7 @@ export const ui = {
   lang: 'en', htmlLang: 'en', locale: 'en_US', name: 'English',
   skip: 'Skip to content',
   langLabel: 'Site language',
+  crumbs: 'Breadcrumbs',
   logoLabel: 'PARI Residence — home',
   pick: 'Select an apartment', pickLines: ['Select', 'an apartment'],
   meeting: 'Book a meeting',
@@ -194,6 +196,7 @@ export const apts = {
   types: { s: 'Studio', 1: '1-room', 2: '2-room', 3: '3-room', 4: '4-room' },
   sort: { rel: 'Recommended', asc: 'Smallest area', desc: 'Largest area' },
   reset: 'Reset',
+  found: 'Apartments found: {n}',
   more: 'Show more',
   empty: 'No apartments match. Change or reset the filters.',
   finish: 'Finish: white-box',

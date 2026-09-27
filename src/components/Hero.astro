@@ -54,21 +54,21 @@ const pins = [
                 ))}
               </div>
               <div class="hero-s_logo_a" data-hero-a2>
-                <h2 class="a2"><span>{d.hero.script}</span></h2>
+                <p class="a2"><span>{d.hero.script}</span></p>
               </div>
             </div>
           </div>
           <div class="u-48"></div>
           <div class="grid">
-            <h3 class="hero-s_title h5">
+            <div class="hero-s_title h5">
               <span class="a-left" data-hero-line><span class="line-mask"><span class="line">{d.hero.left}</span></span></span>
               <div class="hero-s_tabs" data-hero-tabs hidden={!nightBase}>
-                <a class="nav-item is-active" href="#" data-theme-btn="day" aria-label={u.day}><span class="nav-item_label"><span class="nav-item_label_text l1">{u.day}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.day}</span></span></a>
-                <div class="hero-s_tabs_divider is-day"></div>
-                <a class="nav-item" href="#" data-theme-btn="night" aria-label={u.night}><span class="nav-item_label"><span class="nav-item_label_text l1">{u.night}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.night}</span></span></a>
+                <button class="nav-item is-active" type="button" data-theme-btn="day" aria-pressed="true"><span class="nav-item_label"><span class="nav-item_label_text l1">{u.day}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.day}</span></span></button>
+                <div class="hero-s_tabs_divider is-day" aria-hidden="true"></div>
+                <button class="nav-item" type="button" data-theme-btn="night" aria-pressed="false"><span class="nav-item_label"><span class="nav-item_label_text l1">{u.night}</span><span class="nav-item_label_text is-2 l1" aria-hidden="true">{u.night}</span></span></button>
               </div>
               <span class="a-right" data-hero-line><span class="line-mask"><span class="line">{d.hero.right}</span></span></span>
-            </h3>
+            </div>
           </div>
         </div>
 
@@ -129,9 +129,7 @@ const pins = [
                   <a class="btn-circle_link" href={href(lang, '/apartments/')} aria-label={u.pick}></a>
                 </div>
               </div>
-              <div class="u-32"></div>
-              <div class="grid"><div class="hero-s_desc"><p class="l1 a-center"></p></div></div>
-              <div class="u-48"></div>
+              <div class="hero-s_b_gap"></div>
             </div>
           </div>
         </div>
@@ -190,7 +188,8 @@ const pins = [
   }
   .hero-w_bg_master{position:relative}
   .hero-w_bg_master_img{position:relative;transform-origin:50% 0}
-  .hero-w_bg_master_img_day{position:relative}
+  /* основной тон кадра, пока фото грузится (медленная сеть): белый текст не остаётся на белом */
+  .hero-w_bg_master_img_day{position:relative;background:linear-gradient(#8595c4,#a3a6c2 55%,#6a6553)}
   .hero-w_bg_master_img_night{position:absolute;inset:0;opacity:0;transition:opacity var(--dur-m) var(--ease-in-out)}
   .hero-w_bg_master_img.is-night .hero-w_bg_master_img_night{opacity:1}
   .hero-img{width:100%;height:auto;display:block}
@@ -219,7 +218,7 @@ const pins = [
   /* кнопка — у низа первого экрана (картинка выше экрана на «хвост»): видна сразу, дальше едет вместе с фоном */
   .hero-s_b{position:absolute;left:0;right:0;bottom:max(0px,calc(100% - 100vh));bottom:max(0px,calc(100% - 100svh));z-index:3;padding-inline:calc(48rem/var(--s))}
   .hero-s_btn{display:flex;justify-content:center}
-  .hero-s_desc{grid-column:4 / 8}
+  .hero-s_b_gap{height:calc(80rem/var(--s))}
   .btn-circle{position:relative;width:max(168px,calc(208rem/var(--s)));height:max(168px,calc(208rem/var(--s)));color:var(--white);display:flex;align-items:center;justify-content:center}
   .btn-circle_label{position:relative;z-index:2;width:62%;text-align:center}
   .btn-circle_label .l1{display:block;white-space:normal}
@@ -239,7 +238,10 @@ const pins = [
     .hero-s_tabs{position:static;transform:none;order:3;flex:0 0 100%;justify-content:center;margin-top:calc(12rem/var(--s))}
     .hero-w_bg{left:calc(-24rem/var(--s))}
     .hero-s_b{padding-inline:calc(24rem/var(--s))}
-    .btn-circle{width:max(150px,calc(160rem/var(--s)));height:max(150px,calc(160rem/var(--s)))}
+    /* на планшете размеры в vw растут вместе с шириной: кнопка и отступы под ней — с потолком,
+       иначе на 768–991 круг ложился на слоган и «Днём / Вечером» */
+    .btn-circle{width:clamp(150px,calc(160rem/var(--s)),196px);height:clamp(150px,calc(160rem/var(--s)),196px)}
+    .hero-s_b_gap{height:min(calc(80rem/var(--s)),80px)}
     .hero-w_note{right:calc(24rem/var(--s))}
   }
 </style>

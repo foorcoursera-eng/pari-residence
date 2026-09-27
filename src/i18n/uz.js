@@ -131,6 +131,7 @@ export const form = {
   fail: 'Arizani yuborib boʻlmadi. Qayta urinib koʻring yoki bizga qoʻngʻiroq qiling.',
   nameErr: 'Sizga qanday murojaat qilishni yozing',
   phoneErr: 'Telefon raqamini tekshiring',
+  consentErr: 'Maʼlumotlarni qayta ishlashga roziligingizni belgilang',
   close: 'Yopish',
 };
 
@@ -147,6 +148,7 @@ export const ui = {
   lang: 'uz', htmlLang: 'uz', locale: 'uz_UZ', name: 'Oʻzbekcha',
   skip: 'Asosiy mazmunga oʻtish',
   langLabel: 'Sayt tili',
+  crumbs: 'Navigatsiya zanjiri',
   logoLabel: 'PARI Residence — bosh sahifa',
   pick: 'Xonadon tanlash', pickLines: ['Xonadon', 'tanlash'],
   meeting: 'Uchrashuvga yozilish',
@@ -195,6 +197,7 @@ export const apts = {
   types: { s: 'Studiya', 1: 'Bir xonali', 2: 'Ikki xonali', 3: 'Uch xonali', 4: 'Toʻrt xonali' },
   sort: { rel: 'Tavsiya etilgan', asc: 'Kichik maydon', desc: 'Katta maydon' },
   reset: 'Tozalash',
+  found: 'Topilgan xonadonlar: {n}',
   more: 'Yana koʻrsatish',
   empty: 'Bunday xonadonlar yoʻq. Filtrlarni oʻzgartiring yoki tozalang.',
   finish: 'Pardoz: white-box',

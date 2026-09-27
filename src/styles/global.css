@@ -7,6 +7,21 @@
    Pinyon Script + Inter.
    ========================================================================== */
 
+/* ---------- шрифты: свои файлы (те же, что раздаёт Google Fonts, лицензия OFL — public/fonts/OFL-*.txt) ----------
+   Со своего домена: без двух лишних соединений (fonts.googleapis.com → fonts.gstatic.com) и без
+   промежуточной таблицы стилей; нужные на первом экране начертания предзагружаются (Base.astro).
+   Наборы знаков разбиты по unicode-range: браузер берёт только те файлы, чьи знаки есть на странице. */
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/cormorant-garamond-500-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/cormorant-garamond-500-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/cormorant-garamond-500-cyrillic.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/cormorant-garamond-500-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-cyrillic.woff2) format('woff2');unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-cyrillic-ext.woff2) format('woff2');unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+@font-face{font-family:'Pinyon Script';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/pinyon-script-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Pinyon Script';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/pinyon-script-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
 :root{
   --s:16;
   /* палитра этапа 1 */
@@ -53,7 +68,8 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
 ::selection{background:rgba(197,160,89,.28)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+/* рамка фокуса — цветом текста: он всегда контрастен своему фону (золото на молочном и на фото терялось) */
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 
 /* ---------- темы (как theme_on-color / theme_on-light в референсе) ---------- */
 .theme_on-color{--c-text:var(--white);--c-line:var(--white-line);color:var(--white)}
@@ -89,6 +105,10 @@ h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
 .a-center{text-align:center}.a-left{text-align:left}.a-right{text-align:right}
 
 /* ---------- отступы и сетка референса ---------- */
+/* u-4 / u-12 / u-16 стояли в разметке каталога и карточки, но не были объявлены (высота 0) */
+.u-4{height:calc(4rem/var(--s))}
+.u-12{height:calc(12rem/var(--s))}
+.u-16{height:calc(16rem/var(--s))}
 .u-24{height:calc(24rem/var(--s))}
 .u-32{height:calc(32rem/var(--s))}
 .u-48{height:calc(48rem/var(--s))}
@@ -114,6 +134,9 @@ h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
 .b-desk{display:block}.b-mob{display:none}
 @media (max-width:991px){.b-desk{display:none}.b-mob{display:block}}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* «Перейти к содержимому» появляется при фокусе с клавиатуры */
+.skip-link:focus-visible{position:fixed!important;z-index:12000;left:16px;top:16px;width:auto;height:auto;clip:auto;overflow:visible;padding:12px 20px;border-radius:999px;
+  background:var(--base-1000);color:var(--base-0);font:600 12px/1.33 var(--font-text);letter-spacing:.2em;text-transform:uppercase;outline-color:var(--accent)}
 
 /* ---------- nav-item: смена двух копий текста при наведении (референс) ---------- */
 .nav-item{display:inline-block;position:relative}
@@ -209,6 +232,11 @@ h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
 .header-logo,.header-nav{transition:color var(--dur-m) var(--ease-out)}
 /* html. — выше по весу, чем scoped-стиль шапки (.header-logo[data-astro-cid]) */
 html.is-light-ui .header-logo,html.is-light-ui .header-nav{color:var(--base-1000)}
+/* пункты шапки лежат поверх фото и веток вишни: мягкий ореол цвета фона держит их читаемыми,
+   на ровном фоне он невидим (светлая сцена — молочный, тёмная — лёгкая тень) */
+.header-nav{text-shadow:0 0 .7em rgba(0,0,0,.28),0 0 .2em rgba(0,0,0,.18)}
+html.is-light-ui .header-nav{text-shadow:0 0 .6em rgba(249,248,246,.95),0 0 .2em rgba(249,248,246,.9)}
+html.is-menu-open .header-nav{text-shadow:none}
 /* телефон: шапка без подложки уходит вверх при прокрутке вниз и возвращается при прокрутке вверх
    (иначе «Меню» и знак ложатся на текст сцен); класс ставит scripts/scenes.js */
 @media (max-width:991px){

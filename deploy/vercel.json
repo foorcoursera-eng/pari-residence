@@ -16,6 +16,21 @@
       ]
     },
     {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<sub>.*)\\.vercel\\.app"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
       "source": "/_astro/(.*)",
       "headers": [
         {
@@ -25,7 +40,7 @@
       ]
     },
     {
-      "source": "/(img|video|data)/(.*)",
+      "source": "/(img|video|data|fonts)/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

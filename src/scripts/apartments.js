@@ -4,7 +4,10 @@
    в адресе (?type=2&ent=4&sort=asc), как у ERA (?type=penthouse-duplex).
    Карточки по 24 + «Показать ещё»; при смене фильтра сетка гаснет (.4 с),
    перестраивается и карточки въезжают снизу с шагом .05 с (ERA ctn: y 3.33rem → 0).
-   Счётчик в заголовке пересчитывается плавно.
+   Счётчик в заголовке пересчитывается плавно; число найденных объявляется
+   экранным дикторам отдельной строкой (сам счётчик мелькает промежуточными числами).
+   Возврат браузером из карточки квартиры: сколько карточек было открыто и где был
+   экран — в history.state, список и позиция восстанавливаются.
    ========================================================================== */
 import { animate } from 'motion';
 import { initSelect } from './select.js';
@@ -15,21 +18,33 @@ if (root && dataEl) {
   const { rows, s: S, page: PAGE } = JSON.parse(dataEl.textContent);
   const list = root.querySelector('[data-apts-list]');
   const countEl = root.querySelector('[data-apts-count]');
+  const foundEl = root.querySelector('[data-apts-found]');
   const moreBtn = root.querySelector('[data-apts-more]');
   const emptyEl = root.querySelector('[data-apts-empty]');
   const resetBtn = root.querySelector('[data-apts-reset]');
+  const resetEmpty = root.querySelector('[data-apts-reset-empty]');
   const selects = [...root.querySelectorAll('[data-select]')];
-  const MOTION = document.documentElement.classList.contains('has-motion');
+  const html_ = document.documentElement;
+  const MOTION = html_.classList.contains('has-motion');
+  /* загрузочный экран ещё закрывает страницу — въезд карточек пройдёт за ним и не мигнёт */
+  const veiled = () => !!document.querySelector('[data-preloader]') && !html_.classList.contains('is-revealed') && !html_.classList.contains('pre-skip');
 
   const fill = (str, v) => String(str).replace(/\{(\w+)\}/g, (_, k) => (v[k] ?? ''));
   const area = (a) => { const x = (Math.round(a * 100) / 100).toFixed(2); return S.lang === 'en' ? x : x.replace('.', ','); };
   const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  /* ---------- состояние ---------- */
+  /* ---------- состояние: только допустимые значения (неверный адрес — как без фильтра) ---------- */
   const DEF = { type: '', ent: '', sort: 'rel' };
+  const VALID = {
+    type: new Set(rows.map((r) => r.t)),
+    ent: new Set(rows.map((r) => String(r.e))),
+    sort: new Set(['rel', 'asc', 'desc']),
+  };
   const q = new URLSearchParams(location.search);
-  const state = { type: q.get('type') || '', ent: q.get('ent') || '', sort: q.get('sort') || 'rel' };
-  let shown = PAGE;
+  const pickVal = (k) => { const v = q.get(k); return v && VALID[k].has(v) ? v : DEF[k]; };
+  const state = { type: pickVal('type'), ent: pickVal('ent'), sort: pickVal('sort') };
+  const saved = history.state && history.state.apts;
+  let shown = saved && saved.shown > PAGE ? saved.shown : PAGE;
 
   const result = () => {
     let r = rows.filter((x) => (!state.type || x.t === state.type) && (!state.ent || String(x.e) === state.ent));
@@ -41,8 +56,8 @@ if (root && dataEl) {
   /* ---------- разметка карточки (та же, что в ApartmentsView.astro) ---------- */
   const cardHTML = (r) => {
     let img;
-    if (r.p) img = `<img src="/img/plans/${r.p}-800.webp" alt="" loading="lazy" decoding="async" />`;
-    else if (r.poly) img = `<div class="acard_floor"><img src="/img/floors/p${r.e}-f${r.f}.webp" alt="" loading="lazy" decoding="async" /><svg viewBox="${r.poly.box}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="${r.poly.d}" /></svg></div>`;
+    if (r.p) img = `<img src="/img/plans/${r.p}-800.webp" alt="${esc(fill(S.alt, { type: S.types[r.t], area: area(r.a) }))}" loading="lazy" decoding="async" />`;
+    else if (r.poly) img = `<div class="acard_floor"><img src="/img/floors/p${r.e}-f${r.f}.webp" alt="${esc(fill(S.altFloor, { floor: r.f, ent: r.e }))}" loading="lazy" decoding="async" /><svg viewBox="${r.poly.box}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="${r.poly.d}" /></svg></div>`;
     else img = '<div class="acard_none" aria-hidden="true"></div>';
     return `<a class="acard" href="${S.base}${r.l}/?flat=${r.id}" data-id="${r.id}">
       <div class="decor" aria-hidden="true"><div class="decor_line"></div><div class="decor_fill"></div></div>
@@ -78,26 +93,46 @@ if (root && dataEl) {
   /* ---------- счётчик ---------- */
   let shownCount = rows.length;
   const setCount = (n) => {
+    if (foundEl) foundEl.textContent = fill(S.found, { n });
     if (!countEl) return;
     if (!MOTION) { countEl.textContent = String(n); shownCount = n; return; }
     const from = shownCount; shownCount = n;
     animate(0, 1, { duration: .6, ease: [.25, 1, .5, 1], onUpdate: (p) => { countEl.textContent = String(Math.round(from + (n - from) * p)); } });
   };
 
+  /* ---------- адрес и history.state ---------- */
+  const remember = () => {
+    const st = { ...(history.state || {}), apts: { shown, y: Math.round(window.scrollY) } };
+    history.replaceState(st, '', location.href);
+  };
+  const sync = () => {
+    const p = new URLSearchParams();
+    if (state.type) p.set('type', state.type);
+    if (state.ent) p.set('ent', state.ent);
+    if (state.sort !== 'rel') p.set('sort', state.sort);
+    const qs = p.toString();
+    history.replaceState({ ...(history.state || {}), apts: { shown, y: Math.round(window.scrollY) } }, '', location.pathname + (qs ? '?' + qs : ''));
+    resetBtn.classList.toggle('is-disabled', !state.type && !state.ent && state.sort === 'rel');
+    resetBtn.setAttribute('aria-disabled', !state.type && !state.ent && state.sort === 'rel' ? 'true' : 'false');
+  };
+
   /* ---------- отрисовка ---------- */
   let first = true;
-  const render = (keepShown) => {
+  const render = (keepShown, done) => {
     const r = result();
     if (!keepShown) shown = PAGE;
     const apply = () => {
       list.innerHTML = html(r.slice(0, shown), 0);
-      enter([...list.children]);
+      if (!first || veiled()) enter([...list.children]);
       list.classList.remove('is-swapping');
       emptyEl.hidden = r.length > 0;
       moreBtn.parentElement.classList.toggle('is-hidden', r.length <= shown);
+      first = false;
+      remember();
+      if (done) done();
     };
     setCount(r.length);
-    if (first || !MOTION) { first = false; apply(); return; }
+    if (first || !MOTION) { apply(); return; }
     list.classList.add('is-swapping');
     setTimeout(apply, 400);
   };
@@ -112,17 +147,10 @@ if (root && dataEl) {
     added.forEach((el) => list.appendChild(el));
     enter(added);
     moreBtn.parentElement.classList.toggle('is-hidden', r.length <= shown);
-  };
-
-  /* ---------- адрес ---------- */
-  const sync = () => {
-    const p = new URLSearchParams();
-    if (state.type) p.set('type', state.type);
-    if (state.ent) p.set('ent', state.ent);
-    if (state.sort !== 'rel') p.set('sort', state.sort);
-    const qs = p.toString();
-    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
-    resetBtn.classList.toggle('is-disabled', !state.type && !state.ent && state.sort === 'rel');
+    remember();
+    /* карточки кончились и кнопка спряталась — фокус не теряется, а встаёт на первую новую карточку */
+    const firstNew = added.find((el) => el.classList.contains('acard'));
+    if (firstNew && document.activeElement === moreBtn && moreBtn.parentElement.classList.contains('is-hidden')) firstNew.focus({ preventScroll: true });
   };
 
   /* ---------- выпадающие списки (ERA filter_select) — scripts/select.js ---------- */
@@ -133,14 +161,41 @@ if (root && dataEl) {
     return { name, api };
   });
 
-  resetBtn.addEventListener('click', () => {
+  const reset = () => {
     Object.assign(state, DEF);
     apis.forEach(({ name, api }) => api.set(state[name]));
     sync(); render();
-  });
+  };
+  resetBtn.addEventListener('click', reset);
+  if (resetEmpty) resetEmpty.addEventListener('click', () => { reset(); resetBtn.focus({ preventScroll: true }); });
   moreBtn.addEventListener('click', more);
+  /* позиция экрана — к возврату браузером: после прокрутки (не на каждый кадр) и в момент перехода в квартиру.
+     Восстанавливает её каталог сам (history.scrollRestoration = manual ставится на запись истории сразу):
+     браузер иначе прокручивал раньше, чем список дорисован, и попадал не туда */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  let tSave = 0;
+  window.addEventListener('scroll', () => { clearTimeout(tSave); tSave = setTimeout(remember, 250); }, { passive: true });
+  list.addEventListener('click', (e) => { if (e.target.closest('a')) remember(); }, true);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) remember(); });
 
-  /* первый показ: если в адресе были фильтры — перестраиваем, иначе оставляем карточки из HTML */
-  if (state.type || state.ent || state.sort !== 'rel') { sync(); render(); }
-  else { first = false; enter([...list.children]); moreBtn.parentElement.classList.toggle('is-hidden', rows.length <= PAGE); sync(); }
+  /* восстановление после возврата: столько же карточек и то же место на экране */
+  const restoreY = () => {
+    if (!saved || !saved.y) return;
+    const y = saved.y;
+    /* нативная прокрутка, а не lenis.scrollTo: Lenis ещё помнит высоту страницы до перерисовки списка и
+       обрезал бы позицию; на нативную прокрутку он переключается сам */
+    requestAnimationFrame(() => { window.scrollTo(0, y); if (window.__lenis) window.__lenis.resize(); });
+  };
+
+  /* первый показ: неверные параметры — поправить адрес; фильтры или «Показать ещё» из истории — перестроить;
+     иначе оставляем карточки из HTML */
+  const bad = ['type', 'ent', 'sort'].some((k) => q.has(k) && !VALID[k].has(q.get(k)));
+  if (state.type || state.ent || state.sort !== 'rel' || shown > PAGE || bad) { sync(); render(true, restoreY); }
+  else {
+    first = false;
+    if (veiled()) enter([...list.children]);
+    moreBtn.parentElement.classList.toggle('is-hidden', rows.length <= PAGE);
+    sync();
+    restoreY();
+  }
 }
