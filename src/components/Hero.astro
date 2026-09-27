@@ -31,11 +31,11 @@ const letters = brand.pari.map((d, i) => {
   return { d, vb: x + ' ' + y + ' ' + w + ' ' + h, style: 'left:' + pct((x - bx) / bw) + ';top:' + pct((y - by) / bh) + ';width:' + pct(w / bw) + ';height:' + pct(h / bh) };
 });
 
-/* точки — на кадре «3.1.jpg» (renders/make-hero-official.py): башня справа, средние корпуса, аркада */
+/* точки — на кадре «вид с улицы» (renders/make-hero-street.py): высокая башня, средние корпуса, аркада под башней */
 const pins = [
-  { left: '80.5%', top: '55.5%', tip: u.pins[0] },
-  { left: '42%', top: '62%', tip: u.pins[1] },
-  { left: '74.5%', top: '81.5%', tip: u.pins[2] },
+  { left: '56%', top: '52%', tip: u.pins[0] },
+  { left: '33%', top: '62%', tip: u.pins[1] },
+  { left: '61%', top: '79.5%', tip: u.pins[2] },
 ];
 ---
 <section id="hero" class="section clip theme_on-color" data-hero>
@@ -92,7 +92,7 @@ const pins = [
                     <source media="(min-width: 600px) and (max-width: 991px) and (orientation: portrait)" srcset={tabSet(dayBase)} sizes="100vw" width="720" height="1560" />
                     <source media="(max-width: 991px) and (orientation: portrait)" srcset={mobSet(dayBase)} sizes="100vw" width="720" height="1560" />
                     <img class="img h-auto hero-img" src={`${dayBase}-1920.webp`} srcset={deskSet(dayBase)}
-                      sizes="100vw" width="1920" height="1286" alt={u.alt.hero} fetchpriority="high" decoding="async" data-critical />
+                      sizes="100vw" width="1920" height="1340" alt={u.alt.hero} fetchpriority="high" decoding="async" data-critical />
                   </picture>
                 </div>
               </div>
@@ -103,7 +103,7 @@ const pins = [
                       {/* вечерний кадр грузится не сразу (scripts/motion.js): на телефоне это −124 КБ на первом экране */}
                       <source media="(min-width: 600px) and (max-width: 991px) and (orientation: portrait)" data-srcset={tabSet(nightBase)} sizes="100vw" width="720" height="1560" />
                       <source media="(max-width: 991px) and (orientation: portrait)" data-srcset={mobSet(nightBase)} sizes="100vw" width="720" height="1560" />
-                      <img class="img h-auto hero-img" data-src={`${nightBase}-1920.webp`} data-srcset={deskSet(nightBase)} sizes="100vw" width="1920" height="1286" alt="" decoding="async" data-night-img />
+                      <img class="img h-auto hero-img" data-src={`${nightBase}-1920.webp`} data-srcset={deskSet(nightBase)} sizes="100vw" width="1920" height="1340" alt="" decoding="async" data-night-img />
                     </picture>
                   </div>
                 </div>
@@ -189,7 +189,7 @@ const pins = [
   .hero-w_bg_master{position:relative}
   .hero-w_bg_master_img{position:relative;transform-origin:50% 0}
   /* основной тон кадра, пока фото грузится (медленная сеть): белый текст не остаётся на белом */
-  .hero-w_bg_master_img_day{position:relative;background:linear-gradient(#8595c4,#a3a6c2 55%,#6a6553)}
+  .hero-w_bg_master_img_day{position:relative;background:linear-gradient(#70a5d4,#909399 55%,#6c6c65)}
   .hero-w_bg_master_img_night{position:absolute;inset:0;opacity:0;transition:opacity var(--dur-m) var(--ease-in-out)}
   .hero-w_bg_master_img.is-night .hero-w_bg_master_img_night{opacity:1}
   .hero-img{width:100%;height:auto;display:block}

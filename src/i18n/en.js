@@ -88,7 +88,7 @@ export const space = {
   text: 'The layouts let you separate private and shared areas, while panoramic windows fill the rooms with light.',
   note: 'The owner chooses the finishes.',
   cta: 'Select an apartment',
-  slides: ['live-1', 'live-2', 'live-3', 'live-4', 'live-5'],
+  slides: ['live-1', 'live-2', 'live-3', 'live-4', 'live-5', 'live-6'],
 };
 
 export const architecture = {

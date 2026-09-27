@@ -89,7 +89,7 @@ export const space = {
   text: 'Tarhlar shaxsiy va umumiy hududlarni ajratishga imkon beradi, panoramali derazalar esa xonalarni yorugʻlikka toʻldiradi.',
   note: 'Pardozni egasi oʻzi tanlaydi.',
   cta: 'Xonadon tanlash',
-  slides: ['live-1', 'live-2', 'live-3', 'live-4', 'live-5'],
+  slides: ['live-1', 'live-2', 'live-3', 'live-4', 'live-5', 'live-6'],
 };
 
 export const architecture = {

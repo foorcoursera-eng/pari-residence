@@ -214,10 +214,13 @@ test.describe('главная', () => {
   test.describe('планшет', () => {
     test.use({ viewport: { width: 768, height: 1024 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 
-    test('круглая кнопка не ложится на «Днём / Вечером»', async ({ page }) => {
+    test('круглая кнопка не ложится на слоган и «Днём / Вечером»', async ({ page }) => {
       await open(page, '/');
-      const [tabs, btn] = await Promise.all(['.hero-s_tabs', '.btn-circle'].map((s) => page.locator(s).first().boundingBox()));
-      expect(btn.y).toBeGreaterThanOrEqual(tabs.y + tabs.height);
+      /* переключатель есть только при паре кадров одной камеры; без него — нижняя граница слогана */
+      const tabs = await page.locator('.hero-s_tabs').first().boundingBox();
+      const above = tabs || await page.locator('.hero-s_title').first().boundingBox();
+      const btn = await page.locator('.btn-circle').first().boundingBox();
+      expect(btn.y).toBeGreaterThanOrEqual(above.y + above.height);
     });
 
     test('поворот в альбом включает горизонтальную главу без перезагрузки', async ({ page }) => {
