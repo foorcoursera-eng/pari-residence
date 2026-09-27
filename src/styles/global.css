@@ -184,6 +184,16 @@ h1,h2,h3,h4,h5,h6,p{margin:0;font-weight:400}
 .btn-circle:hover .btn-circle_arc{stroke-dasharray:325.155 650.31}
 .btn-circle_ring{stroke:var(--c-line,var(--white-line))}
 .btn-circle_link{position:absolute;inset:0;z-index:3;border-radius:50%;cursor:pointer;background:none;border:0}
+/* бабочка на кольце (scripts/butterfly.js): центр бабочки — в центре круга, положение — transform */
+.bfly{--bw:max(34px,calc(46rem/var(--s)));position:absolute;left:50%;top:50%;z-index:4;width:var(--bw);height:calc(var(--bw) * .8125);margin:calc(var(--bw) * -.40625) 0 0 calc(var(--bw) * -.5);pointer-events:none;opacity:0;will-change:transform}
+.bfly svg{display:block;overflow:visible}
+.bfly.is-flying,.bfly.is-landed{opacity:1}
+.bfly_wing{transform-box:view-box;transform-origin:32px 26px}
+.bfly.is-landed .bfly_wing{animation:bflyRest 6.5s ease-in-out infinite}
+.bfly.is-landed.is-far .bfly_wing{animation-play-state:paused}
+html:not(.has-motion) .bfly .bfly_wing{animation:none}
+@keyframes bflyRest{0%,58%,100%{transform:scaleX(1)}64%{transform:scaleX(.34)}70%{transform:scaleX(1)}77%{transform:scaleX(.6)}83%{transform:scaleX(1)}}
+@media (max-width:991px){.bfly{--bw:max(32px,calc(40rem/var(--s)))}}
 @media (max-width:991px){.btn-circle{width:max(150px,calc(136rem/var(--s)));height:max(150px,calc(136rem/var(--s)))}.btn-circle.is-m{width:max(140px,calc(120rem/var(--s)));height:max(140px,calc(120rem/var(--s)))}}
 
 /* ---------- кнопка-пилюля (ERA .btn-pill): тонкая рамка, на наведении — заливка ---------- */

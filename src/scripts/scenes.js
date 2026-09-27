@@ -11,6 +11,7 @@ import { onFrame, onLayout, progress, wake, desktop, docRect, viewRect, layoutVe
 import { initTabs } from './tabs.js';
 import './blossom.js';
 import './clouds.js';
+import './butterfly.js';
 
 const root = document.documentElement;
 const MOTION = root.classList.contains('has-motion');
