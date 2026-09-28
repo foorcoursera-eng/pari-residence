@@ -6,16 +6,17 @@
    Граница 992 px проверяется в каждом кадре (desktop()): поворот планшета без
    перезагрузки переключает сцены между раскладками.
    ========================================================================== */
-import { revealTitle } from './reveal.js';
-import { onFrame, onLayout, progress, wake, desktop, docRect, viewRect, layoutVersion } from './ticker.js';
+import { cubicBezier } from 'motion';
+import { onFrame, onLayout, progress, wake, hold, release, desktop, docRect, viewRect, layoutVersion } from './ticker.js';
 import { initTabs } from './tabs.js';
+import { switcher } from './switch.js';
 import './blossom.js';
+import './branch.js';
 import './clouds.js';
 import './butterfly.js';
 
 const root = document.documentElement;
 const MOTION = root.classList.contains('has-motion');
-const FINE = matchMedia('(pointer: fine)').matches && matchMedia('(hover: hover)').matches;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const $ = (s, r = document) => r.querySelector(s);
@@ -44,7 +45,7 @@ onFrame('write', (now, dt) => {
   if (moving) wake();
 });
 
-/* ---------- слайдеры (ERA initSlider: кадр из маски-полигона, scale 1.5→1, xPercent 25→0) ---------- */
+/* ---------- слайдеры (ERA initSlider: смена кадра и текста — scripts/switch.js) ---------- */
 $$('[data-slider]').forEach((box) => {
   const imgs = $$('[data-slide-img]', box);
   const titles = $$('[data-slide-title]', box);
@@ -54,6 +55,7 @@ $$('[data-slider]').forEach((box) => {
   const n = Math.max(imgs.length, titles.length, texts.length);
   if (n < 2) return;
   const auto = MOTION ? parseInt(box.dataset.autoplay || '0', 10) : 0;
+  const sw = switcher({ frames: imgs, texts: [titles, texts] });
   let cur = 0;
   /* следующий слайд грузим заранее: иначе ленивая картинка под маской появляется с пустой полосой */
   const warm = (i) => { const im = imgs[(i + n) % n]?.querySelector('img'); if (im && im.loading === 'lazy') im.loading = 'eager'; };
@@ -73,13 +75,10 @@ $$('[data-slider]').forEach((box) => {
   };
   function set(i, fromAuto) {
     cur = (i + n) % n;
-    [imgs, titles, texts].forEach((list) => list.forEach((el, k) => {
-      el.classList.toggle('is-active', k === cur);
-      if (el.hasAttribute('data-slide-title')) el.setAttribute('aria-hidden', k === cur ? 'false' : 'true');
-    }));
+    titles.forEach((el, k) => el.setAttribute('aria-hidden', k === cur ? 'false' : 'true'));
+    sw.go(cur);                                                    /* кадр, заголовок и текст меняются по времени ERA */
     if (index) index.textContent = String(cur + 1);
     if (fill && !auto) fill.style.transform = `scaleX(${(cur + 1) / n})`;
-    if (titles[cur]) revealTitle(titles[cur]);
     warm(cur + 1);
     /* «Посмотреть планировку» в типологиях ведёт в каталог с фильтром по комнатам текущего слайда */
     const tl = $('[data-types-link]', box);
@@ -120,39 +119,60 @@ $$('[data-slider]').forEach((box) => {
   }
 });
 
-/* ---------- вкладки удобств (ERA initTabs) ---------- */
+/* ---------- вкладки удобств (ERA initTabs + initTabsHilight) ----------
+   Вкладка меняется по нажатию, как у ERA: по наведению кадр менялся от каждого проезда мыши
+   над списком (например, по пути к меню шапки) и смены шли одна за другой. Кадр и текст —
+   scripts/switch.js; метка на линии слева едет к активной вкладке (.8 с, in-out). */
 $$('[data-tabs]').forEach((box) => {
   const tabs = $$('[data-tab]', box);
   const imgs = $$('[data-tab-img]', box);
   const texts = $$('[data-tab-text]', box);
-  const select = initTabs(tabs, texts, (i) => {
+  const mark = $('[data-tab-mark]', box);
+  const sw = switcher({ frames: imgs, texts: [texts] });
+  let at = 0, placed = false;
+  const place = () => {
+    if (!mark) return;
+    const line = mark.parentElement.getBoundingClientRect(), r = tabs[at].getBoundingClientRect();
+    if (!line.height) return;
+    if (!placed) mark.style.transition = 'none';                   /* первое положение и смена раскладки — без езды */
+    mark.style.transform = `translateY(${(r.top - line.top).toFixed(1)}px) scaleY(${r.height.toFixed(1)})`;
+    if (!placed) { void mark.offsetWidth; mark.style.transition = ''; placed = true; }
+  };
+  initTabs(tabs, texts, (i) => {
+    at = i;
     tabs.forEach((t, k) => t.classList.toggle('is-active', k === i));
-    imgs.forEach((t, k) => t.classList.toggle('is-active', k === i));
-    texts.forEach((t, k) => t.classList.toggle('is-active', k === i));
+    place();
+    sw.go(i);
   }, { orientation: 'vertical' });
-  if (FINE) tabs.forEach((t, i) => t.addEventListener('mouseenter', () => select(i, false)));
+  const replace = () => { placed = false; place(); };
+  window.addEventListener('resize', replace);
+  if (document.fonts) document.fonts.ready.then(replace);
+  /* кадры всех вкладок — заранее, когда сцена в экране от видимой части: смена не открывает пустую рамку */
+  new IntersectionObserver(([e], io) => {
+    if (!e.isIntersecting) return;
+    io.disconnect();
+    imgs.forEach((f) => { const im = f.querySelector('img'); if (im && im.loading === 'lazy') im.loading = 'eager'; });
+    replace();
+  }, { rootMargin: '100% 0px' }).observe(box);
 });
 
 /* ---------- горизонтальная глава о месте (ERA horScroll) ----------
    Ширина ленты и положение секции меряются при смене раскладки, в кадре — только scrollY. */
 $$('[data-hscroll]').forEach((sec) => {
   const track = $('[data-hscroll-track]', sec);
-  const path = $('[data-path]', sec);
   if (!track) return;
   const START = .18;
-  let dist = 0, distV = -1, draw = '', on = null;
+  let dist = 0, distV = -1, on = null;
   const set = smooth((t) => {
     if (!on) return;
     track.style.transform = `translate3d(${(-dist * t).toFixed(1)}px,0,0)`;
-    const d = `${((1 - clamp01((t - .78) / .2)) * 100).toFixed(1)}%`;
-    if (path && d !== draw) path.style.setProperty('--draw', draw = d);
   }, MOTION ? .25 : .001);
   onFrame('read', () => {
     const d = desktop();
     const turned = d !== on;
     if (turned) {
       on = d;
-      if (!d) { track.style.transform = ''; if (path) path.style.setProperty('--draw', draw = '0%'); return; }
+      if (!d) { track.style.transform = ''; return; }
     }
     if (!on) return;
     const r = docRect(sec);
@@ -161,6 +181,37 @@ $$('[data-hscroll]').forEach((sec) => {
     const t = clamp01((progress(viewRect(sec), 'pin') - START) / (1 - START));
     if (turned) set.jump(t);
     else { if (remeasure) set.redraw(); set(t); }
+  });
+});
+
+/* ---------- линия пути с местами вокруг квартала (ERA .img.loc-path) ----------
+   Как у ERA: когда линия въезжает в кадр, через .8 с она прорисовывается слева направо
+   за 2.4 с (ease-out). Точки, знак PARI и подписи появляются, когда линия до них доходит,
+   пояснение про расстояния — в конце. Раньше линию рисовала прокрутка в самом конце ленты,
+   а точки и подписи стояли сразу. Исходные состояния ставит только скрипт: без него всё видно. */
+const easeOutEra = cubicBezier(.25, 1, .5, 1);
+$$('[data-path]').forEach((path) => {
+  if (!MOTION) return;
+  const map = $('.concept-path_map', path) || path;
+  const stops = $$('[data-stop]', path).map((el) => ({ el, x: parseFloat(el.dataset.stop) || 0, on: false }));
+  const key = {};
+  path.classList.add('is-armed');
+  path.style.setProperty('--draw', '100%');
+  let t0 = null, done = false;
+  const io = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return;
+    io.disconnect();
+    t0 = performance.now() + 800;
+    hold(key);
+  });
+  io.observe(map);
+  onFrame('write', (now) => {
+    if (t0 === null || done) return;
+    const k = clamp01((now - t0) / 2400);
+    const e = easeOutEra(k);
+    path.style.setProperty('--draw', `${((1 - e) * 100).toFixed(2)}%`);
+    stops.forEach((s) => { if (!s.on && e >= s.x) { s.on = true; s.el.classList.add('is-on'); } });
+    if (k >= 1) { done = true; path.classList.add('is-drawn'); release(key); }
   });
 });
 

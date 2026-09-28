@@ -66,10 +66,10 @@ import BtnCircle from './BtnCircle.astro';
   .space_btn{grid-column:7 / 8;grid-row:3;margin-top:calc(80rem/var(--s))}
   .space_slider{margin-top:calc(220rem/var(--s));margin-left:calc(300rem/var(--s))}
   .space_slides{position:relative;width:100%;aspect-ratio:1.6;overflow:hidden}
-  .space_slide{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
-  .space_slide img{width:100%;height:100%;object-fit:cover;transform:scale(1.5) translateX(25%);transition:transform var(--dur-l) var(--ease-out)}
-  .space_slide.is-active{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);z-index:1}
-  .space_slide.is-active img{transform:none}
+  /* смену кадра ведёт scripts/switch.js (шторка ERA), здесь — только покой */
+  .space_slide{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%)}
+  .space_slide img{width:100%;height:100%;object-fit:cover}
+  .space_slide.is-active{clip-path:none;z-index:1}
   .space_pag{justify-content:flex-start;margin-top:calc(24rem/var(--s))}
   @media (max-width:991px){
     .space{margin-top:calc(-120rem/var(--s))}

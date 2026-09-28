@@ -83,17 +83,17 @@ const R = 1000;                      /* радиус дуги текста в к
   .reasons-slider_in{height:100%;display:flex;flex-direction:column;align-items:center}
   .reasons-titles{display:grid;width:calc(1200rem/var(--s))}
   /* не шире промежутка между знаком и меню шапки: подписи меню не мельче 12 px, на узких экранах они шире */
-  .reasons-title{grid-area:1/1;font-size:min(calc(150rem/var(--s)),calc((100vw - 560px) / (var(--chars) * .62)));white-space:nowrap;opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  /* смену слайда ведёт scripts/switch.js (шторка кадра и тексты по времени ERA), здесь — только покой */
+  .reasons-title{grid-area:1/1;font-size:min(calc(150rem/var(--s)),calc((100vw - 560px) / (var(--chars) * .62)));white-space:nowrap;opacity:0}
   .reasons-title.is-active{opacity:1}
   .reasons-card{position:relative;width:calc(416rem/var(--s));aspect-ratio:2/1;margin-top:calc(64rem/var(--s));overflow:hidden}
-  .reasons-card_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
-  .reasons-card_img img{width:100%;height:100%;object-fit:cover;transform:scale(1.5) translateX(25%);transition:transform var(--dur-l) var(--ease-out)}
-  .reasons-card_img.is-active{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);z-index:1}
-  .reasons-card_img.is-active img{transform:none}
+  .reasons-card_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%)}
+  .reasons-card_img img{width:100%;height:100%;object-fit:cover}
+  .reasons-card_img.is-active{clip-path:none;z-index:1}
   .reasons-pag{margin-top:calc(32rem/var(--s))}
   .reasons-texts{display:grid;width:calc(592rem/var(--s));margin-top:auto}
-  .reasons-text{grid-area:1/1;opacity:0;transform:translateY(12px);transition:opacity var(--dur-m) var(--ease-out),transform var(--dur-m) var(--ease-out)}
-  .reasons-text.is-active{opacity:1;transform:none}
+  .reasons-text{grid-area:1/1;opacity:0}
+  .reasons-text.is-active{opacity:1}
   .reasons-note{width:calc(200rem/var(--s));margin-top:calc(48rem/var(--s));margin-bottom:calc(80rem/var(--s))}
 
   @media (max-width:991px){

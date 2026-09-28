@@ -204,11 +204,15 @@ export const apts = {
   roomsShort: { s: 'studio', 1: '1 p.', 2: '2 p.', 3: '3 p.', 4: '4 p.' },
   same: '+ {n} autres de ce plan',
   benefits: [
-    { title: 'Architecture', img: 'reasons-arch-800',
+    { title: 'Architecture', img: 'apt-arch',
       text: 'Des façades expressives en pierre naturelle aux éléments décoratifs, des halls d’entrée signés par des designers, des arcades le long des rez-de-chaussée.' },
-    { title: 'Un jardin à soi', img: 'amen-yard-1280',
+    { title: 'Court de padel', img: 'apt-padel',
+      text: 'Un court de padel privé, au cœur de la cour.' },
+    { title: 'Parking', img: 'apt-parking',
+      text: 'Un parking en plein air le long de la rue, au pied de la résidence.' },
+    { title: 'Un jardin à soi', img: 'apt-garden',
       text: 'Platanes, marronniers et tilleuls donnent à la cour son caractère verdoyant. On y trouve la place d’une promenade sans hâte et d’une courte pause.' },
-    { title: 'White-box', img: 'live-1-1200',
+    { title: 'White-box', img: 'apt-whitebox',
       text: 'Appartements livrés en white-box. Le propriétaire choisit lui-même les finitions.' },
   ],
 };

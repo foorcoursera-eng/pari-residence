@@ -137,6 +137,16 @@ test.describe('заявка', () => {
 });
 
 test.describe('каталог', () => {
+  /* 28.09: вставки — «Архитектура», падел-корт и парковка на первой странице, сад и white-box — после «Показать ещё»;
+     кадры — вертикальные, из исходников полного разрешения (не растянутые 800×400) */
+  test('вставки: падел и парковка на первой странице, всего пять', async ({ page }) => {
+    await open(page, '/apartments/');
+    await expect(page.locator('.abenefit h3')).toHaveText(['Архитектура', 'Падел-корт', 'Парковка']);
+    await expect(page.locator('.abenefit img').first()).toHaveAttribute('srcset', /apt-arch-1100\.webp 1100w/);
+    await page.locator('[data-apts-more]').click();
+    await expect(page.locator('.abenefit')).toHaveCount(5);
+  });
+
   test('неверные параметры адреса отбрасываются', async ({ page }) => {
     await open(page, '/apartments/?type=9&ent=99&sort=zzz');
     await expect(page.locator('[data-apts-count]')).toHaveText('1186');
@@ -201,6 +211,69 @@ test.describe('главная', () => {
     expect(r).toBeLessThan(.1);
   });
 
+  /* 28.09: цикл кадров спит в покое, и часы Lenis получали «прошедшие» секунды разом —
+     первый щелчок колеса после паузы перескакивал весь шаг за один кадр */
+  test('первый щелчок колеса после паузы доезжает плавно, а не прыгает', async ({ page }) => {
+    await open(page, '/');
+    await page.mouse.move(700, 450);
+    await page.waitForTimeout(2500);
+    const y0 = await page.evaluate(() => scrollY);
+    await page.mouse.wheel(0, 100);
+    await page.waitForTimeout(60);
+    const early = await page.evaluate((y0) => scrollY - y0, y0);
+    await page.waitForTimeout(1600);
+    const full = await page.evaluate((y0) => scrollY - y0, y0);
+    expect(full).toBeGreaterThan(0);
+    expect(early).toBeLessThan(full * .7);
+  });
+
+  /* 28.09: старый кадр сжимался с одной стороны, новый рос с другой — посередине смены открывался пустой фон */
+  test('смена вкладки удобств: новый кадр входит по краю старого, без просвета', async ({ page }) => {
+    await open(page, '/');
+    await page.evaluate(() => { const s = document.querySelector('.amen'); window.scrollTo(0, s.getBoundingClientRect().top + scrollY); });
+    await page.waitForTimeout(800);
+    await page.locator('[data-tab]').nth(1).click();
+    /* по ходу смены верхняя и нижняя строки кадра целиком закрыты хотя бы одним кадром
+       (маски кадров — из вычисленного clip-path: polygon у шторки, inset у прежней смены) */
+    for (const t of [350, 600, 850]) {
+      await page.waitForTimeout(t === 350 ? 350 : 250);
+      const holes = await page.evaluate(() => {
+        const spans = (el) => {
+          const c = getComputedStyle(el).clipPath, w = el.offsetWidth || 1;
+          const pc = (v) => (v.endsWith('%') ? parseFloat(v) : parseFloat(v) / w * 100);
+          if (c === 'none') return [[0, 100], [0, 100]];
+          let m = c.match(/^polygon\((.*)\)$/);
+          if (m) {
+            const pts = m[1].split(',').map((s) => s.trim().split(/\s+/)).map(([x, y]) => [pc(x), parseFloat(y)]);
+            const row = (yy) => { const xs = pts.filter((p) => p[1] === yy).map((p) => p[0]); return xs.length ? [Math.min(...xs), Math.max(...xs)] : [0, 0]; };
+            return [row(0), row(100)];
+          }
+          m = c.match(/^inset\((.*)\)$/);
+          if (m) { const v = m[1].split(/\s+/); const r = pc(v[1] ?? v[0]), l = pc(v[3] ?? v[1] ?? v[0]); return [[l, 100 - r], [l, 100 - r]]; }
+          return [[0, 100], [0, 100]];
+        };
+        const all = [...document.querySelectorAll('[data-tab-img]')].map(spans);
+        const out = [];
+        [0, 1].forEach((row) => [1, 10, 25, 40, 50, 60, 75, 90, 99].forEach((x) => {
+          if (!all.some((s) => s[row][0] <= x && x <= s[row][1])) out.push(`${row ? 'низ' : 'верх'} ${x}%`);
+        }));
+        return out;
+      });
+      expect(holes, `на ${t} мс без кадра: ${holes}`).toEqual([]);
+    }
+    await expect(page.locator('[data-tab-text]').nth(1)).toHaveClass(/is-active/);
+  });
+
+  /* 28.09: ветка вишни — WebGL (изгиб, дрожь цветков, падающие лепестки); без WebGL остаётся картинка */
+  test('ветка вишни оживает: холст вместо неподвижной картинки', async ({ page }) => {
+    await open(page, '/');
+    const gl = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
+    test.skip(!gl, 'в этом браузере нет WebGL — остаётся картинка');
+    await page.evaluate(() => { const s = document.querySelector('.statement'); scrollTo(0, s.getBoundingClientRect().top + scrollY - 100); });
+    await expect(page.locator('.statement .flower')).toHaveClass(/is-gl/, { timeout: 10_000 });
+    await expect(page.locator('.statement .flower canvas.flower_gl')).toHaveCount(1);
+  });
+
   test('вкладки удобств переключаются стрелками', async ({ page }) => {
     await open(page, '/');
     const tabs = page.locator('[data-tab]');
@@ -209,6 +282,25 @@ test.describe('главная', () => {
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
     await expect(tabs.nth(1)).toBeFocused();
     await expect(page.locator('[data-tab-text]').nth(1)).toHaveClass(/is-active/);
+  });
+
+  /* 28.09: размеры ленты идут от ширины экрана, и путь, прибитый к верху, уходил за нижний край
+     у браузера на весь экран 1920×1080 (окно ~1904×950) — видна была только подпись «Университет» */
+  test.describe('широкое невысокое окно', () => {
+    test.use({ viewport: { width: 1904, height: 950 } });
+    test('линия пути с подписями — целиком на экране и ниже заголовка', async ({ page }) => {
+      await open(page, '/');
+      await page.evaluate(() => { const s = document.querySelector('.concept'); scrollTo(0, s.getBoundingClientRect().top + scrollY + s.offsetHeight - innerHeight - 40); });
+      await expect.poll(() => page.evaluate(() => document.querySelector('[data-path]').classList.contains('is-drawn')), { timeout: 10_000 }).toBe(true);
+      const g = await page.evaluate(() => {
+        const b = (s) => document.querySelector(s).getBoundingClientRect();
+        const lbl = [...document.querySelectorAll('.concept-path_lbl')].map((e) => e.getBoundingClientRect());
+        return { vh: innerHeight, title: b('.concept-city').bottom, note: b('.concept-path_note').bottom, top: Math.min(...lbl.map((r) => r.top)), bottom: Math.max(...lbl.map((r) => r.bottom)) };
+      });
+      expect(g.note).toBeLessThanOrEqual(g.vh);
+      expect(g.bottom).toBeLessThanOrEqual(g.vh);
+      expect(g.top).toBeGreaterThan(g.title);
+    });
   });
 
   test.describe('планшет', () => {

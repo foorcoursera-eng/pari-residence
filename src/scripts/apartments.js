@@ -11,6 +11,7 @@
    ========================================================================== */
 import { animate } from 'motion';
 import { initSelect } from './select.js';
+import { onFrame, wake, desktop } from './ticker.js';
 
 const root = document.querySelector('[data-apts]');
 const dataEl = document.getElementById('apts-data');
@@ -75,9 +76,14 @@ if (root && dataEl) {
       </div>
     </a>`;
   };
-  const benefitHTML = (b) => `<div class="abenefit theme_on-color"><div class="abenefit_bg"><img src="/img/scenes/${b.img}.webp" alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">${esc(b.title)}</h3><div class="u-12"></div><p class="p1">${esc(b.text)}</p></div></div>`;
-  /* вставки — в слоты 5, 12 и 20 сетки (ряд 2 справа, ряд 5 слева, ряд 7 справа) */
-  const BEFORE = { 5: 0, 11: 1, 18: 2 };
+  /* та же разметка, что в components/apts/Benefit.astro */
+  const benefitHTML = (b) => {
+    const src = (w) => `/img/scenes/${b.img}-${w}.webp`;
+    return `<div class="abenefit theme_on-color"><div class="abenefit_bg"><div class="abenefit_par"><img src="${src(700)}" srcset="${src(700)} 700w, ${src(1100)} 1100w" sizes="(max-width: 991px) 92vw, 28vw" alt="" loading="lazy" decoding="async" width="700" height="1296" /></div><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">${esc(b.title)}</h3><div class="u-12"></div><p class="p1">${esc(b.text)}</p></div></div>`;
+  };
+  /* вставки — в ячейки 5, 12, 20 (первая страница: ряды 2, 5, 7) и 27, 35 (после «Показать ещё»: ряды 10, 12),
+     поочерёдно справа и слева (как SLOTS в ApartmentsView.astro) */
+  const BEFORE = { 5: 0, 11: 1, 18: 2, 24: 3, 31: 4 };
 
   const html = (items, from) => items.map((r, k) => {
     const i = from + k;
@@ -186,6 +192,40 @@ if (root && dataEl) {
        обрезал бы позицию; на нативную прокрутку он переключается сам */
     requestAnimationFrame(() => { window.scrollTo(0, y); if (window.__lenis) window.__lenis.resize(); });
   };
+
+  /* ---------- параллакс кадров во вставках (ERA .benefit-card: картинка 140 %, yPercent −15 → 15, scrub .5) ----------
+     Кадр едет внутри рамки навстречу прокрутке: листают вниз — картинка в рамке опускается (на экране
+     поднимается медленнее страницы), вверх — наоборот. Вставки перерисовываются вместе со списком,
+     поэтому берутся из живой коллекции в каждом кадре (их три). Телефон — без параллакса («Этап 1»). */
+  if (MOTION) {
+    const pars = list.getElementsByClassName('abenefit_par');
+    const cur = new WeakMap(), drawn = new WeakMap(), want = [];
+    let on = null;
+    onFrame('read', () => {
+      want.length = 0;
+      const d = desktop();
+      if (d !== on) { on = d; if (!d) for (const el of pars) { el.style.transform = ''; cur.delete(el); drawn.delete(el); } }
+      if (!on) return;
+      const vh = window.innerHeight;
+      for (const el of pars) {
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.bottom < -vh * .5 || r.top > vh * 1.5) continue;             /* далеко от экрана — не трогаем */
+        want.push([el, Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)))]);
+      }
+    });
+    onFrame('write', (now, dt) => {
+      let moving = false;
+      want.forEach(([el, p]) => {
+        let c = cur.get(el);
+        c = c === undefined ? p : c + (p - c) * (1 - Math.exp(-dt * 6));
+        if (Math.abs(p - c) < 1e-4) c = p; else moving = true;
+        cur.set(el, c);
+        const tr = `translate3d(0,${((c * 2 - 1) * 14).toFixed(2)}%,0)`;   /* ±14 % от 140 % — край кадра не выходит в рамку */
+        if (drawn.get(el) !== tr) { el.style.transform = tr; drawn.set(el, tr); }
+      });
+      if (moving) wake();
+    });
+  }
 
   /* первый показ: неверные параметры — поправить адрес; фильтры или «Показать ещё» из истории — перестроить;
      иначе оставляем карточки из HTML */

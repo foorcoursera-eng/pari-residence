@@ -113,7 +113,9 @@ function splitLinesBatch(els) {
   });
   jobs.forEach((j) => {
     j.el.innerHTML = j.rows.map((r) => `<span class="split-line-mask" style="display:block;overflow:clip;padding-bottom:.08em;margin-bottom:-.08em"><span class="split-line" style="display:block">${esc(r.join(' '))}</span></span>`).join('');
-    j.el._lines = { lines: $$('.split-line', j.el), restore: () => { j.el.innerHTML = j.html; j.el._lines = null; } };
+    /* возвращает разметку только своя разбивка: абзац могли разбить заново (смена слайда во время появления) */
+    const L = { lines: $$('.split-line', j.el), restore: () => { if (j.el._lines !== L) return; j.el.innerHTML = j.html; j.el._lines = null; } };
+    j.el._lines = L;
   });
 }
 
@@ -183,8 +185,9 @@ const run = {
   ctn(el, delay) {
     const y = el._y || '3.333rem';
     const b = el._baseT || '';                                     /* свой transform элемента (центровка −50 %) сохраняем */
-    const a = animate(el, { opacity: [0, 1], transform: [`${b} translateY(${y})`, `${b} translateY(0rem)`] }, { duration: DUR_L, delay, ease: OUT });
-    a.then(() => setTimeout(() => { el.style.transform = ''; el.style.opacity = ''; }));   /* после того как Motion допишет итог */
+    const a = el._ctn = animate(el, { opacity: [0, 1], transform: [`${b} translateY(${y})`, `${b} translateY(0rem)`] }, { duration: DUR_L, delay, ease: OUT });
+    /* после того как Motion допишет итог; блок успели показать заново (смена вкладки туда и обратно) — не трогаем */
+    a.then(() => setTimeout(() => { if (el._ctn !== a) return; el.style.transform = ''; el.style.opacity = ''; }));
     return a;
   },
   line(el, delay) {
@@ -192,11 +195,12 @@ const run = {
     a.then(() => setTimeout(() => { el.style.clipPath = ''; }));
     return a;
   },
+  /* сдвиг, потом масштаб — как xPercent + scale у GSAP: левый край картинки всё время у края шторки */
   slide(el, delay) {
     const inner = el.firstElementChild;
     animate(el, { clipPath: ['polygon(100% 0%, 100% 0%, 101% 100%, 125% 100%)', 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)'] }, { duration: DUR_L, delay, ease: INOUT })
       .then(() => setTimeout(() => { el.style.clipPath = ''; }));
-    if (inner) animate(inner, { transform: ['scale(1.5) translateX(25%)', 'scale(1) translateX(0%)'] }, { duration: DUR_L, delay, ease: INOUT })
+    if (inner) animate(inner, { transform: ['translateX(25%) scale(1.5)', 'translateX(0%) scale(1)'] }, { duration: DUR_L, delay, ease: INOUT })
       .then(() => setTimeout(() => { inner.style.transform = ''; }));
   },
   flower(el, delay) {
@@ -219,7 +223,7 @@ function prepare(items) {
     else if (type === 'p') { if (el._lines) el._lines.lines.forEach((l) => { l.style.transform = 'translateY(110%)'; }); }
     else if (type === 'ctn') { el.style.opacity = '0'; el.style.transform = `${el._baseT} translateY(${el._y})`; }
     else if (type === 'line') el.style.clipPath = 'inset(0% 0% 100% 0%)';
-    else if (type === 'slide') { el.style.clipPath = 'polygon(100% 0%, 100% 0%, 101% 100%, 125% 100%)'; if (el.firstElementChild) el.firstElementChild.style.transform = 'scale(1.5) translateX(25%)'; }
+    else if (type === 'slide') { el.style.clipPath = 'polygon(100% 0%, 100% 0%, 101% 100%, 125% 100%)'; if (el.firstElementChild) el.firstElementChild.style.transform = 'translateX(25%) scale(1.5)'; }
     else if (type === 'flower') el.style.opacity = '0';
   });
 }
@@ -229,7 +233,7 @@ const SKIP = '[data-hero], [data-dialog], [data-no-reveal]';
 const TEXT_SKIP = '.btn-circle, .pag, .nav-item, .pill, [data-tab], label, .split-char, .fsel, [role="listbox"], .mnav, .acard, .abenefit';
 const RULES = [
   ['slide', '.reasons-card, .types_card, .concept-terrace, .concept-relief, .space_garden, .space_terrace, .space_slides'],
-  ['line', '.reasons-line, .team_line'],
+  ['line', '.reasons-line, .team_line, .amen_line'],
   ['flower', '[data-flower]'],
   ['ctn', '.btn-circle, .pill, .pag, .reasons-symbol, .concept-symbol, .footer_symbol, .reasons-arc, .concept-path_map, .apt-sim .acard'],
   ['h', '.h1, .h2, .h3, .h4, .h5, .h6'],
@@ -259,11 +263,27 @@ function tag() {
   return items;
 }
 
-/* заголовок слайдера при смене слайда — те же параметры, без задержки */
-export function revealTitle(el) {
+/* ---------- текст слайда или вкладки при смене (scripts/switch.js) ----------
+   Как у ERA после смены кадра (animateTextH / animateTextP / animateCtn): заголовки — по буквам,
+   абзацы — строками из-под маски, подписи — снизу с проявлением на .4 с позже. Исходные
+   состояния ставятся сразу, пока блок ещё не показан; движение — через delay секунд. */
+const H_SEL = '.h1, .h2, .h3, .h4, .h5, .h6';
+export function showText(box, delay = 0) {
   if (!MOTION) return;
-  splitChars(el).forEach((c) => FX.h(c, 0));
-  run.h(el, 0);
+  const own = (sel) => (box.matches(sel) ? [box] : $$(sel, box));
+  const hs = own(H_SEL).filter((el) => !el.closest('.a1, .a2'));
+  const ps = own('.p1');
+  ps.forEach((p) => { if (p._lines) p._lines.restore(); });       /* абзац ещё в строках от прошлого появления */
+  const simple = ps.filter((p) => ![...p.children].some((c) => c.tagName !== 'BR'));
+  const cs = own('.l1, .l2').filter((el) => !hs.some((h) => h.contains(el)));
+  if (simple.length) splitLinesBatch(simple);
+  simple.forEach((p) => p._lines.lines.forEach((l) => FX.p(l, 0)));
+  hs.forEach((h) => { if (h._tw) tweens.delete(h._tw); splitChars(h).forEach((c) => FX.h(c, 0)); });
+  const y = desktop() ? '3.333rem' : '11.54rem';
+  cs.forEach((c) => { c._baseT = ''; c._y = y; c.style.opacity = '0'; c.style.transform = `translateY(${y})`; });
+  hs.forEach((h, i) => run.h(h, delay + i * STEP));
+  simple.forEach((p, i) => run.p(p, delay + i * STEP));
+  cs.forEach((c, i) => run.ctn(c, delay + .4 + i * STEP));
 }
 
 /* ---------- группы: подготовка на подходе, запуск при входе в кадр ---------- */

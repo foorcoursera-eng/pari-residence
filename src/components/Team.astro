@@ -9,7 +9,7 @@ const u = tr(lang).ui;
 import Flower from './Flower.astro';
 ---
 <section class="section clip theme_on-light team" data-ui="light">
-  <Flower side="r" style="left:calc(1120rem/var(--s));top:calc(-300rem/var(--s));width:calc(520rem/var(--s))" />
+  <Flower side="r" style="left:calc(1000rem/var(--s));top:calc(-30rem/var(--s));width:calc(640rem/var(--s))" />
   <div class="container team_in" data-reveal-w>
     <p class="l1 a-center team_label" data-reveal>{team.label}</p>
     <div class="team_line" aria-hidden="true"></div>
@@ -38,7 +38,7 @@ import Flower from './Flower.astro';
   @media (hover:none),(max-width:991px){
     .team_row{margin-bottom:calc(20rem/var(--s))}
     .team_tip{position:static;transform:none;opacity:.7;width:auto;margin-top:calc(8rem/var(--s))}
-    .team :global(.flower){width:calc(150rem/var(--s))!important;left:auto!important;right:calc(-40rem/var(--s));top:calc(-60rem/var(--s))!important}
+    .team :global(.flower){display:none}   /* на узком экране вытянутая ветка ложится на подпись над списком */
     .team_row :global(.h3),.team_row h4{font-size:calc(40rem/var(--s))}
   }
 </style>

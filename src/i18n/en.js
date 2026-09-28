@@ -204,11 +204,15 @@ export const apts = {
   roomsShort: { s: 'studio', 1: '1 room', 2: '2 rooms', 3: '3 rooms', 4: '4 rooms' },
   same: '+ {n} more with this layout',
   benefits: [
-    { title: 'Architecture', img: 'reasons-arch-800',
+    { title: 'Architecture', img: 'apt-arch',
       text: 'Expressive façades with natural stone and decorative details, designer entrance halls and arcades along the ground floors.' },
-    { title: 'A garden of your own', img: 'amen-yard-1280',
+    { title: 'Padel court', img: 'apt-padel',
+      text: 'A private padel court right in the courtyard.' },
+    { title: 'Parking', img: 'apt-parking',
+      text: 'Open-air parking along the street, right by the building.' },
+    { title: 'A garden of your own', img: 'apt-garden',
       text: 'Plane trees, chestnuts and lindens give the courtyard its green character. There is room for an unhurried walk and a short pause between errands.' },
-    { title: 'White-box', img: 'live-1-1200',
+    { title: 'White-box', img: 'apt-whitebox',
       text: 'Apartments are delivered white-box. The owner chooses the finishes.' },
   ],
 };

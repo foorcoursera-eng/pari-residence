@@ -205,11 +205,15 @@ export const apts = {
   roomsShort: { s: 'studiya', 1: '1 xona', 2: '2 xona', 3: '3 xona', 4: '4 xona' },
   same: '+ yana {n} ta shu tarhda',
   benefits: [
-    { title: 'Arxitektura', img: 'reasons-arch-800',
+    { title: 'Arxitektura', img: 'apt-arch',
       text: 'Tabiiy tosh va bezak unsurlari bilan ifodali fasadlar, dizaynerlik kirish guruhlari, birinchi qavatlar boʻylab arkadalar.' },
-    { title: 'Oʻz bogʻingiz', img: 'amen-yard-1280',
+    { title: 'Padel korti', img: 'apt-padel',
+      text: 'Hovlida — oʻz padel-tennis kortingiz.' },
+    { title: 'Avtoturargoh', img: 'apt-parking',
+      text: 'Koʻcha boʻylab ochiq avtoturargoh — uyning yonginasida.' },
+    { title: 'Oʻz bogʻingiz', img: 'apt-garden',
       text: 'Chinorlar, kashtan va joʻkalar hovlining yashil qiyofasini yaratadi. Bu yerda shoshilmasdan sayr qilish va qisqa tanaffus uchun joy topiladi.' },
-    { title: 'White-box', img: 'live-1-1200',
+    { title: 'White-box', img: 'apt-whitebox',
       text: 'Xonadonlar white-box formatida topshiriladi. Pardozni egasi oʻzi tanlaydi.' },
   ],
 };

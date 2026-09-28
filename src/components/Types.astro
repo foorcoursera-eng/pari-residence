@@ -50,7 +50,7 @@ import Flower from './Flower.astro';
 </section>
 
 <section class="section clip theme_on-brand statement" data-ui="light">
-  <Flower side="l" style="left:calc(-40rem/var(--s));top:calc(-220rem/var(--s));width:calc(460rem/var(--s))" />
+  <Flower side="l" style="left:calc(-40rem/var(--s));top:calc(-30rem/var(--s));width:calc(640rem/var(--s))" />
   <div class="container statement_in" data-reveal-w>
     <p class="l1 a-center statement_refrain" data-reveal>{refrain}</p>
     <h3 class="h4 a-center statement_text" data-split>{statement.head}</h3>
@@ -62,20 +62,20 @@ import Flower from './Flower.astro';
   .types{height:100vh;min-height:calc(1000rem/var(--s))}
   .types_in{height:100%;position:relative}
   .types_card{position:absolute;left:50%;top:calc(174rem/var(--s));width:calc(440rem/var(--s));aspect-ratio:3/4;transform:translateX(-50%);overflow:hidden}
-  .types_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
-  .types_img img{width:100%;height:100%;object-fit:cover;transform:scale(1.5) translateX(25%);transition:transform var(--dur-l) var(--ease-out)}
-  .types_img.is-active{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);z-index:1}
-  .types_img.is-active img{transform:none}
+  /* смену слайда ведёт scripts/switch.js (шторка кадра и тексты по времени ERA), здесь — только покой */
+  .types_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%)}
+  .types_img img{width:100%;height:100%;object-fit:cover}
+  .types_img.is-active{clip-path:none;z-index:1}
   .types_row{position:absolute;left:calc(48rem/var(--s));right:calc(48rem/var(--s));top:calc(388rem/var(--s))}
   .types_specs{grid-column:2 / 4;display:grid}
   .types_spec .h5{white-space:nowrap}
-  .types_spec{grid-area:1/1;opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .types_spec{grid-area:1/1;opacity:0}
   .types_spec.is-active{opacity:1}
   .types_spec .h5{margin-top:calc(8rem/var(--s))}
   .types_desc{grid-column:8 / 11}
   /* .pill — общий стиль в global.css */
   .types_titles{position:absolute;left:0;right:0;top:calc(800rem/var(--s));display:grid;z-index:2;pointer-events:none}
-  .types_title{grid-area:1/1;opacity:0;transition:opacity var(--dur-m) var(--ease-out)}
+  .types_title{grid-area:1/1;opacity:0}
   .types_title.is-active{opacity:1}
   .types_pag{position:absolute;left:0;right:0;top:calc(950rem/var(--s))}
 
@@ -98,7 +98,7 @@ import Flower from './Flower.astro';
     .statement_in{padding-top:calc(120rem/var(--s));padding-bottom:calc(120rem/var(--s))}
     .types_card{order:0}.types_titles{order:1}.types_pag{order:2}.types_row{order:3}
     .statement_text{width:100%;margin-top:calc(48rem/var(--s))}
-    .statement :global(.flower){width:calc(150rem/var(--s))!important;top:calc(-40rem/var(--s))!important;left:calc(-40rem/var(--s))!important}
+    .statement :global(.flower){width:calc(250rem/var(--s))!important;top:calc(-10rem/var(--s))!important;left:calc(-16rem/var(--s))!important}
     .statement_text{font-size:calc(30rem/var(--s))}
     .types_title{font-size:calc(40rem/var(--s))}
   }

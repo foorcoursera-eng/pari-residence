@@ -34,13 +34,15 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
 ---
 <section class="section clip theme_on-light concept" data-ui="light" data-hscroll>
   <div class="concept-w" data-hscroll-w>
+    <!-- лепестки во весь экран главы (ПК, scripts/blossom.js): дальние — за текстом и фото, ближние — поверх -->
+    <canvas class="concept-petals-all" data-petals data-petals-wide="back" aria-hidden="true"></canvas>
     <div class="concept-track" data-hscroll-track>
 
-      <!-- панель 1 обрамлена двумя ветками: сверху крупная, снизу вторая — навстречу -->
-      <Flower side="l" depth={-0.22} style="left:calc(-60rem/var(--s));top:calc(-290rem/var(--s));width:calc(610rem/var(--s))" />
-      <Flower side="lb" depth={-0.3} style="left:calc(-50rem/var(--s));top:calc(540rem/var(--s));width:calc(440rem/var(--s))" />
-      <Flower side="r" z={0} depth={0.1} style="left:calc(1952rem/var(--s));top:calc(520rem/var(--s));width:calc(440rem/var(--s))" />
-      <Flower side="r" depth={-0.18} style="left:calc(4440rem/var(--s));top:calc(-300rem/var(--s));width:calc(520rem/var(--s))" />
+      <!-- панель 1 обрамлена двумя ветками: верхняя входит слева ниже знака в шапке (его охранное поле), нижняя — навстречу -->
+      <Flower side="l" depth={-0.22} style="left:calc(-40rem/var(--s));top:calc(200rem/var(--s));width:calc(580rem/var(--s))" />
+      <Flower side="lb" depth={-0.3} style="left:calc(-40rem/var(--s));top:auto;bottom:calc(-24rem/var(--s));width:calc(560rem/var(--s))" />
+      <Flower side="r" z={0} depth={0.1} style="left:calc(1905rem/var(--s));top:calc(560rem/var(--s));width:calc(560rem/var(--s))" />
+      <Flower side="r" depth={-0.18} style="left:calc(4330rem/var(--s));top:calc(-40rem/var(--s));width:calc(640rem/var(--s))" />
 
       <!-- панель 1: концепция -->
       <div class="concept-p1" data-reveal-w>
@@ -73,33 +75,41 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
         <span class="a2 concept-city_a">{concept.cityScript}</span>
         <span class="h-line"><span>{concept.cityTitle[1]}</span></span>
       </h2>
-      <div class="concept-path" data-path>
+      <!-- линия пути: прорисовывается слева направо, точки и подписи — когда линия до них доходит
+           (scripts/scenes.js, data-stop — доля ширины); общее появление сцен её не трогает -->
+      <div class="concept-path" data-path data-no-reveal>
         <div class="concept-path_map">
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={u.pathLabel}>
           <path class="concept-path_line" d={pathD} fill="none" stroke="currentColor" stroke-width="1.4" />
           {dots.map((p) => (
-            <circle class="concept-path_pt" cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="4" fill="currentColor" />
+            <circle class="concept-path_pt" cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="4" fill="currentColor" data-stop={(p.x / W).toFixed(3)} />
           ))}
-          <g transform={`translate(${CX - 26} ${(yAt(CX) - 44).toFixed(1)})`}><svg width="52" height="32" viewBox={parts.viewBox} fill="currentColor" set:html={parts.script}></svg></g>
+          <g class="concept-path_logo" data-stop=".5" transform={`translate(${CX - 26} ${(yAt(CX) - 44).toFixed(1)})`}><svg width="52" height="32" viewBox={parts.viewBox} fill="currentColor" set:html={parts.script}></svg></g>
         </svg>
         <!-- подписи точек — HTML поверх svg, чтобы кегль не падал ниже 12 px вместе с масштабом ленты -->
         {dots.map((p, i) => (
-          <div class={`concept-path_lbl ${i % 2 ? 'is-below' : ''} ${i % 4 > 1 ? 'is-far' : ''} ${i === 0 ? 'is-first' : ''}`} style={`left:${(p.x / W * 100).toFixed(2)}%;top:${(p.y / H * 100).toFixed(2)}%`}>
+          <div class={`concept-path_lbl ${i % 2 ? 'is-below' : ''} ${i % 4 > 1 ? 'is-far' : ''} ${i === 0 ? 'is-first' : ''}`} style={`left:${(p.x / W * 100).toFixed(2)}%;top:${(p.y / H * 100).toFixed(2)}%`} data-stop={(p.x / W).toFixed(3)}>
             <span class="l1">{p.name}</span><span class="l1 reg">{p.d} {u.km}</span>
           </div>
         ))}
         </div>
-        <p class="l2 concept-path_note">{u.distNote}</p>
+        <p class="l2 concept-path_note" data-stop=".98">{u.distNote}</p>
       </div>
 
     </div>
+    <canvas class="concept-petals-all is-front" data-petals data-petals-wide="front" aria-hidden="true"></canvas>
   </div>
 </section>
 
 <style>
   .concept{height:calc(100vh + 250vw)}
   .concept-w{position:sticky;top:0;height:100vh;overflow:hidden}
-  .concept-track{position:relative;height:100%;width:calc(4900rem/var(--s));will-change:transform}
+  .concept-track{position:relative;z-index:1;height:100%;width:calc(4900rem/var(--s));will-change:transform}
+  /* лепестки главы: слой за лентой и слой перед ней; на телефоне — только поле первой панели */
+  .concept-petals-all{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .concept-petals-all.is-front{z-index:6}
+  @media (min-width:992px){.concept-petals{display:none}}
+  @media (max-width:991px){.concept-petals-all{display:none}}
   .concept-track>*{position:absolute}
 
   .concept-p1{left:0;top:0;width:100vw;height:100%;display:flex;flex-direction:column;align-items:center}
@@ -122,9 +132,18 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
   .concept-side{left:calc(2968rem/var(--s));top:calc(760rem/var(--s));width:calc(440rem/var(--s))}
   .concept-btn{left:calc(3240rem/var(--s));top:calc(400rem/var(--s))}
 
-  .concept-city{left:calc(3780rem/var(--s));top:calc(262rem/var(--s));width:calc(960rem/var(--s));display:flex;flex-direction:column;align-items:center}
+  /* панель 3 — как у ERA (.loc-path-s: колонка во весь экран, заголовок сверху, путь снизу):
+     размеры в ленте идут от ширины экрана, а на широком и невысоком окне (1920×950 у браузера
+     на весь экран) путь, прибитый к верху, уходил за нижний край. Теперь путь стоит от низа
+     экрана, заголовок поднимается, когда места мало, и оба чуть уменьшаются на очень широких
+     окнах (12vh / 150vh — при 16:9 это те же размеры, что по ширине). */
+  .concept-city{z-index:5;left:calc(3780rem/var(--s));top:clamp(calc(96rem/var(--s)),calc(100vh - 640rem/var(--s)),calc(262rem/var(--s)));width:calc(960rem/var(--s));display:flex;flex-direction:column;align-items:center}
   .concept-city_a{position:relative;z-index:2;margin:calc(-40rem/var(--s)) 0 calc(-52rem/var(--s));text-transform:none;letter-spacing:0;color:var(--accent);transform:rotate(-6deg)}
-  .concept-path{left:calc(3664rem/var(--s));top:calc(700rem/var(--s));width:calc(1200rem/var(--s));color:var(--base-1000)}
+  @media (min-width:992px){
+    .concept-city{font-size:min(calc(96rem/var(--s)),12vh)}
+    .concept-city_a{font-size:min(calc(120rem/var(--s)),15vh)}
+  }
+  .concept-path{--pw:min(calc(1200rem/var(--s)),150vh);left:calc(4264rem/var(--s) - var(--pw) / 2);bottom:calc(36rem/var(--s));width:var(--pw);color:var(--base-1000)}
   /* только сама карта во всю ширину: вложенный svg знака PARI держит свои 52×32 (раньше правило
      растягивало и его — знак уезжал на правый край поверх «Аэропорта» и меню) */
   .concept-path_map>svg{display:block;width:100%;height:auto;overflow:visible}
@@ -133,6 +152,13 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
   .concept-path_lbl{position:absolute;transform:translate(-50%,calc(-100% - 14px));display:flex;flex-direction:column;align-items:center;white-space:nowrap;text-align:center}
   .concept-path_lbl.is-below{transform:translate(-50%,14px)} /* соседние подписи — по разные стороны линии, чтобы не наезжали */
   .concept-path_lbl .reg{opacity:.65}
+  /* прорисовка (scripts/scenes.js ставит is-armed, потом is-on по мере хода линии) */
+  .concept-path_pt{transform-box:fill-box;transform-origin:center;transition:transform var(--dur-m) var(--ease-out)}
+  .concept-path_lbl{transition:opacity var(--dur-m) var(--ease-out),translate var(--dur-m) var(--ease-out)}
+  .concept-path_logo,.concept-path_note{transition:opacity var(--dur-l) var(--ease-out)}
+  .concept-path.is-armed .concept-path_pt:not(.is-on){transform:scale(0)}
+  .concept-path.is-armed .concept-path_lbl:not(.is-on){opacity:0;translate:0 12px}
+  .concept-path.is-armed .concept-path_logo:not(.is-on),.concept-path.is-armed .concept-path_note:not(.is-on){opacity:0}
   @media (max-width:991px){
     /* на узкой линии соседние подписи одной стороны разнесены ещё и по высоте */
     .concept-path_lbl.is-far{transform:translate(-50%,calc(-100% - 50px))}
@@ -147,8 +173,8 @@ const dots = [...west, ...east].map((p, i) => ({ ...p, x: xs[i], y: yAt(xs[i]), 
     .concept{height:auto}
     .concept-w{position:relative;height:auto;overflow:visible}
     .concept-track{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;padding:calc(64rem/var(--s)) calc(24rem/var(--s));gap:calc(40rem/var(--s))}
-    .concept-track>*{position:relative;left:auto!important;top:auto!important}
-    .concept-track>:global(.flower){position:absolute!important;width:calc(150rem/var(--s))!important;left:calc(-24rem/var(--s))!important;top:calc(-60rem/var(--s))!important;z-index:0}
+    .concept-track>*{position:relative;left:auto!important;top:auto!important;bottom:auto!important}
+    .concept-track>:global(.flower){position:absolute!important;width:calc(250rem/var(--s))!important;left:calc(-24rem/var(--s))!important;top:calc(-40rem/var(--s))!important;bottom:auto!important;z-index:0}   /* ветка вытянута вбок (1520×793): срез уходит за верх секции, цветы — над подписью */
     .concept-track>:global(.flower ~ .flower){display:none}
     .concept-p1{width:100%;height:auto;min-height:80svh;justify-content:center}
     .concept-label{margin-top:0}

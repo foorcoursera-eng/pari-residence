@@ -1,7 +1,9 @@
 ---
 /* Сцена 8 ERA: кадр на весь экран, справа вверху список вкладок (активная белая,
-   остальные приглушены), слева внизу l1 + h5, справа круглая кнопка «Book a call».
-   Смена вкладки — кадр раскрывается маской, текст сменяется. */
+   остальные приглушены) с линией слева и светлой меткой у активной вкладки
+   (ERA .amm-s_cms_tabs_line + initTabsHilight), слева внизу l1 + h5 + p1, справа
+   круглая кнопка «Book a call». Смена вкладки — по нажатию: кадр входит «косой
+   шторкой» справа по краю уходящего, текст сменяется (scripts/switch.js). */
 import { t as tr, href } from '../i18n/index.js';
 const { lang = 'ru' } = Astro.props;
 const { amenities } = tr(lang);
@@ -19,11 +21,14 @@ import BtnCircle from './BtnCircle.astro';
   <div class="img-over-grad from-top _100vh"></div>
   <div class="amen_grad" aria-hidden="true"></div>
   <div class="container amen_in">
-    <ul class="amen_list" role="tablist" aria-label={u.lifeLabel} data-reveal-w>
-      {amenities.map((a, i) => (
-        <li><button class={`h5 amen_tab ${i === 0 ? 'is-active' : ''}`} type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-tab>{a.name}</button></li>
-      ))}
-    </ul>
+    <div class="amen_tabs" data-reveal-w>
+      <span class="amen_line" aria-hidden="true"><span class="amen_mark" data-tab-mark></span></span>
+      <ul class="amen_list" role="tablist" aria-label={u.lifeLabel}>
+        {amenities.map((a, i) => (
+          <li><button class={`h5 amen_tab ${i === 0 ? 'is-active' : ''}`} type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-tab>{a.name}</button></li>
+        ))}
+      </ul>
+    </div>
     <div class="grid amen_bottom" data-reveal-w>
       <div class="amen_texts">
         {amenities.map((a, i) => (
@@ -43,10 +48,10 @@ import BtnCircle from './BtnCircle.astro';
 <style>
   .amen{height:calc(100vh + 200rem/var(--s));min-height:calc(1100rem/var(--s));background:var(--dark)}
   .amen_media{position:absolute;left:0;right:0;top:calc(-240rem/var(--s));height:calc(100% + 480rem/var(--s))}
-  .amen_img{position:absolute;inset:0;clip-path:inset(0 0 0 100%);transition:clip-path var(--dur-l) var(--ease-in-out)}
-  .amen_img.is-active{clip-path:inset(0 0 0 0);z-index:1}
-  .amen_img img{width:100%;height:100%;object-fit:cover;transform:scale(1.15);transition:transform var(--dur-l) var(--ease-out)}
-  .amen_img.is-active img{transform:none}
+  /* смену вкладки ведёт scripts/switch.js (шторка кадра и тексты по времени ERA), здесь — только покой */
+  .amen_img{position:absolute;inset:0;clip-path:polygon(100% 0,100% 0,100% 100%,100% 100%)}
+  .amen_img.is-active{clip-path:none;z-index:1}
+  .amen_img img{width:100%;height:100%;object-fit:cover}
   /* затемнение под текстом (гайдбук §5.3): снизу и отдельное пятно за текстом слева и списком вкладок справа */
   .amen_grad{position:absolute;inset:0;z-index:1;pointer-events:none;
     background:
@@ -54,20 +59,24 @@ import BtnCircle from './BtnCircle.astro';
       radial-gradient(28% 40% at 72% 20%,rgba(0,0,0,.35),rgba(0,0,0,0) 70%),
       linear-gradient(rgba(0,0,0,0) 45%,rgba(0,0,0,.55))}
   .amen_in{position:relative;z-index:2;height:100%}
-  .amen_list{list-style:none;margin:0;padding:0;position:absolute;right:calc(380rem/var(--s));top:calc(150rem/var(--s)); /* левее меню шапки: подписи меню стали крупнее */display:flex;flex-direction:column;gap:calc(4rem/var(--s))}
+  .amen_tabs{position:absolute;right:calc(380rem/var(--s));top:calc(150rem/var(--s))} /* левее меню шапки: подписи меню стали крупнее */
+  .amen_list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:calc(4rem/var(--s))}
+  /* линия слева от списка и светлая метка у активной вкладки: высота 1 px, растягивает её scaleY (scripts/scenes.js) */
+  .amen_line{position:absolute;left:calc(-16rem/var(--s));top:0;bottom:0;width:1.25px;background:var(--white-line)}
+  .amen_mark{position:absolute;left:0;top:0;width:100%;height:1px;background:var(--white);border-radius:2px;transform-origin:50% 0;transform:scaleY(0);transition:transform var(--dur-m) var(--ease-in-out)}
   .amen_tab{text-align:left;opacity:.4;transition:opacity var(--dur-m) var(--ease-out);padding:calc(2rem/var(--s)) 0}
   .amen_tab.is-active,.amen_tab:hover{opacity:1}
   .amen_bottom{position:absolute;left:calc(48rem/var(--s));right:calc(48rem/var(--s));bottom:calc(360rem/var(--s));align-items:end}
   .amen_texts{grid-column:2 / 7;display:grid}
-  .amen_text{grid-area:1/1;opacity:0;transform:translateY(16px);transition:opacity var(--dur-m) var(--ease-out),transform var(--dur-m) var(--ease-out)}
-  .amen_text.is-active{opacity:1;transform:none}
+  .amen_text{grid-area:1/1;opacity:0}
+  .amen_text.is-active{opacity:1}
   .amen_text .l1{padding-left:calc(152rem/var(--s))}
   .amen_p{margin-top:calc(20rem/var(--s));max-width:calc(460rem/var(--s))}
   .amen_btn{grid-column:8 / 10;display:flex;justify-content:center}
   @media (max-width:991px){
     .amen{height:auto;min-height:100svh}
     .amen_media{top:0;height:100%}
-    .amen_list{position:relative;right:auto;top:auto;padding-top:calc(96rem/var(--s))}
+    .amen_tabs{position:relative;right:auto;top:auto;margin-top:calc(96rem/var(--s));margin-left:calc(16rem/var(--s))}
     .amen_bottom{position:relative;left:auto;right:auto;bottom:auto;margin-top:calc(200rem/var(--s));padding-bottom:calc(180rem/var(--s));row-gap:calc(32rem/var(--s))}   /* +наезд арки «Пространства» */
     .amen_tab{opacity:.6;min-height:44px}
     .amen_texts{grid-column:1 / 5}

@@ -14,6 +14,7 @@ import '../styles/apts.css';
 import Base from '../layouts/Base.astro';
 import Select from '../components/apts/Select.astro';
 import Decor from '../components/apts/Decor.astro';
+import Benefit from '../components/apts/Benefit.astro';
 import Flower from '../components/Flower.astro';
 import FinalCta from '../components/FinalCta.astro';
 import Footer from '../components/Footer.astro';
@@ -67,6 +68,10 @@ const entOpts = [{ v: '', t: A.all }, ...ENTRANCES.map((n) => ({ v: String(n), t
 const sortOpts = [{ v: 'rel', t: A.sort.rel }, { v: 'asc', t: A.sort.asc }, { v: 'desc', t: A.sort.desc }];
 
 const PAGE = 24;
+/* вставки: перед карточкой с этим номером — вставка с этим номером. На первой странице три
+   (ряды 2, 5 и 7 сетки в три колонки: справа, слева, справа — 24 карточки + 3 вставки = 9 полных рядов),
+   ещё две — после «Показать ещё» (ряды 10 слева и 12 справа). Те же места — в scripts/apartments.js (BEFORE). */
+const SLOTS = { 5: 0, 11: 1, 18: 2, 24: 3, 31: 4 };
 const first = rows.slice(0, PAGE);
 const flatHref = (r: any) => href(lang, `/apartments/${r.l}/`) + `?flat=${r.id}`;
 const strings = {
@@ -78,7 +83,7 @@ const title = A.title;
 ---
 <Base lang={lang} path="/apartments/" title={d.meta.apartments.title} description={d.meta.apartments.description} crumbs={[{ t: d.ui.home, href: href(lang, '/') }, { t: A.crumb }]} scrollbar={false}>
   <section class="section apts" data-ui="light" data-apts>
-    <Flower side="r" style="left:calc(1180rem/var(--s));top:calc(-230rem/var(--s));width:calc(480rem/var(--s))" />
+    <Flower side="r" style="left:calc(1010rem/var(--s));top:calc(-20rem/var(--s));width:calc(620rem/var(--s))" />
     <div class="container">
       <div class="u-48"></div>
       <div class="apts_top"></div>
@@ -107,15 +112,7 @@ const title = A.title;
           <div class="apts_list" data-apts-list>
             {first.map((r, i) => (
               <>
-                {i === 5 && A.benefits[0] && (
-                  <div class="abenefit theme_on-color"><div class="abenefit_bg"><img src={`/img/scenes/${A.benefits[0].img}.webp`} alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">{A.benefits[0].title}</h3><div class="u-12"></div><p class="p1">{A.benefits[0].text}</p></div></div>
-                )}
-                {i === 11 && A.benefits[1] && (
-                  <div class="abenefit theme_on-color"><div class="abenefit_bg"><img src={`/img/scenes/${A.benefits[1].img}.webp`} alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">{A.benefits[1].title}</h3><div class="u-12"></div><p class="p1">{A.benefits[1].text}</p></div></div>
-                )}
-                {i === 18 && A.benefits[2] && (
-                  <div class="abenefit theme_on-color"><div class="abenefit_bg"><img src={`/img/scenes/${A.benefits[2].img}.webp`} alt="" loading="lazy" decoding="async" /><div class="abenefit_grad"></div></div><div class="abenefit_info"><h3 class="h5">{A.benefits[2].title}</h3><div class="u-12"></div><p class="p1">{A.benefits[2].text}</p></div></div>
-                )}
+                {SLOTS[i] !== undefined && A.benefits[SLOTS[i]] && <Benefit b={A.benefits[SLOTS[i]]} />}
                 <a class="acard" href={flatHref(r)} data-id={r.id}>
                   <Decor />
                   <div class="acard_shadow" aria-hidden="true"></div>

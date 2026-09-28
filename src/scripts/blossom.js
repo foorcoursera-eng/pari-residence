@@ -14,15 +14,20 @@
    в покое вдали от сцены цикл спит.
    ========================================================================== */
 import { onFrame, wake, hold, release, desktop, viewRect } from './ticker.js';
+import branchData from '../data/branch.json';
 
 const root = document.documentElement;
 const MOTION = root.classList.contains('has-motion');
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
+/* ветер от прокрутки (−1…1): его же берут живые ветки и их лепестки (scripts/branch.js) */
+let wind = 0;
+export const windNow = () => wind;
+
 if (MOTION) {
   /* ---------- скорость прокрутки (px/с), сглаженная ---------- */
-  let lastY = window.scrollY, vy = 0, wind = 0;
+  let lastY = window.scrollY, vy = 0;
 
   /* ---------- ветки и слои глубины ---------- */
   const layers = $$('[data-flower], [data-depth]').filter((el, i, a) => a.indexOf(el) === i).map((el) => ({
@@ -36,36 +41,44 @@ if (MOTION) {
     gain: .8 + Math.random() * .5,                          /* ветки гнутся по-разному */
   }));
 
-  /* ---------- лепестки ---------- */
+  /* ---------- лепестки ----------
+     Поля: во весь экран горизонтальной главы (ПК, data-petals-wide: back — за текстом и фото, front —
+     ближние, поверх) и в первой панели (телефон). У лепестка своя глубина z: ближе — крупнее, быстрее
+     и плотнее. Падение плавное: долгое покачивание из стороны в сторону с наклоном по ходу (как
+     планирующий лист), медленный кувырок изнанкой, лёгкое вращение; прокрутка сдувает. */
   const fields = $$('[data-petals]').map((cv) => {
     const ctx = cv.getContext('2d');
-    const n = desktop() ? 34 : 14;
+    const layer = cv.dataset.petalsWide || '';
+    const wide = !!layer;
+    const [z0, z1] = layer === 'front' ? [.78, 1] : layer === 'back' ? [.3, .78] : [.35, 1];
+    const n = layer === 'front' ? 12 : layer === 'back' ? 34 : (desktop() ? 22 : 14);
     const f = { cv, ctx, w: 0, h: 0, dpr: 1, petals: [], n };
     const size = () => {
-      f.dpr = Math.min(2, window.devicePixelRatio || 1);
+      f.dpr = Math.min(wide ? 1.5 : 2, window.devicePixelRatio || 1);
       f.w = cv.clientWidth; f.h = cv.clientHeight;
       cv.width = Math.round(f.w * f.dpr); cv.height = Math.round(f.h * f.dpr);
     };
     size();
     window.addEventListener('resize', size);
-    /* рождаются у ветки слева вверху (и немного по всей верхней кромке) */
     const spawn = (p, anywhere) => {
-      const fromBranch = Math.random() < .75;
-      p.x = anywhere ? Math.random() * f.w : (fromBranch ? Math.random() * f.w * .32 : Math.random() * f.w);
-      p.y = anywhere ? Math.random() * f.h : (fromBranch ? f.h * (.05 + Math.random() * .45) : -20);
-      p.s = 9 + Math.random() * 9;                            /* размер, px */
-      p.vy = 16 + Math.random() * 26;                         /* падение, px/с */
-      p.vx = 8 + Math.random() * 22;                          /* лёгкий бриз вправо */
-      p.sw = 10 + Math.random() * 24;                         /* размах колебаний */
+      const z = p.z = z0 + Math.random() * (z1 - z0);
+      p.s = (10 + 15 * z) * (wide ? 1.15 : 1);                /* размер, px */
+      p.vy = 12 + 32 * z;                                     /* падение, px/с */
+      p.vx = -4 + Math.random() * 14;                         /* лёгкий бриз вправо */
+      p.sw = 12 + 36 * z;                                     /* размах покачивания */
+      p.T = 3.6 + Math.random() * 3.4;                        /* период покачивания, с */
       p.ph = Math.random() * Math.PI * 2;
-      p.fr = .6 + Math.random() * .9;                         /* частота колебаний */
-      p.r = Math.random() * Math.PI * 2;
-      p.vr = (Math.random() - .5) * 2.2;
+      p.r0 = Math.random() * Math.PI * 2;
+      p.vr = (Math.random() - .5) * .6;                       /* медленное вращение */
       p.flip = Math.random() * Math.PI * 2;
-      p.vf = 1.4 + Math.random() * 2.2;                       /* переворот лепестка */
-      p.o = .7 + Math.random() * .3;
+      p.vf = .7 + Math.random() * 1.3;                        /* медленный кувырок */
+      p.o = .5 + .5 * z;
       p.t = 0;
       p.bx = 0;
+      p.k = (Math.random() * branchData.petals) | 0;           /* какой лепесток из атласа */
+      if (anywhere) { p.x = Math.random() * f.w; p.y = Math.random() * f.h; }
+      else if (!wide && Math.random() < .7) { p.x = Math.random() * f.w * .32; p.y = f.h * (.05 + Math.random() * .45); }   /* у ветки слева вверху */
+      else { p.x = Math.random() * (f.w + 240) - 160; p.y = -40 - Math.random() * 80; }                                   /* сверху по всей ширине */
       return p;
     };
     for (let i = 0; i < n; i++) f.petals.push(spawn({}, true));
@@ -73,8 +86,25 @@ if (MOTION) {
     return f;
   });
 
-  /* лепесток сакуры: капля с вырезом на широком конце, тон шампани */
+  /* лепестки — настоящие, из той же ветки (атлас renders/make-branch.py): кувыркаются и переворачиваются
+     изнанкой; пока атлас не загрузился — нарисованная капля с вырезом, тон шампани */
+  const atlas = new Image();
+  let atlasOk = false;
+  atlas.decoding = 'async';
+  atlas.onload = () => { atlasOk = true; };
+  atlas.src = '/img/scenes/petals.webp';
   const drawPetal = (ctx, p) => {
+    if (atlasOk) {
+      const c = Math.cos(p.flip), s2 = p.s * 1.9;
+      ctx.save();
+      ctx.translate(p.x + p.bx, p.y);
+      ctx.rotate(p.r);
+      ctx.scale((Math.abs(c) < .18 ? .18 : Math.abs(c)) * (c < 0 ? -1 : 1), 1);
+      ctx.globalAlpha = p.o;
+      ctx.drawImage(atlas, p.k * 128, 0, 128, 128, -s2 / 2, -s2 / 2, s2, s2);
+      ctx.restore();
+      return;
+    }
     const s = p.s, w = s * .62;
     ctx.save();
     ctx.translate(p.x + p.bx, p.y);
@@ -148,7 +178,9 @@ if (MOTION) {
         if (Math.abs(L.a) < .002 && Math.abs(L.va) < .002 && Math.abs(target) < .002) { L.a = 0; L.va = 0; }
         else busy = true;                                        /* ветка ещё отыгрывает — нужен следующий кадр */
         if (!L.near) return;
-        tr = `translate3d(${L.tx.toFixed(1)}px,${L.ty.toFixed(1)}px,0) rotate(${L.a.toFixed(2)}deg)`;
+        /* живая ветка (WebGL, scripts/branch.js) гнётся сама: угол ветра уходит в изгиб, рамка только сдвигается */
+        if (L.el.classList.contains('is-gl')) { L.el.__bend = L.a; tr = `translate3d(${L.tx.toFixed(1)}px,${L.ty.toFixed(1)}px,0)`; }
+        else tr = `translate3d(${L.tx.toFixed(1)}px,${L.ty.toFixed(1)}px,0) rotate(${L.a.toFixed(2)}deg)`;
       } else {
         if (!(DESKTOP && L.depth)) { if (L.shown) L.el.style.transform = L.shown = ''; return; }   /* телефон: глубины нет, сдвиг снят */
         if (!L.near) return;
@@ -165,12 +197,14 @@ if (MOTION) {
       ctx.clearRect(0, 0, f.w, f.h);
       f.petals.forEach((p) => {
         p.t += dt;
-        p.y += (p.vy + Math.abs(wind) * 30) * dt;
-        p.x += (p.vx + wind * 260) * dt;                        /* прокрутка вниз — сдувает вправо */
-        p.bx = Math.sin(p.t * p.fr + p.ph) * p.sw;
-        p.r += (p.vr + wind * 3) * dt;
+        p.y += (p.vy + Math.abs(wind) * 40 * p.z) * dt;
+        p.x += (p.vx + wind * 260 * p.z) * dt;                  /* прокрутка вниз — сдувает вправо, ближние сильнее */
+        const a = p.t * Math.PI * 2 / p.T + p.ph;
+        p.bx = Math.sin(a) * p.sw;
+        p.r0 += (p.vr + wind * 1.5) * dt;
+        p.r = p.r0 + Math.cos(a) * .5;                          /* наклон по ходу покачивания — лист планирует */
         p.flip += p.vf * dt;
-        if (p.y > f.h + 24 || p.x + p.bx > f.w + 40 || p.x + p.bx < -60) f.spawn(p, false);
+        if (p.y > f.h + 40 || p.x + p.bx > f.w + 80 || p.x + p.bx < -120) f.spawn(p, false);
         drawPetal(ctx, p);
       });
     });

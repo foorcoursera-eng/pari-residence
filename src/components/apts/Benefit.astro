@@ -1,0 +1,12 @@
+---
+/* Имиджевая вставка каталога (ERA .benefit-card): кадр на 40 % выше рамки и едет внутри неё
+   при прокрутке (параллакс — scripts/apartments.js), снизу h5 + p1 на затемнении.
+   Та же разметка собирается в benefitHTML (scripts/apartments.js) при перестройке списка. */
+interface Props { b: { title: string; img: string; text: string } }
+const { b } = Astro.props;
+const src = (w: number) => `/img/scenes/${b.img}-${w}.webp`;
+---
+<div class="abenefit theme_on-color">
+  <div class="abenefit_bg"><div class="abenefit_par"><img src={src(700)} srcset={`${src(700)} 700w, ${src(1100)} 1100w`} sizes="(max-width: 991px) 92vw, 28vw" alt="" loading="lazy" decoding="async" width="700" height="1296" /></div><div class="abenefit_grad"></div></div>
+  <div class="abenefit_info"><h3 class="h5">{b.title}</h3><div class="u-12"></div><p class="p1">{b.text}</p></div>
+</div>

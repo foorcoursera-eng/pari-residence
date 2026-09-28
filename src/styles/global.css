@@ -210,6 +210,9 @@ html:not(.has-motion) .bfly .bfly_wing{animation:none}
 .flower img{width:100%;height:auto;display:block;transform-origin:var(--fo,0% 0%);animation:flowerSway 7s ease-in-out infinite alternate}
 .flower.is-r img,.flower.is-rb img{animation-duration:8.5s;animation-delay:-3s}
 .flower.is-far img{animation-play-state:paused}   /* вдали от экрана покачивание стоит (scripts/blossom.js) */
+/* живая ветка (scripts/branch.js): холст шире рамки — запас на изгиб (6 %) и падение лепестков (90 % высоты вниз) */
+.flower_gl{position:absolute;left:-6%;top:-6%;width:112%;height:196%;display:block;pointer-events:none}
+.flower.is-gl img{visibility:hidden;animation:none}
 @keyframes flowerSway{
   0%{transform:rotate(-1.6deg) skewY(0deg) scale(1)}
   45%{transform:rotate(.4deg) skewY(-.5deg) scale(1.012)}

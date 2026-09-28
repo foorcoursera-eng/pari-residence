@@ -33,9 +33,13 @@
 .acard.is-in{animation:acardIn var(--dur-l) var(--ease-out) both}
 @keyframes acardIn{from{opacity:0;transform:translateY(calc(40rem/var(--s)))}to{opacity:1;transform:none}}
 
-/* имиджевая вставка (ERA .benefit-card): кадр с затемнением, h5 + p1 снизу */
+/* имиджевая вставка (ERA .benefit-card): кадр с затемнением, h5 + p1 снизу.
+   На ПК картинка на 40 % выше рамки (ERA .img-p 140 %) и едет внутри неё при прокрутке —
+   сдвиг пишет scripts/apartments.js в .abenefit_par; на телефоне параллакса нет, кадр по рамке */
 .abenefit{position:relative;overflow:hidden;min-height:calc(560rem/var(--s));padding:calc(32rem/var(--s));display:flex;align-items:flex-end}
-.abenefit_bg{position:absolute;inset:0}
+.abenefit_bg{position:absolute;inset:0;overflow:hidden}
+.abenefit_par{position:absolute;left:0;top:0;width:100%;height:100%}
+@media (min-width:992px){.abenefit_par{top:-20%;height:140%;will-change:transform}}
 .abenefit_bg img{width:100%;height:100%;object-fit:cover;transform:scale(1.04);transition:transform 1.6s var(--ease-out)}
 .abenefit:hover .abenefit_bg img{transform:scale(1.1)}
 .abenefit_grad{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,0) 35%,rgba(0,0,0,.62))}
